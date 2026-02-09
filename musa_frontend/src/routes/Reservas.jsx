@@ -12,6 +12,7 @@ function Reservas() {
     turno: "PRIMER TURNO",
     nombre: "",
     cantidad: "",
+    telefono: "",
     observaciones: "",
   });
   const [turnos, setTurnos] = useState([]);
@@ -49,7 +50,7 @@ function Reservas() {
   };
 
   const handleChange = (e) => {
-    if (e.target.name === "cantidad") {
+    if (e.target.name === "cantidad" || e.target.name === "telefono") {
       const numericValue = e.target.value.replace(/[^0-9]/g, "");
       setTurno((prev) => ({
         ...prev,
@@ -79,6 +80,7 @@ function Reservas() {
       turno: "PRIMER TURNO",
       nombre: "",
       cantidad: "",
+      telefono: "",
       observaciones: "",
       total: 0,
     });
@@ -266,6 +268,17 @@ function Reservas() {
             />
           </div>
           <div className="form-group">
+            <label>Telefono</label>
+            <input
+              type="text"
+              id="telefono"
+              name="telefono"
+              value={turno.telefono}
+              onChange={handleChange}
+              autoComplete="off"
+            />
+          </div>
+          <div className="form-group">
             <label>Observaciones</label>
             <textarea
               id="observaciones"
@@ -334,6 +347,7 @@ function Reservas() {
                 <th>
                   Cantidad <br />({sumaCantidad})
                 </th>
+                <th>Telefono</th>
                 <th>Observaciones</th>
                 <th>
                   Monto a pagar <br />
@@ -353,8 +367,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {turno.fecha}
@@ -364,8 +378,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {turno.turno}
@@ -375,8 +389,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {turno.nombre}
@@ -386,8 +400,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {turno.cantidad}
@@ -397,8 +411,25 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
+                    }
+                    onClick={() =>
+                      window.open(
+                        `https://wa.me/549${turno.telefono}`,
+                        "_blank"
+                      )
+                    }
+                  >
+                    {turno.telefono}
+                  </td>
+                  <td
+                    className={
+                      turno.cobrado === turno.total
+                        ? "fila-verde"
+                        : turno.cobrado
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {turno.observaciones}
@@ -408,8 +439,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {!turno.total ? (
@@ -429,8 +460,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde"
                         : turno.cobrado
-                          ? "fila-amarilla"
-                          : ""
+                        ? "fila-amarilla"
+                        : ""
                     }
                   >
                     {!turno.cobrado ? (
@@ -451,8 +482,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde editar"
                         : turno.cobrado
-                          ? "fila-amarilla editar"
-                          : "editar"
+                        ? "fila-amarilla editar"
+                        : "editar"
                     }
                   >
                     <i className="bi bi-pencil-square"></i>
@@ -463,8 +494,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde editar"
                         : turno.cobrado
-                          ? "fila-amarilla editar"
-                          : "editar"
+                        ? "fila-amarilla editar"
+                        : "editar"
                     }
                   >
                     <i className="bi bi-cash-coin"></i>
@@ -475,8 +506,8 @@ function Reservas() {
                       turno.cobrado === turno.total
                         ? "fila-verde editar"
                         : turno.cobrado
-                          ? "fila-amarilla editar"
-                          : "editar"
+                        ? "fila-amarilla editar"
+                        : "editar"
                     }
                   >
                     <i className="bi bi-trash3-fill"></i>

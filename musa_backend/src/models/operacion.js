@@ -10,6 +10,7 @@ const operacion = new mongoose.Schema(
     filePath: { type: String },
     beneficiario: { type: String },
     fecha: { type: String },
+    factura: { type: String },
   },
   { timestamps: true }
 );

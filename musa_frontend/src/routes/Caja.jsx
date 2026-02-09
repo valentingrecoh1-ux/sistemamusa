@@ -13,6 +13,7 @@ function Caja() {
     nombre: "",
     formaPago: null,
     tipoOperacion: null,
+    factura: null,
   });
   const [nombres, setNombres] = useState([]);
   const [totales, setTotales] = useState({});
@@ -98,6 +99,22 @@ function Caja() {
       alert("FALTA MONTO");
       return;
     }
+    if (
+      (operacion.tipoOperacion === "GASTO" ||
+        operacion.tipoOperacion === "RETIRO") &&
+      operacion.monto > 0
+    ) {
+      alert("Para GASTO o RETIRO el monto debe ser negativo");
+      return;
+    }
+    if (
+      (operacion.tipoOperacion === "INGRESO" ||
+        operacion.tipoOperacion === "APORTE") &&
+      operacion.monto < 0
+    ) {
+      alert("Para INGRESO o APORTE el monto debe ser positivo");
+      return;
+    }
     if (!operacion.formaPago) {
       alert("FALTA FORMA DE PAGO");
       return;
@@ -144,6 +161,10 @@ function Caja() {
     } catch (error) {
       console.error("Error al enviar los datos:", error);
     }
+  };
+
+  const handleChangeFactura = (value) => {
+    setOperacion((prev) => ({ ...prev, factura: value }));
   };
 
   const handleChangeNumber = (value) => {
@@ -285,6 +306,32 @@ function Caja() {
           <button onClick={() => borrarFile(operacion._id)}>X</button>
         </div>
         <div className="botones-caja">
+          <button
+            className={operacion.factura === "A" ? "boton-activo" : ""}
+            onClick={() => {
+              if (operacion.factura === "A") {
+                handleChangeFactura(null);
+              } else {
+                handleChangeFactura("A");
+              }
+            }}
+          >
+            A
+          </button>
+          <button
+            className={operacion.factura === "C" ? "boton-activo" : ""}
+            onClick={() => {
+              if (operacion.factura === "C") {
+                handleChangeFactura(null);
+              } else {
+                handleChangeFactura("C");
+              }
+            }}
+          >
+            C
+          </button>
+        </div>
+        <div className="botones-caja">
           <button onClick={() => enviar()}>ENVIAR</button>
         </div>
       </div>
@@ -352,6 +399,7 @@ function Caja() {
               <th>NOMBRE</th>
               <th>TIPO OPERACION</th>
               <th>FORMA DE PAGO</th>
+              <th>FACTURA</th>
               <th>MONTO</th>
               <th>DESCRIPCION</th>
               <th></th>
@@ -390,6 +438,11 @@ function Caja() {
                 <td>{operacion.nombre}</td>
                 <td>{operacion.tipoOperacion}</td>
                 <td>{operacion.formaPago}</td>
+                <td>
+                  {operacion.factura && operacion.factura !== "null"
+                    ? operacion.factura
+                    : ""}
+                </td>
                 <td style={{ color: operacion.monto < 0 ? "red" : "" }}>
                   <NumericFormat
                     prefix="$"

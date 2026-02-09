@@ -11,6 +11,7 @@ const turno = new mongoose.Schema(
     formaDeCobro: { type: String },
     total: { type: Number },
     facturado: { type: Boolean },
+    telefono: { type: String },
   },
   { timestamps: true }
 );

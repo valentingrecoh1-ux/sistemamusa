@@ -361,15 +361,15 @@ E
           <div className="form-group">
             <label>Cantidad</label>
             <input
-              disabled={formData._id} // Desactiva el campo si formData._id existe
               type="text"
               id="cantidad"
               name="cantidad"
               value={formData.cantidad}
               onChange={handleChange}
               autoComplete="off"
-              readOnly={formData._id}
-              className={`${formData._id ? "input-disabled" : ""}`}
+              //disabled={formData._id} // Desactiva el campo si formData._id existe
+              //readOnly={formData._id}
+              //className={`${formData._id ? "input-disabled" : ""}`}
             />
           </div>
           <div className="form-group">

@@ -295,6 +295,7 @@ function Ventas() {
               {venta.productos.map((prod, index) => (
                 <div key={index}>
                   {prod.carritoCantidad} x {prod.nombre}
+                  {venta.nombreTurno && ` de ${venta.nombreTurno}`}
                 </div>
               ))}
               <div className="modal-footer">

@@ -1095,6 +1095,10 @@ tr td.fila-verde {
   width:100%;
 }
 
+.flujo-color td {
+  background-color: #84e063;
+}
+
 @media (max-width: 768px) {
   .modal-content {
     flex-direction: column;

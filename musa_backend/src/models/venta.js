@@ -17,9 +17,12 @@ const venta = new mongoose.Schema(
     notaCredito: { type: Boolean },
     fecha: { type: String },
     idTurno: { type: String },
+    nombreTurno: { type: String },
     descuento: { type: Number },
     detalle: { type: String },
     numeroVenta: { type: Number },
+    montoEfectivo: { type: Number },
+    montoDigital: { type: Number },
   },
   { timestamps: true }
 );

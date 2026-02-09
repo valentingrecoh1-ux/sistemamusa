@@ -94,6 +94,10 @@ function Flujos() {
     setTodos((prev) => !prev);
   };
 
+  const enviarCaja = (id) => {
+    socket.emit("enviar-a-caja", id);
+  };
+
   useEffect(() => {
     socket.on("cambios", () => {
       fetchFlujos(ordenadoFechaPago, todos);
@@ -181,9 +185,11 @@ function Flujos() {
                   {ordenadoFechaPago ? " ↓" : ""}
                 </span>
               </th>
-              <th>IMPORTE</th>
               <th>BENEFICIARIO</th>
+              <th>IMPORTE</th>
+              <th>NOMBRE</th>
               <th>DESCRIPCION</th>
+              <th></th>
               <th></th>
               <th></th>
             </tr>
@@ -191,6 +197,7 @@ function Flujos() {
           <tbody>
             {flujos?.map((f, index) => (
               <tr
+                className={f.enviado ? "flujo-color" : ""}
                 onClick={() => {
                   if (f.filePath) {
                     window.open(`${IP()}/${f.filePath}`);
@@ -200,6 +207,7 @@ function Flujos() {
               >
                 <td>{f.fecha}</td>
                 <td>{f.fechaPago} </td>
+                <td>{f.beneficiario} </td>
                 <td>
                   <NumericFormat
                     displayType="text"
@@ -209,7 +217,7 @@ function Flujos() {
                     decimalSeparator=","
                   />
                 </td>
-                <td>{f.beneficiario} </td>
+                <td>{f.nombre} </td>
                 <td>{f.descripcion} </td>
                 <td
                   onClick={(e) => {
@@ -220,7 +228,7 @@ function Flujos() {
                 >
                   <i className="bi bi-pencil-square"></i>
                 </td>
-                <td>
+                <td className="editar caja-editar">
                   {f.filePath ? (
                     f.filePath.endsWith(".pdf") ? (
                       <i className="bi bi-filetype-pdf icono-caja"></i>
@@ -228,6 +236,15 @@ function Flujos() {
                       <i className="bi bi-file-earmark-image icono-caja"></i>
                     )
                   ) : null}
+                </td>
+                <td
+                  className="editar caja-editar"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Evita que el clic en el botón de edición abra el archivo
+                    enviarCaja(f._id);
+                  }}
+                >
+                  <i className="bi bi-send"></i>
                 </td>
               </tr>
             ))}

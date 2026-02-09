@@ -82,10 +82,12 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware para servir los archivos estáticos de la carpeta dist
 app.use(express.static(path.join(__dirname, "dist")));
 
+/*
 app.use(
   "/.well-known/pki-validation/",
   express.static(path.join(__dirname, ".well-known/pki-validation"))
 );
+*/
 
 // Sirviendo la carpeta 'uploads' de forma estática
 app.use("/uploads", express.static("uploads"));
@@ -255,164 +257,196 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
   }
 });
 
+/* ============================
+   Helpers AFIP / Formateo
+   ============================ */
+function mapTipoCmp({ factura, notaCredito }) {
+  // AFIP: 1=Factura A, 3=Nota de Crédito A, 6=Factura B, 8=Nota de Crédito B
+  if (notaCredito) return factura === "A" ? 3 : 8;
+  return factura === "A" ? 1 : 6;
+}
+
+function pickDocTipoYNumero(data) {
+  // Respetá lo que te devuelve AfipService si viene; sino inferí.
+  const docTipo =
+    data.docTipo ??
+    data.tipoDoc ??
+    (data.factura === "A"
+      ? 80 // CUIT
+      : data.dni
+      ? 96
+      : 99); // DNI o Consumidor Final
+
+  const nroDoc = Number(
+    Number(docTipo) === 99
+      ? 0
+      : data.cuit ?? data.dni ?? data.nroDoc ?? data.docNro ?? 0
+  );
+
+  return { docTipo: Number(docTipo), nroDoc };
+}
+
+function formatFechaCortaConHora(date = new Date()) {
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = String(date.getFullYear());
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mi = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return { fecha: `${dd}/${mm}/${yyyy}`, hora: `${hh}:${mi}:${ss}` };
+}
+
+function ymd(date = new Date()) {
+  const yyyy = String(date.getFullYear());
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/* ==========================================
+   Función principal: imprimirTicket(data)
+   ========================================== */
 async function imprimirTicket(data) {
   const doc = new PDFDocument({
     size: "A7",
     margins: { top: 0, bottom: 0, left: 0, right: 0 },
   });
-  let stringNumeroComprobante =
-    `0000${data.puntoDeVenta.toString()}-` +
-    data.numeroComprobante.toString().padStart(8, "0");
-  let nombrePath =
-    `F${data.factura}-0000${data.puntoDeVenta.toString()}-` +
-    data.numeroComprobante.toString().padStart(8, "0");
-  if (data.notaCredito) {
-    doc.pipe(
-      fs.createWriteStream(
-        path.join(__dirname, "notas_de_credito", `${nombrePath}.pdf`)
-      )
-    );
-  } else {
-    doc.pipe(
-      fs.createWriteStream(
-        path.join(__dirname, "facturas", `${nombrePath}.pdf`)
-      )
-    );
-  }
-  doc.fontSize(12);
-  doc.font("Courier-Bold");
-  doc.fontSize(25);
-  doc.text("MUSA PALERMO", { align: "center" });
-  doc.fontSize(12);
-  doc.font("Courier");
+
+  // Cadenas con padding correcto
+  const pvStr = data.puntoDeVenta.toString().padStart(6, "0");
+  const nroStr = data.numeroComprobante.toString().padStart(8, "0");
+
+  const stringNumeroComprobante = `${pvStr}-${nroStr}`;
+  const nombrePath = `F${data.factura}-${pvStr}-${nroStr}`;
+
+  // Dónde guardar
+  const carpeta = data.notaCredito ? "notas_de_credito" : "facturas";
+  const filePath = path.join(__dirname, carpeta, `${nombrePath}.pdf`);
+  fs.mkdirSync(path.dirname(filePath), { recursive: true }); // por si no existe
+
+  const out = fs.createWriteStream(filePath);
+  doc.pipe(out);
+
+  // ====== ENCABEZADO ======
+  doc
+    .fontSize(25)
+    .font("Courier-Bold")
+    .text("MUSA PALERMO", { align: "center" });
+  doc.fontSize(12).font("Courier");
   doc.text("---------------------------", { align: "center" });
   doc.text("Valentin Greco", { align: "center" });
-  doc.text("CUIT e IIBB: 20-41858889-7", { align: "center" });
+  doc.text("CUIT e IIBB: 20-41858889-7", { align: "center" }); // <- tus datos
   doc.text("DIRECCIÓN: ARAOZ 2785", { align: "center" });
   doc.text("IVA RESP. INSCRIPTO", { align: "center" });
   doc.text("---------------------------", { align: "center" });
+
+  // Tipo de comprobante visible
   if (data.factura === "A") {
-    if (data.notaCredito) {
-      doc.text("NOTA DE CREDITO A", { align: "center" });
-    } else {
-      doc.text("FACTURA A", { align: "center" });
-    }
-    doc.text("---------------------------", { align: "center" });
-    doc.text(`NRO. COMP: ${stringNumeroComprobante}`, { align: "center" });
-    doc.text(
-      `FECHA: ${new Date().toLocaleDateString()} ${new Date()
-        .getHours()
-        .toString()
-        .padStart(2, "0")}:${new Date()
-        .getMinutes()
-        .toString()
-        .padStart(2, "0")}:${new Date()
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}`,
-      { align: "center" }
-    );
-    doc.text("---------------------------", { align: "center" });
-    doc.text(data.razonSocial, { align: "left" });
-    doc.text(`CUIT: ${data.cuit}`, { align: "left" });
-    doc.text(`RESPONSABLE INSCRIPTO`, { align: "left" });
-    doc.text(`${data.direccion}`, { align: "left" });
-    doc.text(`${data.localidad}`, { align: "left" });
-    doc.text(`${data.provincia}`, { align: "left" });
+    doc.text(data.notaCredito ? "NOTA DE CREDITO A" : "FACTURA A", {
+      align: "center",
+    });
+  } else {
+    doc.text(data.notaCredito ? "NOTA DE CREDITO B" : "FACTURA B", {
+      align: "center",
+    });
   }
-  if (data.factura === "B") {
-    if (data.notaCredito) {
-      doc.text("NOTA DE CREDITO B", { align: "center" });
-    } else {
-      doc.text("FACTURA B", { align: "center" });
-    }
-    doc.text("---------------------------", { align: "center" });
-    doc.text(`NRO. COMP: ${stringNumeroComprobante}`, { align: "center" });
-    doc.text(
-      `FECHA: ${new Date().toLocaleDateString()} ${new Date()
-        .getHours()
-        .toString()
-        .padStart(2, "0")}:${new Date()
-        .getMinutes()
-        .toString()
-        .padStart(2, "0")}:${new Date()
-        .getSeconds()
-        .toString()
-        .padStart(2, "0")}`,
-      { align: "center" }
-    );
-    doc.text("---------------------------", { align: "center" });
+
+  const { fecha, hora } = formatFechaCortaConHora(new Date());
+  doc.text("---------------------------", { align: "center" });
+  doc.text(`NRO. COMP: ${stringNumeroComprobante}`, { align: "center" });
+  doc.text(`FECHA: ${fecha} ${hora}`, { align: "center" });
+  doc.text("---------------------------", { align: "center" });
+
+  // Datos del receptor
+  if (data.factura === "A") {
+    doc.text(data.razonSocial ?? "", { align: "left" });
+    doc.text(`CUIT: ${data.cuit ?? ""}`, { align: "left" });
+    doc.text("RESPONSABLE INSCRIPTO", { align: "left" });
+    if (data.direccion) doc.text(data.direccion, { align: "left" });
+    if (data.localidad) doc.text(data.localidad, { align: "left" });
+    if (data.provincia) doc.text(data.provincia, { align: "left" });
+  } else {
     if (data.dni && data.nombre && data.domicilio) {
       doc.text(data.nombre, { align: "left" });
       doc.text(`DNI: ${data.dni}`, { align: "left" });
       doc.text(data.domicilio, { align: "left" });
     } else {
-      doc.text(`A CONSUMIDOR FINAL`, { align: "center" });
+      doc.text("A CONSUMIDOR FINAL", { align: "center" });
     }
   }
+
   doc.text("---------------------------", { align: "center" });
-  doc.addPage();
+
+  // ====== CUERPO / ITEMS ======
+  doc.addPage(); // como en tu versión
   doc.moveDown();
   doc.fontSize(10);
+
   let currentY = doc.y;
   doc.text("CANTIDAD/P. UNIT", 0, currentY, { align: "left" });
   doc.text("IMPORTE", 165, currentY);
   doc.x = 0;
+
   currentY = doc.y;
   doc.text("DESCRIPCION", 0, currentY, { align: "left" });
   doc.text("IVA%", 135, currentY);
-  console.dir(data.productosCarrito, { depth: null });
-  data.productosCarrito.forEach((producto) => {
+
+  (data.productosCarrito || []).forEach((producto) => {
     doc.x = 0;
     currentY = doc.y;
-    if (data.factura === "A") {
-      doc.text(
-        ((producto.carritoCantidad * producto.venta) / 1.21).toFixed(2),
-        0,
-        currentY,
-        { align: "right" }
-      );
-    } else {
-      doc.text(
-        (producto.carritoCantidad * producto.venta).toFixed(2),
-        0,
-        currentY,
-        { align: "right" }
-      );
-    }
+
+    const importeLinea =
+      data.factura === "A"
+        ? (producto.carritoCantidad * producto.venta) / 1.21
+        : producto.carritoCantidad * producto.venta;
+
+    // Importe a la derecha
+    doc.text(importeLinea.toFixed(2), 0, currentY, { align: "right" });
+    // Cantidad / Precio unitario a la izquierda
     doc.text(`${producto.carritoCantidad}/$${producto.venta}`, 0, currentY);
+
     currentY = doc.y;
-    let maxWidth = 135;
-    let nombreProducto = producto.nombre;
-    while (doc.widthOfString(nombreProducto) > maxWidth) {
+
+    // Descripción truncada a ancho 135
+    const maxWidth = 135;
+    let nombreProducto = String(producto.nombre ?? "");
+    while (
+      doc.widthOfString(nombreProducto) > maxWidth &&
+      nombreProducto.length > 0
+    ) {
       nombreProducto = nombreProducto.slice(0, -1);
     }
     doc.text(nombreProducto, 0, currentY);
-    doc.text(`(21%)`, 135, currentY);
+    doc.text("(21%)", 135, currentY); // asumís 21% para todos los ítems
     doc.x = 0;
   });
-  doc.addPage();
+
+  // ====== TOTALES ======
+  doc.addPage(); // como en tu versión
   currentY = doc.y;
-  doc.text(`DESCUENTO:`, 0, currentY, { align: "left" });
-  doc.text(`$${data.descuento}`, 0, currentY, { align: "right" });
+
+  const descuento = Number(data.descuento ?? 0);
+  doc.text("DESCUENTO:", 0, currentY, { align: "left" });
+  doc.text(`$${descuento.toFixed(2)}`, 0, currentY, { align: "right" });
+
+  const precioTotal = Number(data.precio ?? 0);
+
   if (data.factura === "A") {
-    doc.text(`SUBTOTAL: ${(data.precio / 1.21).toFixed(2)}`, {
-      align: "right",
-    });
+    const neto = precioTotal / 1.21;
+    const iva = precioTotal - neto;
+    doc.text(`SUBTOTAL: ${neto.toFixed(2)}`, { align: "right" });
     doc.moveDown();
-    doc.text(`NETO GRAVADO: ${(data.precio / 1.21).toFixed(2)}`, {
-      align: "right",
-    });
-    doc.text(`IVA 21%: ${(data.precio - data.precio / 1.21).toFixed(2)}`, {
-      align: "right",
-    });
+    doc.text(`NETO GRAVADO: ${neto.toFixed(2)}`, { align: "right" });
+    doc.text(`IVA 21%: ${iva.toFixed(2)}`, { align: "right" });
   }
+
   doc.moveDown();
   doc.fontSize(19);
   currentY = doc.y;
-  const precioFormateado = data.precio.toLocaleString("es-AR");
-  doc.text(`TOTAL:`, 0, currentY, { align: "left" });
+  const precioFormateado = precioTotal.toLocaleString("es-AR");
+  doc.text("TOTAL:", 0, currentY, { align: "left" });
   doc.text(`$${precioFormateado}`, 0, currentY, { align: "right" });
+
   doc.fontSize(12);
   doc.moveDown();
   doc.text("---------------------------", { align: "center" });
@@ -422,51 +456,57 @@ async function imprimirTicket(data) {
   doc.text(`C.A.E: ${data.CAE}`, { align: "center" });
   doc.text(`Vto.: ${data.vtoCAE}`, { align: "center" });
 
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = (today.getMonth() + 1).toString().padStart(2, "0");
-  const day = today.getDate().toString().padStart(2, "0");
+  // ====== QR AFIP (JSON + imagen inline) ======
+  const tipoCmp = mapTipoCmp({
+    factura: data.factura,
+    notaCredito: data.notaCredito,
+  });
+  const { docTipo: tipoDocRec, nroDoc: nroDocRec } = pickDocTipoYNumero(data);
 
-  let formattedDateString = year + "-" + month + "-" + day;
-
-  let importe_total = parseFloat(data.precio).toFixed(2);
-
-  let object = {
+  const qrPayload = {
     ver: 1,
-    fecha: formattedDateString,
-    cuit: data.cuit_afip,
-    ptoVta: data.puntoDeVenta,
-    tipoCmp: 6,
-    nroCmp: data.numeroComprobante,
-    importe: parseFloat(importe_total),
+    fecha: ymd(new Date()), // YYYY-MM-DD
+    cuit: Number(data.cuit_afip), // CUIT del emisor
+    ptoVta: Number(data.puntoDeVenta),
+    tipoCmp, // 1/3/6/8
+    nroCmp: Number(data.numeroComprobante),
+    importe: Number(precioTotal.toFixed(2)),
     moneda: "PES",
     ctz: 1,
-    tipoDocRec: data.tipoDoc,
-    nroDocRec: data.cuit,
+    tipoDocRec: Number(tipoDocRec), // 80/96/99
+    nroDocRec: Number(nroDocRec), // 0 si 99 (CF)
     tipoCodAut: "E",
-    codAut: parseInt(data.CAE),
+    codAut: Number.parseInt(String(data.CAE), 10), // CAE numérico
   };
 
-  const jsonString = JSON.stringify(object);
-  const buffer = Buffer.from(jsonString, "utf-8");
-  const base64String = buffer.toString("base64");
-  let qr_svg = qr.image(
-    `https://serviciosweb.afip.gob.ar/genericos/comprobantes/cae.aspx?p=${base64String}`,
-    { type: "png" }
+  const base64String = Buffer.from(JSON.stringify(qrPayload), "utf-8").toString(
+    "base64"
   );
-  qr_svg.pipe(fs.createWriteStream("qr-afip.png"));
-  await new Promise((res) => setTimeout(res, 250));
-  doc.image("qr-afip.png", {
+  const qrUrl = `https://serviciosweb.afip.gob.ar/genericos/comprobantes/cae.aspx?p=${base64String}`;
+
+  // Genero la imagen del QR en memoria y la incrusto
+  const qrBuffer = qr.imageSync(qrUrl, { type: "png", margin: 0, size: 4 });
+  doc.image(qrBuffer, {
     x: 55,
-    fit: [100, 100], // Ajusta el tamaño de la imagen para que se ajuste al tamaño de la página
-    align: "center", // Centra la imagen horizontalmente en la página
+    fit: [100, 100],
+    align: "center",
+  });
+
+  // Cierro y espero a que se escriba todo antes de imprimir
+  const finished = new Promise((resolve, reject) => {
+    out.on("finish", resolve);
+    out.on("error", reject);
   });
   doc.end();
-  await new Promise((res) => setTimeout(res, 250));
-  if (data.notaCredito) {
-    print(path.join(__dirname, "notas_de_credito", `${nombrePath}.pdf`));
-  } else {
-    print(path.join(__dirname, "facturas", `${nombrePath}.pdf`));
+  await finished;
+
+  // Enviá a imprimir como hacías
+  if (typeof print === "function") {
+    if (data.notaCredito) {
+      print(path.join(__dirname, "notas_de_credito", `${nombrePath}.pdf`));
+    } else {
+      print(path.join(__dirname, "facturas", `${nombrePath}.pdf`));
+    }
   }
 }
 
@@ -606,12 +646,24 @@ io.on("connection", (socket) => {
   });
   socket.on("finalizar-compra", async (datosCompra) => {
     try {
+      // Obtenemos todos los productos que están en el carrito
       const productosCarrito = await Product.find({ carrito: true });
+
+      // Calculamos el total de la venta
       let totalVenta = 0;
       productosCarrito.forEach((producto) => {
         totalVenta += producto.carritoCantidad * parseFloat(producto.venta);
       });
+
+      // Aplicamos el descuento si lo hay
       totalVenta = totalVenta - datosCompra.descuento;
+
+      // NUEVO: Obtenemos los montos de pago mixto (si vienen desde el frontend).
+      // Si no, se dejan como 0.
+      const montoEfectivo = datosCompra.efectivoMixto || 0;
+      const montoDigital = datosCompra.digitalMixto || 0;
+
+      // Factura A
       if (datosCompra.factura === "A") {
         const data_factura = await afipService.facturaA(
           totalVenta,
@@ -629,20 +681,6 @@ io.on("connection", (socket) => {
           socket.emit("error-no-cuit");
           return;
         }
-        /*
-                persona = {
-                    personaReturn: {
-                        datosGenerales: {
-                            razonSocial: 'ROBERTO CARLOS',
-                            domicilioFiscal: {
-                                localidad: 'BAHIA BLANCA',
-                                direccion: 'CASTELLI 200',
-                                descripcionProvincia: 'BUENOS AIRES'
-                            }
-                        },
-                    }
-                }
-                */
         data.cuit = datosCompra.cuit;
         data.factura = datosCompra.factura;
         data.razonSocial = persona.personaReturn.datosGenerales.razonSocial;
@@ -661,7 +699,11 @@ io.on("connection", (socket) => {
         data.vtoCAE = data_factura.vtoCAE;
         data.tipoDoc = data_factura.docTipo;
         data.productosCarrito = productosCarrito;
+
+        // Imprimimos o procesamos el ticket (si tienes esta función)
         await imprimirTicket(data);
+
+        // Creación de la venta en la base de datos
         const venta = {
           productos: productosCarrito,
           tipoFactura: datosCompra.factura,
@@ -681,8 +723,14 @@ io.on("connection", (socket) => {
             .format("YYYY-MM-DD"),
           descuento: datosCompra.descuento,
           detalle: datosCompra.detalle,
+
+          // NUEVOS CAMPOS
+          montoEfectivo,
+          montoDigital,
         };
         await Venta.create(venta);
+
+        // Factura B
       } else if (datosCompra.factura === "B") {
         let data_factura;
         if (datosCompra.dni) {
@@ -707,7 +755,11 @@ io.on("connection", (socket) => {
         data.vtoCAE = data_factura.vtoCAE;
         data.tipoDoc = data_factura.docTipo;
         data.productosCarrito = productosCarrito;
+
+        // Imprimimos o procesamos el ticket (si tienes esta función)
         await imprimirTicket(data);
+
+        // Creación de la venta en la base de datos
         const venta = {
           productos: productosCarrito,
           tipoFactura: datosCompra.factura,
@@ -715,7 +767,7 @@ io.on("connection", (socket) => {
             `F${datosCompra.factura}-0000${data.puntoDeVenta.toString()}-` +
             data.numeroComprobante.toString().padStart(8, "0"),
           numeroFactura: data.numeroComprobante,
-          cuit: datosCompra.dni,
+          cuit: datosCompra.dni, // En caso de usar DNI como identificador
           monto: totalVenta,
           formaPago: datosCompra.formaPago,
           domicilio: datosCompra.domicilio,
@@ -725,9 +777,16 @@ io.on("connection", (socket) => {
             .format("YYYY-MM-DD"),
           descuento: datosCompra.descuento,
           detalle: datosCompra.detalle,
+
+          // NUEVOS CAMPOS
+          montoEfectivo,
+          montoDigital,
         };
         await Venta.create(venta);
+
+        // Sin factura
       } else {
+        // Creación de la venta en la base de datos sin factura A/B
         const venta = {
           productos: productosCarrito,
           monto: totalVenta,
@@ -737,18 +796,28 @@ io.on("connection", (socket) => {
             .format("YYYY-MM-DD"),
           descuento: datosCompra.descuento,
           detalle: datosCompra.detalle,
+
+          // NUEVOS CAMPOS
+          montoEfectivo,
+          montoDigital,
         };
         await Venta.create(venta);
       }
-      productosCarrito.forEach(async (producto) => {
+
+      // Actualizamos el stock de los productos en el carrito
+      for (const producto of productosCarrito) {
         await Product.findByIdAndUpdate(producto._id, {
           $inc: { cantidad: -producto.carritoCantidad },
         });
-      });
+      }
+
+      // Reiniciamos carrito y favoritos
       await Product.updateMany(
         { $or: [{ carrito: true }, { favorito: true }] },
         { carrito: false, favorito: false }
       );
+
+      // Emitimos los eventos pertinentes
       io.emit("cambios");
       socket.emit("compra-finalizada");
     } catch (error) {
@@ -852,17 +921,17 @@ io.on("connection", (socket) => {
         notaCredito: true,
         descuento: venta.descuento,
       };
-      if (venta.idTurno) {
-        data.productosCarrito = [
-          { nombre: "RESERVA", carritoCantidad: 1, venta: venta.monto },
-        ];
-        const turno = await Turno.findById(venta.idTurno);
-        if (turno) {
-          const nuevoCobrado = turno.cobrado - venta.monto;
-          await Turno.findByIdAndUpdate(venta.idTurno, {
-            cobrado: nuevoCobrado,
-          });
-        }
+    }
+    if (venta.idTurno) {
+      data.productosCarrito = [
+        { nombre: "RESERVA", carritoCantidad: 1, venta: venta.monto },
+      ];
+      const turno = await Turno.findById(venta.idTurno);
+      if (turno) {
+        const nuevoCobrado = turno.cobrado - venta.monto;
+        await Turno.findByIdAndUpdate(venta.idTurno, {
+          cobrado: nuevoCobrado,
+        });
       }
     }
     // Imprimir ticket y actualizar la venta
@@ -879,6 +948,15 @@ io.on("connection", (socket) => {
     io.emit("cambios");
   });
   socket.on("devolucion", async (venta) => {
+    if (venta.idTurno) {
+      const turno = await Turno.findById(venta.idTurno);
+      if (turno) {
+        const nuevoCobrado = turno.cobrado - venta.monto;
+        await Turno.findByIdAndUpdate(venta.idTurno, {
+          cobrado: nuevoCobrado,
+        });
+      }
+    }
     await Venta.findByIdAndUpdate(venta._id, { notaCredito: true });
     venta.productos.forEach(async (producto) => {
       await Product.findByIdAndUpdate(producto._id, {
@@ -888,25 +966,12 @@ io.on("connection", (socket) => {
     io.emit("cambios");
   });
   socket.on("request-totales", async () => {
+    // 1. SUMAR EFECTIVO (formaPago = "EFECTIVO")
     const totalEfectivoResult = await Venta.aggregate([
       {
         $match: {
           formaPago: "EFECTIVO",
-          notaCredito: { $ne: true }, // Excluir ventas con notaCredito en true
-        },
-      },
-      {
-        $group: {
-          _id: null, // No necesitamos agrupar por formaPago, solo queremos el total
-          total: { $sum: "$monto" },
-        },
-      },
-    ]);
-    const totalDigitalResult = await Venta.aggregate([
-      {
-        $match: {
-          formaPago: "DIGITAL",
-          notaCredito: { $ne: true }, // Excluir ventas con notaCredito en true
+          notaCredito: { $ne: true }, // Excluir ventas con notaCredito == true
         },
       },
       {
@@ -916,22 +981,80 @@ io.on("connection", (socket) => {
         },
       },
     ]);
+
+    // 2. SUMAR DIGITAL (formaPago = "DIGITAL")
+    const totalDigitalResult = await Venta.aggregate([
+      {
+        $match: {
+          formaPago: "DIGITAL",
+          notaCredito: { $ne: true },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$monto" },
+        },
+      },
+    ]);
+
+    // 3. SUMAR MIXTO (formaPago = "MIXTO")
+    //    Aquí debemos sumar "montoEfectivo" y "montoDigital" por separado
+    const totalMixtoResult = await Venta.aggregate([
+      {
+        $match: {
+          formaPago: "MIXTO",
+          notaCredito: { $ne: true },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalEfectivoMixto: { $sum: "$montoEfectivo" },
+          totalDigitalMixto: { $sum: "$montoDigital" },
+        },
+      },
+    ]);
+
+    // Obtenemos los valores o 0 si no hay resultados
     let efectivo =
       totalEfectivoResult.length > 0 ? totalEfectivoResult[0].total : 0;
     let digital =
       totalDigitalResult.length > 0 ? totalDigitalResult[0].total : 0;
+
+    let efectivoMixto =
+      totalMixtoResult.length > 0 ? totalMixtoResult[0].totalEfectivoMixto : 0;
+    let digitalMixto =
+      totalMixtoResult.length > 0 ? totalMixtoResult[0].totalDigitalMixto : 0;
+
+    // Sumamos los mixtos a cada tipo de total
+    efectivo += efectivoMixto;
+    digital += digitalMixto;
+
+    // 4. SUMAR OPERACIONES
+    //    Si tus Operaciones también incluyen MIXTO, puedes sumarlas de forma similar:
     const operaciones = await Operacion.find();
-    operaciones.map((operacion) => {
+
+    operaciones.forEach((operacion) => {
       if (operacion.formaPago === "EFECTIVO") {
         efectivo += operacion.monto;
-      } else {
+      } else if (operacion.formaPago === "DIGITAL") {
         digital += operacion.monto;
+      } else if (operacion.formaPago === "MIXTO") {
+        // Asumiendo que tu 'Operacion' en modo MIXTO también
+        // tenga campos tipo 'montoEfectivo' y 'montoDigital'
+        efectivo += operacion.montoEfectivo || 0;
+        digital += operacion.montoDigital || 0;
       }
     });
+
+    // 5. Armamos la respuesta
     const totales = {
       efectivo,
       digital,
     };
+
+    // 6. Enviamos al cliente
     socket.emit("response-totales", totales);
   });
   socket.on("request-nombres", async () => {
@@ -940,7 +1063,6 @@ io.on("connection", (socket) => {
     socket.emit("response-nombres", nombres);
   });
   socket.on("guardar-operacion", async (operacion) => {
-    console.log(operacion);
     if (operacion._id) {
       await Operacion.findByIdAndUpdate(operacion._id, operacion);
     } else {
@@ -1038,6 +1160,26 @@ io.on("connection", (socket) => {
         message: "Error al obtener las ventas y sumar los montos.",
       });
     }
+  });
+  socket.on("request-gastos", async (mes) => {
+    const operaciones = await Operacion.find({
+      fecha: {
+        $regex: `^${mes}`, // Filtrar donde la fecha empiece con el valor de 'mes' (YYYY-MM)
+      },
+    });
+    let totalGastoFacturado = 0;
+    let totalGastoFacturadoA = 0;
+    operaciones.forEach((operacion) => {
+      if (operacion.factura) {
+        totalGastoFacturado += parseFloat(operacion.monto);
+        if (operacion.factura === "A") {
+          totalGastoFacturadoA += parseFloat(operacion.monto);
+        }
+      }
+    });
+    totalGastoFacturado = totalGastoFacturado * -1;
+    let ivaCompra = (totalGastoFacturadoA - totalGastoFacturadoA / 1.21) * -1;
+    socket.emit("response-gastos", totalGastoFacturado, ivaCompra);
   });
   socket.on("request-inicio", (code) => {
     if (code === "0510") {
@@ -1138,7 +1280,6 @@ io.on("connection", (socket) => {
     turno.cobrado = (turno.cobrado || 0) + parseFloat(turnoData.cobrado);
     turno.facturado = turnoData.facturado;
     turno.formaDeCobro = turnoData.formaDeCobro;
-    await turno.save();
     if (turnoData.facturado) {
       let data_factura = "";
       data_factura = await afipService.facturaB(turnoData.cobrado, 0);
@@ -1154,6 +1295,7 @@ io.on("connection", (socket) => {
       data.productosCarrito = [
         { nombre: "RESERVA", carritoCantidad: 1, venta: turnoData.cobrado },
       ];
+      data.descuento = 0;
       await imprimirTicket(data);
       const venta = {
         productos: data.productosCarrito,
@@ -1168,12 +1310,14 @@ io.on("connection", (socket) => {
           .tz("America/Argentina/Buenos_Aires")
           .format("YYYY-MM-DD"),
         idTurno: turno._id,
+        nombreTurno: turno.nombre,
         descuento: 0,
       };
       await Venta.create(venta);
     } else {
       await Venta.create({
         idTurno: turno._id,
+        nombreTurno: turno.nombre,
         formaPago: turnoData.formaDeCobro,
         tipoFactura: "",
         monto: turnoData.cobrado,
@@ -1181,8 +1325,16 @@ io.on("connection", (socket) => {
           .tz("America/Argentina/Buenos_Aires")
           .format("YYYY-MM-DD"),
         descuento: 0,
+        productos: [
+          {
+            nombre: "RESERVA",
+            carritoCantidad: 1,
+            venta: turnoData.cobrado,
+          },
+        ],
       });
     }
+    await turno.save();
     io.emit("cambios");
   });
   socket.on("cambiar-cantidad-color", (color, cantidad) => {
@@ -1259,6 +1411,27 @@ io.on("connection", (socket) => {
       socket.emit("response-flujos", []); // Enviar un array vacío en caso de error
     }
   });
+  socket.on("enviar-a-caja", async (id) => {
+    const flujo = await Flujo.findByIdAndUpdate(
+      id,
+      { enviado: true },
+      { new: true } // ← aquí le indicas que te devuelva el documento actualizado
+    );
+    const operacion = {
+      fecha: moment(new Date())
+        .tz("America/Argentina/Buenos_Aires")
+        .format("YYYY-MM-DD"),
+      beneficiario: flujo.beneficiario,
+      nombre: flujo.nombre,
+      filePath: flujo.filePath,
+      descripcion: flujo.descripcion,
+      monto: parseFloat(flujo.importe),
+      tipoOperacion: "GASTO",
+      formaPago: "DIGITAL",
+    };
+    await Operacion.create(operacion);
+    io.emit("cambios");
+  });
 });
 
 const PORT = 5000;
@@ -1266,3 +1439,45 @@ const PORT = 5000;
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
+
+async function vinoMasVendido() {
+  // 1. Obtenemos todas las ventas
+  const ventas = await Venta.find();
+
+  // 2. Creamos un objeto para acumular cantidades por código
+  const cantidadesPorCodigo = {};
+
+  // 3. Recorremos cada venta y cada producto
+  ventas.forEach((venta) => {
+    venta.productos.forEach((producto) => {
+      const codigo = producto.codigo;
+      // Inicializamos el registro en caso de que no exista
+      if (!cantidadesPorCodigo[codigo]) {
+        cantidadesPorCodigo[codigo] = {
+          nombre: producto.nombre,
+          totalCantidad: 0,
+        };
+      }
+      // Sumamos la cantidad vendida de este producto
+      cantidadesPorCodigo[codigo].totalCantidad += producto.carritoCantidad;
+    });
+  });
+
+  // 4. Convertimos el objeto en un array para poder ordenarlo o mostrarlo
+  const resultado = Object.entries(cantidadesPorCodigo).map(
+    ([codigo, data]) => ({
+      codigo,
+      nombre: data.nombre,
+      totalCantidad: data.totalCantidad,
+    })
+  );
+
+  // 5. (Opcional) Ordenamos por cantidad vendida descendente
+  resultado.sort((a, b) => b.totalCantidad - a.totalCantidad);
+
+  // 6. Mostramos el resultado
+  console.log("Cantidad vendida por código:", resultado);
+}
+
+// Llamamos a la función
+//vinoMasVendido();

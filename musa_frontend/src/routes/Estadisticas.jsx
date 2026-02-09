@@ -7,9 +7,12 @@ function Estadisticas() {
   const [operaciones, setOperaciones] = useState([]);
   const [totalFacturado, setTotalFacturado] = useState(0);
   const [totalNoFacturado, setTotalNoFacturado] = useState(0);
+  const [totalGastoFacturado, setTotalGastoFacturado] = useState(0);
+  const [ivaCompra, setIvaCompra] = useState(0);
 
   const [mes, setMes] = useState("");
 
+  const getGastos = (m) => socket.emit("request-gastos", m);
   const getOperaciones = (tipo, m) =>
     socket.emit("request-tipo-operacion", tipo, m);
   const getTotalFacturado = (m) => socket.emit("request-facturado", m);
@@ -22,12 +25,17 @@ function Estadisticas() {
       setTotalFacturado(total.totalFacturado);
       setTotalNoFacturado(total.totalNoFacturado);
     });
+    socket.on("response-gastos", (totalGastoFacturado, ivaCompra) => {
+      setTotalGastoFacturado(totalGastoFacturado);
+      setIvaCompra(ivaCompra);
+    });
     socket.on("cambios", () => {
       getOperaciones(tipoOperacion, mes);
       getTotalFacturado(mes);
     });
     getOperaciones(tipoOperacion, mes);
     getTotalFacturado(mes);
+    getGastos(mes);
     return () => {
       socket.off("response-tipo-operacion");
       socket.off("response-facturado");
@@ -47,24 +55,63 @@ function Estadisticas() {
           value={mes}
           onChange={(e) => setMes(e.target.value)}
         />
-        <div className="totales">
-          <NumericFormat
-            prefix="FACTURADO: $"
-            displayType="text"
-            value={totalFacturado}
-            thousandSeparator="."
-            decimalSeparator=","
-            decimalScale={2}
-          />
-          /
-          <NumericFormat
-            prefix="B: $"
-            displayType="text"
-            value={totalNoFacturado}
-            thousandSeparator="."
-            decimalSeparator=","
-            decimalScale={2}
-          />
+        <div>
+          <div className="totales">
+            <NumericFormat
+              prefix="TOTAL: $"
+              displayType="text"
+              value={totalFacturado + totalNoFacturado}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+            />
+            /
+            <NumericFormat
+              prefix="FACTURADO: $"
+              displayType="text"
+              value={totalFacturado}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+            />
+            /
+            <NumericFormat
+              prefix="B: $"
+              displayType="text"
+              value={totalNoFacturado}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+            />
+            /
+            <NumericFormat
+              prefix="IVA: $"
+              displayType="text"
+              value={totalFacturado - totalFacturado / 1.21}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+            />
+          </div>
+          <div className="totales">
+            <NumericFormat
+              prefix="GASTO FACTURADO: $"
+              displayType="text"
+              value={totalGastoFacturado}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+            />
+            /
+            <NumericFormat
+              prefix="IVA COMPRA: $"
+              displayType="text"
+              value={ivaCompra}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+            />
+          </div>
         </div>
       </div>
       <table>

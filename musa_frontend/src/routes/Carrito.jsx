@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { IP, socket } from "../main";
 import { NumericFormat, PatternFormat } from "react-number-format";
 
-const LIMITE_EFECTIVO = 172244;
-const LIMITE_DIGITAL = 344488;
+const LIMITE_EFECTIVO = 10000000;
+const LIMITE_DIGITAL = 10000000;
 
 const Carrito = () => {
   const [productos, setProductos] = useState([]);
@@ -29,7 +29,11 @@ const Carrito = () => {
 
   const [todoOK, setTodoOK] = useState(false);
 
-  const [compraEnProceso, setCompraEnProceso] = useState(false); // Nuevo estado
+  const [compraEnProceso, setCompraEnProceso] = useState(false);
+
+  // NUEVOS ESTADOS para manejo de montos en pago mixto
+  const [efectivoMixto, setEfectivoMixto] = useState(0);
+  const [digitalMixto, setDigitalMixto] = useState(0);
 
   const fetchProductosCarrito = () => socket.emit("productos-carrito");
 
@@ -56,11 +60,15 @@ const Carrito = () => {
 
   const handleFormaPagoClick = useCallback((tipo) => {
     setFormaPago(tipo);
+    // Si es DIGITAL, auto-seleccionamos factura B (como en tu código original).
+    // Si es MIXTO o EFECTIVO, inicialmente dejamos factura en null.
     setFactura(tipo === "DIGITAL" ? "B" : null);
   }, []);
 
   const handleFacturaClick = useCallback(
     (tipo) => {
+      // Si la forma de pago no es DIGITAL, permitimos togglear la factura.
+      // Mantiene la lógica existente.
       setFactura(factura === tipo && formaPago !== "DIGITAL" ? null : tipo);
     },
     [factura, formaPago]
@@ -84,6 +92,7 @@ const Carrito = () => {
   const finalizar = () => {
     if (compraEnProceso) return;
     setCompraEnProceso(true);
+
     const datosCompra = {
       descuento,
       detalle,
@@ -91,8 +100,14 @@ const Carrito = () => {
       factura,
       ...(pedirCuit && { cuit }),
       ...(pedirData && { dni, nombre, domicilio }),
+      // Si la forma de pago es MIXTO, incluimos los montos
+      ...(formaPago === "MIXTO" && {
+        efectivoMixto,
+        digitalMixto,
+      }),
     };
-    console.log("FINALIZANDO COMPRA");
+
+    console.log("FINALIZANDO COMPRA", datosCompra);
     socket.emit("finalizar-compra", datosCompra);
   };
 
@@ -115,11 +130,21 @@ const Carrito = () => {
       setPedirCuit(factura === "A");
       setPedirData(factura === "B" && total >= limite);
 
-      // Calcular isDataComplete directamente
-      const dataComplete =
+      let dataComplete =
         productos.length > 0 && // Verifica que haya productos en el carrito
         (!pedirCuit || (cuit && cuit.length === 11)) && // CUIT válido si es requerido
         (!pedirData || (dni && nombre && domicilio)); // Datos completos si son requeridos
+
+      // Si hay un descuento distinto de 0, exigimos que `detalle` NO esté vacío
+      if (descuento !== 0) {
+        dataComplete = dataComplete && detalle.trim() !== "";
+      }
+
+      // Si el pago es MIXTO, también validamos la suma de efectivoMixto + digitalMixto
+      if (formaPago === "MIXTO") {
+        dataComplete =
+          dataComplete && efectivoMixto + digitalMixto === totalFinal;
+      }
 
       setTodoOK(dataComplete);
     }
@@ -134,6 +159,11 @@ const Carrito = () => {
     dni,
     nombre,
     domicilio,
+    efectivoMixto,
+    digitalMixto,
+    totalFinal,
+    descuento,
+    detalle,
   ]);
 
   useEffect(() => {
@@ -160,6 +190,9 @@ const Carrito = () => {
       setDetalle("");
       setCompraEnProceso(false);
       setTodoOK(false);
+      // Limpiamos los montos mixtos
+      setEfectivoMixto(0);
+      setDigitalMixto(0);
     });
     fetchProductosCarrito();
     document.addEventListener("keydown", handleGlobalKeyDown);
@@ -215,13 +248,16 @@ const Carrito = () => {
         setDetalle={setDetalle}
         setDescuento={setDescuento}
         totalFinal={totalFinal}
-        compraEnProceso={compraEnProceso} // Pasar el estado
+        compraEnProceso={compraEnProceso}
+        // Pasamos también los montos mixtos y sus setters
+        efectivoMixto={efectivoMixto}
+        setEfectivoMixto={setEfectivoMixto}
+        digitalMixto={digitalMixto}
+        setDigitalMixto={setDigitalMixto}
       />
     </div>
   );
 };
-
-// Componentes separados para ProductoItem y ResumenCompra
 
 const ProductoItem = ({
   producto,
@@ -316,6 +352,11 @@ const ResumenCompra = ({
   todoOK,
   finalizar,
   compraEnProceso,
+  // Recibimos los montos para pago mixto
+  efectivoMixto,
+  setEfectivoMixto,
+  digitalMixto,
+  setDigitalMixto,
 }) => (
   <div className="resumen-section">
     <div>
@@ -386,7 +427,45 @@ const ResumenCompra = ({
         >
           DIGITAL
         </button>
+        {/* Nuevo botón MIXTO */}
+        <button
+          className={`button-formpago ${formaPago === "MIXTO" ? "active" : ""}`}
+          onClick={() => handleFormaPagoClick("MIXTO")}
+        >
+          MIXTO
+        </button>
       </div>
+      {/* Inputs para pago mixto, solo si formaPago === "MIXTO" */}
+      {formaPago === "MIXTO" && (
+        <div style={{ marginTop: "1rem" }}>
+          <div className="div-cuit">
+            <span>EFECTIVO</span>
+            <NumericFormat
+              prefix="$"
+              className="input-cuit"
+              value={efectivoMixto}
+              thousandSeparator="."
+              decimalSeparator=","
+              onValueChange={(values) => {
+                setEfectivoMixto(values.floatValue || 0);
+              }}
+            />
+          </div>
+          <div className="div-cuit">
+            <span>DIGITAL</span>
+            <NumericFormat
+              prefix="$"
+              className="input-cuit"
+              value={digitalMixto}
+              thousandSeparator="."
+              decimalSeparator=","
+              onValueChange={(values) => {
+                setDigitalMixto(values.floatValue || 0);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
     <div>
       <h2>FACTURA</h2>

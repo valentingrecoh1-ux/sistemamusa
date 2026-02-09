@@ -1,0 +1,370 @@
+[{
+  "_id": {
+    "$oid": "6760ccb308e51a6fc85bee15"
+  },
+  "fecha": "2024-12-16",
+  "fechaPago": "2025-01-02",
+  "nombre": "Vinos",
+  "importe": "-297622.5",
+  "beneficiario": "Alejandro Armando Battistini",
+  "descripcion": "¿?",
+  "createdAt": {
+    "$date": "2024-12-17T00:58:27.757Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-17T00:58:27.757Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6760ccf208e51a6fc85bee20"
+  },
+  "fecha": "2024-12-16",
+  "fechaPago": "2024-11-24",
+  "nombre": "Vinos",
+  "importe": "-832500",
+  "beneficiario": "Banco De San Juan S.a.",
+  "descripcion": "¿?",
+  "createdAt": {
+    "$date": "2024-12-17T00:59:30.096Z"
+  },
+  "updatedAt": {
+    "$date": "2024-12-17T00:59:30.096Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "679cc8b4a00747f36529f85f"
+  },
+  "fecha": "2025-01-31",
+  "fechaPago": "2025-03-15",
+  "nombre": "Vinos",
+  "importe": "421920.13",
+  "beneficiario": "Matias David Severino",
+  "descripcion": "eCheq a 45 dias",
+  "filePath": "comprobantes\\file-1738328244631-418890094-FC Musa Casa de Vinos 30-01-25.pdf",
+  "createdAt": {
+    "$date": "2025-01-31T12:57:24.638Z"
+  },
+  "updatedAt": {
+    "$date": "2025-03-13T13:57:44.277Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67b335a49921b43ab0ca47eb"
+  },
+  "fecha": "2025-02-17",
+  "fechaPago": "2025-03-11",
+  "nombre": "Tino Slow Wines SAS",
+  "importe": "-227100",
+  "beneficiario": "Vinos",
+  "descripcion": "Vinos Astronauta",
+  "filePath": "comprobantes\\file-1739797924134-199952488-Greco Valentin - Les Astronautes - 00000428.pdf",
+  "createdAt": {
+    "$date": "2025-02-17T13:12:04.149Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-17T13:13:39.688Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67b335f89921b43ab0ca47f3"
+  },
+  "fecha": "2025-02-17",
+  "fechaPago": "2025-02-17",
+  "nombre": "Contenedores Azul SA",
+  "importe": "-229349.93",
+  "beneficiario": "Vinos",
+  "descripcion": "Vinos Galileo",
+  "createdAt": {
+    "$date": "2025-02-17T13:13:28.681Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-17T13:14:05.520Z"
+  },
+  "__v": 0,
+  "filePath": "comprobantes\\file-1739798045517-187445693-Greco Valentin - Galileo - 00004678.pdf"
+},
+{
+  "_id": {
+    "$oid": "67b336169921b43ab0ca47fb"
+  },
+  "fecha": "2025-02-17",
+  "fechaPago": "2025-02-17",
+  "nombre": "Delta Este SA",
+  "importe": "-107910",
+  "beneficiario": "Vinos",
+  "descripcion": "Vinos Secretos",
+  "filePath": "comprobantes\\file-1739798205091-844012211-Greco Valentin - Secreto Patagonico - 00000915.pdf",
+  "createdAt": {
+    "$date": "2025-02-17T13:13:58.176Z"
+  },
+  "updatedAt": {
+    "$date": "2025-02-17T13:16:45.094Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67effb57dddcca3802636dcd"
+  },
+  "fecha": "2025-04-04",
+  "fechaPago": "2025-04-26",
+  "nombre": "Vinos",
+  "importe": "-329891",
+  "beneficiario": "Bodega Furlotti Sociedad Anonma",
+  "descripcion": "Vinos",
+  "createdAt": {
+    "$date": "2025-04-04T15:31:35.687Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T15:52:37.595Z"
+  },
+  "__v": 0,
+  "filePath": "comprobantes\\file-1744168524966-69809501-FACA0000900000174 - GRECO.pdf"
+},
+{
+  "_id": {
+    "$oid": "68090cbfc4e23990ecfd5567"
+  },
+  "fecha": "2025-04-23",
+  "fechaPago": "2025-05-23",
+  "nombre": "Vinos",
+  "importe": "-196224",
+  "beneficiario": "Sardella",
+  "descripcion": "",
+  "filePath": "comprobantes\\file-1745423551982-686038432-VALENTIN_GRECO_FCA-0003-00000164.pdf",
+  "createdAt": {
+    "$date": "2025-04-23T15:52:31.996Z"
+  },
+  "updatedAt": {
+    "$date": "2025-05-26T15:42:57.519Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "6823954907c82ea25a9615a5"
+  },
+  "fecha": "2025-05-13",
+  "fechaPago": "2025-06-13",
+  "nombre": "Vinos",
+  "importe": -160833.33,
+  "beneficiario": "Pocari Gustavo Pedro",
+  "descripcion": "Vinos con eCheq a 30/60/90, la factura es por los 3 cheques que emiti",
+  "filePath": "comprobantes\\file-1747162441288-81577033-20081587680_001_00003_00002053.pdf",
+  "createdAt": {
+    "$date": "2025-05-13T18:54:01.292Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-19T04:31:10.833Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "6823957a07c82ea25a9615b7"
+  },
+  "fecha": "2025-05-13",
+  "fechaPago": "2025-07-13",
+  "nombre": "Vinos",
+  "importe": -160833.3,
+  "beneficiario": "Pocari Gustavo Pedro",
+  "descripcion": "Vinos con eChueq a 30/60/90, la factura es por los 3 cheques que emiti",
+  "filePath": "comprobantes\\file-1747162490535-494306687-20081587680_001_00003_00002053.pdf",
+  "createdAt": {
+    "$date": "2025-05-13T18:54:50.546Z"
+  },
+  "updatedAt": {
+    "$date": "2025-07-10T02:09:59.208Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "682395a907c82ea25a9615c9"
+  },
+  "fecha": "2025-05-13",
+  "fechaPago": "2025-08-13",
+  "nombre": "Vinos",
+  "importe": -160833.33,
+  "beneficiario": "Pocari Gustavo Pedro",
+  "descripcion": "Vinos con eCheq a 30/60/90, la factura es por los 3 cheques que emiti",
+  "filePath": "comprobantes\\file-1747162537702-511714127-20081587680_001_00003_00002053.pdf",
+  "createdAt": {
+    "$date": "2025-05-13T18:55:37.704Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-12T02:03:04.407Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "683dbb4b125e8ecf6849e130"
+  },
+  "fecha": "2025-06-02",
+  "fechaPago": "2025-06-20",
+  "nombre": "Vinos",
+  "importe": -783967.13,
+  "beneficiario": "Aurea Vinos SRL",
+  "descripcion": "",
+  "filePath": "comprobantes\\file-1748876107946-687917502-Factura A 0001-00015170 MUSA (2).pdf",
+  "createdAt": {
+    "$date": "2025-06-02T14:55:07.954Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-19T04:32:24.303Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "683dbb4d125e8ecf6849e13a"
+  },
+  "fecha": "2025-06-02",
+  "fechaPago": "2025-06-20",
+  "nombre": "Vinos",
+  "importe": 0,
+  "beneficiario": "-",
+  "descripcion": "",
+  "filePath": "comprobantes\\file-1748876109267-201747380-Factura A 0001-00015170 MUSA (2).pdf",
+  "createdAt": {
+    "$date": "2025-06-02T14:55:09.275Z"
+  },
+  "updatedAt": {
+    "$date": "2025-06-02T14:55:19.502Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "683dbca8125e8ecf6849e14f"
+  },
+  "fecha": "2025-06-02",
+  "fechaPago": "2025-07-02",
+  "nombre": "Vinos",
+  "importe": -281620,
+  "beneficiario": "Distribuidora AB",
+  "descripcion": "Vinos con eCheq a 30/60/90, la factura es por los 3 cheques que emiti",
+  "filePath": "comprobantes\\file-1748876456515-115788868-VALENTIN_GRECO_FCA-0008-00000904.pdf",
+  "createdAt": {
+    "$date": "2025-06-02T15:00:56.546Z"
+  },
+  "updatedAt": {
+    "$date": "2025-07-05T02:17:44.330Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "683dbcc1125e8ecf6849e159"
+  },
+  "fecha": "2025-06-02",
+  "fechaPago": "2025-08-02",
+  "nombre": "Vinos",
+  "importe": -281620,
+  "beneficiario": "Distribuidora AB",
+  "descripcion": "Vinos con eCheq a 30/60/90, la factura es por los 3 cheques que emiti",
+  "filePath": "comprobantes\\file-1748876481288-465264825-VALENTIN_GRECO_FCA-0008-00000904.pdf",
+  "createdAt": {
+    "$date": "2025-06-02T15:01:21.297Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-01T13:09:42.086Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "683dbcdc125e8ecf6849e163"
+  },
+  "fecha": "2025-06-02",
+  "fechaPago": "2025-09-02",
+  "nombre": "Vinos",
+  "importe": -281620,
+  "beneficiario": "Distribuidora AB",
+  "descripcion": "Vinos con eCheq a 30/60/90, la factura es por los 3 cheques que emiti",
+  "filePath": "comprobantes\\file-1748876508132-76015635-VALENTIN_GRECO_FCA-0008-00000904.pdf",
+  "createdAt": {
+    "$date": "2025-06-02T15:01:48.144Z"
+  },
+  "updatedAt": {
+    "$date": "2025-09-03T13:27:50.183Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "687995400b981c32b4918050"
+  },
+  "fecha": "2025-07-17",
+  "fechaPago": "2025-08-17",
+  "nombre": "Vinos",
+  "importe": -262500,
+  "beneficiario": "Envero SRL",
+  "descripcion": "Vinos bulamina",
+  "filePath": "comprobantes\\file-1752798528398-409606875-33717507539_001_00001_00000033.pdf",
+  "createdAt": {
+    "$date": "2025-07-18T00:28:48.407Z"
+  },
+  "updatedAt": {
+    "$date": "2025-08-12T02:03:25.003Z"
+  },
+  "__v": 0,
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "688cd9490c7a06fb2113cc16"
+  },
+  "fecha": "2025-08-01",
+  "fechaPago": "2025-09-01",
+  "nombre": "Vinos",
+  "importe": -305880,
+  "beneficiario": "Alejandro Battisitni",
+  "descripcion": "Falta la factura",
+  "createdAt": {
+    "$date": "2025-08-01T15:12:09.953Z"
+  },
+  "updatedAt": {
+    "$date": "2025-09-03T13:27:45.358Z"
+  },
+  "__v": 0,
+  "filePath": "comprobantes\\file-1754063523193-726770900-VALENTIN_GRECO_FCA-0008-00000981.pdf",
+  "enviado": true
+},
+{
+  "_id": {
+    "$oid": "68bb5307ab7128715fee0a56"
+  },
+  "fecha": "2025-09-05",
+  "fechaPago": "2025-10-25",
+  "nombre": "Vinos",
+  "importe": -272082.65,
+  "beneficiario": "MONDOVINO S.A.",
+  "descripcion": "",
+  "filePath": "comprobantes\\file-1757106951860-598631179-Pedido 901 - Greco Valentin - FC A 3-4025.pdf",
+  "createdAt": {
+    "$date": "2025-09-05T21:15:51.870Z"
+  },
+  "updatedAt": {
+    "$date": "2025-10-30T14:57:05.869Z"
+  },
+  "__v": 0,
+  "enviado": true
+}]

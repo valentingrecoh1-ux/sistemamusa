@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { socket } from '../../main';
+import { socket, IP } from '../../main';
 import s from './Setup.module.css';
 
 const SECTIONS = [
@@ -89,6 +89,10 @@ export default function Setup() {
   const [jspmStatus, setJspmStatus] = useState('no-detectado');
   const [printers, setPrinters] = useState([]);
   const [servicios, setServicios] = useState(null);
+  const [waModal, setWaModal] = useState(false);
+  const [waStatus, setWaStatus] = useState('disconnected');
+  const [waQr, setWaQr] = useState(null);
+  const [waLoading, setWaLoading] = useState(false);
 
   useEffect(() => {
     // Check JSPM status
@@ -123,6 +127,40 @@ export default function Setup() {
       clearInterval(interval);
     };
   }, []);
+
+  // WhatsApp modal: poll status while open
+  useEffect(() => {
+    if (!waModal) return;
+    const fetchWa = async () => {
+      try {
+        const res = await fetch(`${IP()}/api/whatsapp/status`);
+        const data = await res.json();
+        setWaStatus(data.status);
+        if (data.qr) setWaQr(data.qr); else setWaQr(null);
+      } catch (e) { /* ignore */ }
+    };
+    fetchWa();
+    const interval = setInterval(fetchWa, 3000);
+    return () => clearInterval(interval);
+  }, [waModal]);
+
+  const connectWa = async () => {
+    setWaLoading(true);
+    setWaQr(null);
+    try {
+      const res = await fetch(`${IP()}/api/whatsapp/connect`, { method: 'POST' });
+      const data = await res.json();
+      setWaStatus(data.status);
+      if (data.qr) setWaQr(data.qr);
+    } catch (e) { /* ignore */ }
+    setWaLoading(false);
+  };
+
+  const handleServiceCardClick = (key, svc) => {
+    if (key === 'whatsapp' && svc.estado !== 'connected') {
+      setWaModal(true);
+    }
+  };
 
   const jspmStatusColor = jspmStatus === 'conectado' ? 'var(--success)' : 'var(--danger)';
   const jspmStatusText = {
@@ -203,8 +241,14 @@ export default function Setup() {
 
         {servicios && Object.entries(servicios).map(([key, svc]) => {
           const info = getStatusInfo(svc.estado);
+          const clickable = key === 'whatsapp' && svc.estado !== 'connected';
           return (
-            <div key={key} className={s.serviceCard}>
+            <div
+              key={key}
+              className={`${s.serviceCard} ${clickable ? s.serviceCardClickable : ''}`}
+              onClick={() => handleServiceCardClick(key, svc)}
+              style={clickable ? { cursor: 'pointer' } : {}}
+            >
               <div className={s.serviceHeader}>
                 <i className={`bi ${SERVICE_ICONS[key] || 'bi-circle'}`} />
                 <span>{svc.nombre}</span>
@@ -247,6 +291,41 @@ export default function Setup() {
           ))}
         </div>
       </div>
+
+      {/* WhatsApp connection modal */}
+      {waModal && (
+        <div className={s.modalOverlay} onClick={() => setWaModal(false)}>
+          <div className={s.modal} onClick={e => e.stopPropagation()}>
+            <div className={s.modalHeader}>
+              <h3><i className="bi bi-whatsapp" /> Conectar WhatsApp</h3>
+              <button className={s.modalClose} onClick={() => setWaModal(false)}>
+                <i className="bi bi-x-lg" />
+              </button>
+            </div>
+            <div className={s.modalBody}>
+              {waStatus === 'connected' ? (
+                <div className={s.waConnected}>
+                  <i className="bi bi-check-circle-fill" />
+                  <span>WhatsApp conectado</span>
+                </div>
+              ) : waQr ? (
+                <div className={s.waQrWrap}>
+                  <p>Escaneá este QR con WhatsApp:</p>
+                  <img src={waQr} alt="QR WhatsApp" className={s.waQrImg} />
+                  <p className={s.waQrHint}>WhatsApp {'>'} Dispositivos vinculados {'>'} Vincular dispositivo</p>
+                </div>
+              ) : (
+                <div className={s.waConnectWrap}>
+                  <p>WhatsApp no esta conectado. Presiona para generar el codigo QR.</p>
+                  <button className={s.waConnectBtn} onClick={connectWa} disabled={waLoading}>
+                    {waLoading ? 'Conectando...' : 'Conectar WhatsApp'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

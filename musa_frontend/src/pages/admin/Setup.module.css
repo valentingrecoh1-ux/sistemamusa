@@ -265,6 +265,139 @@
   border-bottom: none;
 }
 
+/* ── Clickable service card ── */
+.serviceCardClickable:hover {
+  border-color: var(--primary);
+  background: var(--accent-bg);
+}
+
+/* ── WhatsApp Modal ── */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.modalHeader h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.modalHeader h3 i {
+  color: #25D366;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  box-shadow: none;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.waConnected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--success);
+  font-size: 16px;
+  font-weight: 600;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.waConnected i {
+  font-size: 24px;
+}
+
+.waQrWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.waQrWrap p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.waQrImg {
+  width: 260px;
+  height: 260px;
+  border-radius: 8px;
+}
+
+.waQrHint {
+  font-size: 12px !important;
+  color: var(--text-muted) !important;
+}
+
+.waConnectWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.waConnectWrap p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.waConnectBtn {
+  background: #25D366;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--border-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.waConnectBtn:hover {
+  background: #1da851;
+}
+
+.waConnectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .servicesGrid {
     grid-template-columns: repeat(2, 1fr);

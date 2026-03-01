@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { IP, socket } from "../main";
 import { NumericFormat } from "react-number-format";
 import moment from "moment-timezone";
@@ -109,6 +109,7 @@ function Ventas({ usuario }) {
   const [mpLinkVenta, setMpLinkVenta] = useState(null);
   const [mpPagosSinVincular, setMpPagosSinVincular] = useState([]);
   const [mpPagosOtros, setMpPagosOtros] = useState([]);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
   const filtrosPago = [
     { value: "todos", label: "Todos" },
     { value: "efectivo", label: "Efectivo" },
@@ -222,21 +223,30 @@ function Ventas({ usuario }) {
     setOpenModal(true);
   };
 
-  const openFacturaPdf = (venta) => {
+  const openFacturaPdf = async (venta) => {
     if (!venta?.stringNumeroFactura) {
       alert("La venta no tiene factura para visualizar.");
       return;
     }
-    // Primero intenta desde MongoDB, fallback a archivo estático
-    window.open(`${IP()}/api/factura-pdf/${venta._id}`, "_blank");
+    try {
+      const res = await fetch(`${IP()}/api/factura-pdf/${venta._id}`);
+      if (!res.ok) { alert("No se pudo cargar la factura"); return; }
+      const blob = await res.blob();
+      setPreviewPdfUrl(URL.createObjectURL(blob));
+    } catch { alert("Error al cargar la factura"); }
   };
 
-  const openNotaCreditoPdf = (venta) => {
+  const openNotaCreditoPdf = async (venta) => {
     if (!venta?.stringNumeroNotaCredito) {
       alert("No hay archivo de nota de credito disponible para esta venta.");
       return;
     }
-    window.open(`${IP()}/api/nota-credito-pdf/${venta._id}`, "_blank");
+    try {
+      const res = await fetch(`${IP()}/api/nota-credito-pdf/${venta._id}`);
+      if (!res.ok) { alert("No se pudo cargar la nota de credito"); return; }
+      const blob = await res.blob();
+      setPreviewPdfUrl(URL.createObjectURL(blob));
+    } catch { alert("Error al cargar la nota de credito"); }
   };
 
   const changeFiltroPago = (value) => {
@@ -983,6 +993,17 @@ function Ventas({ usuario }) {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Modal preview PDF factura/nota credito */}
+      {previewPdfUrl && (
+        <div className={s.previewOverlay} onClick={() => { URL.revokeObjectURL(previewPdfUrl); setPreviewPdfUrl(null); }}>
+          <div className={s.previewModal} onClick={(e) => e.stopPropagation()}>
+            <button className={s.previewClose} onClick={() => { URL.revokeObjectURL(previewPdfUrl); setPreviewPdfUrl(null); }}>
+              <i className="bi bi-x-lg" />
+            </button>
+            <iframe src={previewPdfUrl} className={s.previewFrame} title="Preview PDF" />
           </div>
         </div>
       )}

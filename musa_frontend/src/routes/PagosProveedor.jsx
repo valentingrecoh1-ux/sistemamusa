@@ -162,7 +162,7 @@ export default function PagosProveedor({ usuario }) {
                   <td>{p.referencia || "—"}</td>
                   <td>
                     {p.filePath ? (
-                      <a href={`${IP()}/${p.filePath}`} target="_blank" rel="noreferrer" style={{ fontSize: "20px" }}>
+                      <a href={p.filePath} target="_blank" rel="noreferrer" style={{ fontSize: "20px" }}>
                         <i className="bi bi-file-earmark"></i>
                       </a>
                     ) : "—"}

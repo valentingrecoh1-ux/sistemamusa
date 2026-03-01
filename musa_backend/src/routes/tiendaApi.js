@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const moment = require("moment-timezone");
-const fs = require("fs");
-const path = require("path");
 
 module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, mpClient, io }) {
   let mpPreference = null;
@@ -812,11 +810,7 @@ IMPORTANT RULES:
           const imgData = await imgRes.json();
 
           if (imgData.data?.[0]?.b64_json) {
-            const filename = `ilustracion_${Date.now()}.png`;
-            const dir = path.join("uploads", "etiquetas");
-            fs.mkdirSync(dir, { recursive: true });
-            fs.writeFileSync(path.join(dir, filename), Buffer.from(imgData.data[0].b64_json, "base64"));
-            ilustracionUrl = `/uploads/etiquetas/${filename}`;
+            ilustracionUrl = `data:image/png;base64,${imgData.data[0].b64_json}`;
           }
         } catch (imgErr) {
           console.error("Error DALL-E ilustracion:", imgErr.message);

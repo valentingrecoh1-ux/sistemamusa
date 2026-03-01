@@ -411,7 +411,8 @@ function Caja() {
                 className="tr-cursor-pointer"
                 onClick={() => {
                   if (operacion.filePath) {
-                    window.open(`${IP()}/${operacion.filePath}`);
+                    const w = window.open();
+                    if (w) { w.document.write(`<iframe src="${operacion.filePath}" style="width:100%;height:100%;border:none"></iframe>`); }
                   }
                 }}
                 key={index}

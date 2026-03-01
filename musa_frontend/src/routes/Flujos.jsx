@@ -200,7 +200,8 @@ function Flujos() {
                 className={f.enviado ? "flujo-color" : ""}
                 onClick={() => {
                   if (f.filePath) {
-                    window.open(`${IP()}/${f.filePath}`);
+                    const w = window.open();
+                    if (w) { w.document.write(`<iframe src="${f.filePath}" style="width:100%;height:100%;border:none"></iframe>`); }
                   }
                 }}
                 key={index}

@@ -5,5 +5,8 @@ musa_backend/src/facturas
 musa_backend/src/notas_de_credito
 musa_backend/.env
 musa_backend/uploads/
+musa_backend/comprobantes/
 dev.bat
 .dev.log
+uploads/
+comprobantes/

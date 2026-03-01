@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { socket } from "../main";
 import { NumericFormat } from "react-number-format";
@@ -10,6 +10,18 @@ import Pagination from "../components/shared/Pagination";
 
 import { IP } from "../main";
 import s from "./Caja.module.css";
+
+function dataUriToBlobUrl(dataUri) {
+  if (!dataUri || !dataUri.startsWith('data:')) return dataUri;
+  try {
+    const [header, b64] = dataUri.split(',');
+    const mime = header.match(/data:(.*?);/)?.[1] || 'application/octet-stream';
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return URL.createObjectURL(new Blob([arr], { type: mime }));
+  } catch { return dataUri; }
+}
 
 const ESTADO_LABELS = {
   approved: "Aprobado",
@@ -68,6 +80,7 @@ function Caja({ usuario }) {
   const [totales, setTotales] = useState({});
   const [operaciones, setOperaciones] = useState([]);
   const [file, setFile] = useState(null);
+  const [previewArchivo, setPreviewArchivo] = useState(null);
   const [otroDia, setOtroDia] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -749,14 +762,7 @@ function Caja({ usuario }) {
                     <tr
                       className={s.clickableRow}
                       onClick={() => {
-                        if (operacion.filePath) {
-                          if (operacion.filePath.startsWith('data:')) {
-                            const w = window.open();
-                            if (w) { w.document.write(`<iframe src="${operacion.filePath}" style="width:100%;height:100%;border:none"></iframe>`); }
-                          } else {
-                            window.open(`${IP()}/${operacion.filePath}`);
-                          }
-                        }
+                        if (operacion.filePath) setPreviewArchivo(operacion.filePath);
                       }}
                       key={index}
                     >
@@ -1601,6 +1607,39 @@ function Caja({ usuario }) {
           )}
         </div>
       )}
+      {/* Modal preview comprobante */}
+      {previewArchivo && (
+        <PreviewModal archivo={previewArchivo} onClose={() => setPreviewArchivo(null)} />
+      )}
+    </div>
+  );
+}
+
+function PreviewModal({ archivo, onClose }) {
+  const blobUrl = useMemo(() => dataUriToBlobUrl(archivo), [archivo]);
+  const isImage = archivo?.match(/^data:image\//);
+
+  useEffect(() => {
+    return () => { if (blobUrl && blobUrl.startsWith('blob:')) URL.revokeObjectURL(blobUrl); };
+  }, [blobUrl]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className={s.previewOverlay} onClick={onClose}>
+      <div className={s.previewModal} onClick={(e) => e.stopPropagation()}>
+        <button className={s.previewClose} onClick={onClose}>
+          <i className="bi bi-x-lg" />
+        </button>
+        {isImage
+          ? <img src={archivo} alt="Preview" className={s.previewImg} />
+          : <iframe src={blobUrl} className={s.previewFrame} title="Preview" />
+        }
+      </div>
     </div>
   );
 }

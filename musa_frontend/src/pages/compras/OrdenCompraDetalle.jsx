@@ -1,7 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { socket } from '../../main';
 import { IP } from '../../main';
+
+/** Convierte un data-URI base64 a un Object URL que el browser puede renderizar */
+function dataUriToBlobUrl(dataUri) {
+  if (!dataUri || !dataUri.startsWith('data:')) return dataUri;
+  try {
+    const [header, b64] = dataUri.split(',');
+    const mime = header.match(/data:(.*?);/)?.[1] || 'application/octet-stream';
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return URL.createObjectURL(new Blob([arr], { type: mime }));
+  } catch { return dataUri; }
+}
 import Badge from '../../components/shared/Badge';
 import Timeline from '../../components/shared/Timeline';
 import Button from '../../components/shared/Button';
@@ -42,6 +55,9 @@ export default function OrdenCompraDetalle({ usuario }) {
   const [pagoMetodo, setPagoMetodo] = useState('transferencia');
   const [pagoRef, setPagoRef] = useState('');
   const [pagoNotas, setPagoNotas] = useState('');
+
+  // Preview archivo modal
+  const [previewArchivo, setPreviewArchivo] = useState(null);
 
   // Upload factura state
   const [showUploadForm, setShowUploadForm] = useState(false);
@@ -877,9 +893,9 @@ export default function OrdenCompraDetalle({ usuario }) {
               <div key={i} className={s.facturaItem}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{f.numero || 'Comprobante'}</span>
                 {f.archivo && (
-                  <a href={f.archivo.startsWith('data:') ? f.archivo : `${IP()}${f.archivo}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span onClick={() => setPreviewArchivo(f.archivo)} style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                     <i className="bi bi-file-earmark-arrow-down" /> Ver archivo
-                  </a>
+                  </span>
                 )}
               </div>
             ))}
@@ -1059,9 +1075,9 @@ export default function OrdenCompraDetalle({ usuario }) {
               <div key={i} className={s.facturaItem}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{f.numero || 'Comprobante'}</span>
                 {f.archivo && (
-                  <a href={f.archivo.startsWith('data:') ? f.archivo : `${IP()}${f.archivo}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span onClick={() => setPreviewArchivo(f.archivo)} style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                     <i className="bi bi-file-earmark-arrow-down" /> Ver archivo
-                  </a>
+                  </span>
                 )}
               </div>
             ))}
@@ -1109,6 +1125,40 @@ export default function OrdenCompraDetalle({ usuario }) {
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, whiteSpace: 'pre-wrap' }}>{orden.notas}</p>
         </div>
       )}
+
+      {/* Modal preview archivo */}
+      {previewArchivo && (
+        <PreviewModal archivo={previewArchivo} onClose={() => setPreviewArchivo(null)} />
+      )}
+    </div>
+  );
+}
+
+function PreviewModal({ archivo, onClose }) {
+  const blobUrl = useMemo(() => dataUriToBlobUrl(archivo), [archivo]);
+  const isImage = archivo?.match(/^data:image\//);
+
+  useEffect(() => {
+    return () => { if (blobUrl && blobUrl.startsWith('blob:')) URL.revokeObjectURL(blobUrl); };
+  }, [blobUrl]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className={s.previewOverlay} onClick={onClose}>
+      <div className={s.previewModal} onClick={(e) => e.stopPropagation()}>
+        <button className={s.previewClose} onClick={onClose}>
+          <i className="bi bi-x-lg" />
+        </button>
+        {isImage
+          ? <img src={archivo} alt="Preview" className={s.previewImg} />
+          : <iframe src={blobUrl} className={s.previewFrame} title="Preview" />
+        }
+      </div>
     </div>
   );
 }

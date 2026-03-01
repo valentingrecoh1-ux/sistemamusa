@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { IP } from '../../main';
 import { generarEtiqueta, fetchConfig } from '../../lib/tiendaApi';
 import s from './TiendaEtiqueta.module.css';
 
@@ -139,7 +138,7 @@ export default function TiendaEtiqueta() {
   const handleDescargar = () => {
     if (result?.ilustracionUrl) {
       const link = document.createElement('a');
-      link.href = `${IP()}${result.ilustracionUrl}`;
+      link.href = result.ilustracionUrl;
       link.download = `ilustracion-${result.labelData?.titulo || 'musa'}.png`;
       link.click();
     }
@@ -298,7 +297,7 @@ export default function TiendaEtiqueta() {
                   <div className={s.fallbackSubtitle}>{result.labelData?.subtitulo}</div>
                   {result.ilustracionUrl && (
                     <img
-                      src={`${IP()}${result.ilustracionUrl}`}
+                      src={result.ilustracionUrl}
                       alt="Ilustracion"
                       className={s.labelIlustracion}
                     />

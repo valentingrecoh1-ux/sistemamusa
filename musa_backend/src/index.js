@@ -37,8 +37,8 @@ const QRCode = require("qrcode");
 const AfipService = require("./AfipService");
 const afipService = new AfipService({ CUIT: 20418588897 });
 
-// Crear carpetas necesarias al iniciar (para Render y deploys frescos)
-["uploads/perfiles", "uploads/facturas_oc", "src/facturas", "src/notas_de_credito", "comprobantes"].forEach(dir => {
+// Crear carpetas necesarias al iniciar (para PDFs generados por AFIP)
+["src/facturas", "src/notas_de_credito"].forEach(dir => {
   fs.mkdirSync(dir, { recursive: true });
 });
 
@@ -413,54 +413,12 @@ app.use(
   })
 );
 
-// Configuración de multer para almacenar los archivos en la carpeta 'uploads'
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + "-" + file.originalname);
-  },
-});
-
-const comprobantesStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "comprobantes/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + "-" + file.originalname);
-  },
-});
-
-const uploadComprobante = multer({
-  storage: comprobantesStorage,
-  limits: { fileSize: 50 * 1024 * 1024 },
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 50 * 1024 * 1024 },
-});
-
-const facturasOCStorage = multer.diskStorage({
-  destination: (req, file, cb) => { cb(null, "uploads/facturas_oc/"); },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `factura-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
-const uploadFacturaOC = multer({ storage: facturasOCStorage, limits: { fileSize: 20 * 1024 * 1024 } });
-
-const perfilStorage = multer.diskStorage({
-  destination: (req, file, cb) => { cb(null, "uploads/perfiles/"); },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `perfil-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
-const uploadPerfil = multer({ storage: perfilStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+// Multer en memoria: los archivos nunca tocan disco, se convierten directo a base64
+const memStorage = multer.memoryStorage();
+const upload = multer({ storage: memStorage, limits: { fileSize: 50 * 1024 * 1024 } });
+const uploadComprobante = multer({ storage: memStorage, limits: { fileSize: 50 * 1024 * 1024 } });
+const uploadFacturaOC = multer({ storage: memStorage, limits: { fileSize: 20 * 1024 * 1024 } });
+const uploadPerfil = multer({ storage: memStorage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -475,11 +433,7 @@ app.use(
 );
 */
 
-// Sirviendo la carpeta 'uploads' de forma estática
-app.use("/uploads", express.static("uploads"));
-app.use("/uploads/facturas_oc", express.static("uploads/facturas_oc"));
-app.use("/uploads/perfiles", express.static("uploads/perfiles"));
-app.use("/comprobantes", express.static("comprobantes"));
+// Sirviendo PDFs de AFIP (legacy filesystem, nuevos van a MongoDB)
 app.use("/facturas", express.static("src/facturas"));
 app.use("/notas_de_credito", express.static("src/notas_de_credito"));
 
@@ -589,10 +543,8 @@ app.post(
           operacionData.filePath = existingOperacion.filePath;
         }
       } else if (file) {
-        const fileBuffer = fs.readFileSync(file.path);
         const mime = file.mimetype || "application/octet-stream";
-        operacionData.filePath = `data:${mime};base64,${fileBuffer.toString("base64")}`;
-        fs.unlink(file.path, () => {});
+        operacionData.filePath = `data:${mime};base64,${file.buffer.toString("base64")}`;
       }
 
       if (operacionData._id) {
@@ -630,10 +582,8 @@ app.post(
           operacionData.filePath = existingOperacion.filePath;
         }
       } else if (file) {
-        const fileBuffer = fs.readFileSync(file.path);
         const mime = file.mimetype || "application/octet-stream";
-        operacionData.filePath = `data:${mime};base64,${fileBuffer.toString("base64")}`;
-        fs.unlink(file.path, () => {});
+        operacionData.filePath = `data:${mime};base64,${file.buffer.toString("base64")}`;
       }
 
       if (operacionData._id) {
@@ -654,13 +604,11 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
   const formData = req.body;
   const file = req.file;
   try {
-    // Convertir foto a base64 para persistencia en MongoDB (Render es efimero)
+    // Convertir foto a base64 para persistencia en MongoDB
     let fotoBase64 = null;
     if (file) {
-      const fileBuffer = fs.readFileSync(file.path);
       const mime = file.mimetype || "image/jpeg";
-      fotoBase64 = `data:${mime};base64,${fileBuffer.toString("base64")}`;
-      fs.unlink(file.path, () => {});
+      fotoBase64 = `data:${mime};base64,${file.buffer.toString("base64")}`;
     }
 
     if (formData._id) {
@@ -999,10 +947,8 @@ app.post("/api/oc/:id/factura", uploadFacturaOC.single("archivo"), async (req, r
     if (!orden) return res.status(404).json({ error: "OC no encontrada" });
     let archivo = "";
     if (req.file) {
-      const fileBuffer = fs.readFileSync(req.file.path);
       const mime = req.file.mimetype || "application/pdf";
-      archivo = `data:${mime};base64,${fileBuffer.toString("base64")}`;
-      fs.unlink(req.file.path, () => {});
+      archivo = `data:${mime};base64,${req.file.buffer.toString("base64")}`;
     }
     const factura = {
       numero: req.body.tipo || req.body.numero || "",
@@ -1040,12 +986,9 @@ app.post("/upload_foto_perfil", uploadPerfil.single("foto"), async (req, res) =>
   try {
     const userId = req.body.userId;
     if (!userId || !req.file) return res.status(400).json({ error: "Faltan datos" });
-    const base64 = fs.readFileSync(req.file.path).toString("base64");
     const mime = req.file.mimetype || "image/jpeg";
-    const foto = `data:${mime};base64,${base64}`;
+    const foto = `data:${mime};base64,${req.file.buffer.toString("base64")}`;
     await Usuario.findByIdAndUpdate(userId, { foto });
-    // Limpiar archivo temporal
-    fs.unlink(req.file.path, () => {});
     io.emit("cambios");
     res.json({ ok: true, foto });
   } catch (err) {
@@ -1378,26 +1321,14 @@ Origen: ${producto.origen || ""}`;
         return;
       }
 
-      // Soportar tanto base64 data URI como rutas de archivo legacy
-      let base64Image, mimeType;
-      if (producto.foto.startsWith("data:")) {
-        const match = producto.foto.match(/^data:(image\/\w+);base64,(.+)$/);
-        if (!match) {
-          if (cb) cb({ error: "Formato de foto invalido" });
-          return;
-        }
-        mimeType = match[1];
-        base64Image = match[2];
-      } else {
-        const imgPath = path.resolve(producto.foto);
-        if (!fs.existsSync(imgPath)) {
-          if (cb) cb({ error: "No se encontro el archivo de foto" });
-          return;
-        }
-        const imgBuffer = fs.readFileSync(imgPath);
-        base64Image = imgBuffer.toString("base64");
-        mimeType = imgPath.endsWith(".png") ? "image/png" : "image/jpeg";
+      // Extraer base64 del data URI
+      const match = producto.foto.match(/^data:(image\/[\w+]+);base64,(.+)$/);
+      if (!match) {
+        if (cb) cb({ error: "Formato de foto invalido (se espera data URI base64)" });
+        return;
       }
+      const mimeType = match[1];
+      const base64Image = match[2];
 
       const imgRes = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",

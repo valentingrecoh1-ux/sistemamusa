@@ -1,8 +1,20 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import moment from "moment-timezone";
 import { NumericFormat } from "react-number-format";
 import { IP, socket } from "../main";
 import s from "./Flujos.module.css";
+
+function dataUriToBlobUrl(dataUri) {
+  if (!dataUri || !dataUri.startsWith('data:')) return dataUri;
+  try {
+    const [header, b64] = dataUri.split(',');
+    const mime = header.match(/data:(.*?);/)?.[1] || 'application/octet-stream';
+    const bytes = atob(b64);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return URL.createObjectURL(new Blob([arr], { type: mime }));
+  } catch { return dataUri; }
+}
 
 function Flujos() {
   const fileInputRef = useRef(null);
@@ -19,6 +31,7 @@ function Flujos() {
     descripcion: "",
   });
   const [file, setFile] = useState(null);
+  const [previewArchivo, setPreviewArchivo] = useState(null);
   const [todos, setTodos] = useState(false);
 
   const [ordenadoFechaPago, setOrdenadoFechaPago] = useState(false); // 'false' para ascendente, 'true' para descendente
@@ -214,14 +227,7 @@ function Flujos() {
                 <tr
                   className={`${s.clickableRow} ${f.enviado ? s.sentRow : ""}`}
                   onClick={() => {
-                    if (f.filePath) {
-                      if (f.filePath.startsWith('data:')) {
-                        const w = window.open();
-                        if (w) { w.document.write(`<iframe src="${f.filePath}" style="width:100%;height:100%;border:none"></iframe>`); }
-                      } else {
-                        window.open(`${IP()}/${f.filePath}`);
-                      }
-                    }
+                    if (f.filePath) setPreviewArchivo(f.filePath);
                   }}
                   key={index}
                 >
@@ -271,6 +277,39 @@ function Flujos() {
             </tbody>
           </table>
         </div>
+      </div>
+      {/* Modal preview comprobante */}
+      {previewArchivo && (
+        <PreviewModal archivo={previewArchivo} onClose={() => setPreviewArchivo(null)} />
+      )}
+    </div>
+  );
+}
+
+function PreviewModal({ archivo, onClose }) {
+  const blobUrl = useMemo(() => dataUriToBlobUrl(archivo), [archivo]);
+  const isImage = archivo?.match(/^data:image\//);
+
+  useEffect(() => {
+    return () => { if (blobUrl && blobUrl.startsWith('blob:')) URL.revokeObjectURL(blobUrl); };
+  }, [blobUrl]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className={s.previewOverlay} onClick={onClose}>
+      <div className={s.previewModal} onClick={(e) => e.stopPropagation()}>
+        <button className={s.previewClose} onClick={onClose}>
+          <i className="bi bi-x-lg" />
+        </button>
+        {isImage
+          ? <img src={archivo} alt="Preview" className={s.previewImg} />
+          : <iframe src={blobUrl} className={s.previewFrame} title="Preview" />
+        }
       </div>
     </div>
   );

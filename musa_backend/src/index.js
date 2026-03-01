@@ -994,13 +994,17 @@ app.delete("/api/oc/:id/factura/:idx", async (req, res) => {
   }
 });
 
-// ── Profile photo upload ──
+// ── Profile photo upload (base64 en MongoDB) ──
 app.post("/upload_foto_perfil", uploadPerfil.single("foto"), async (req, res) => {
   try {
     const userId = req.body.userId;
     if (!userId || !req.file) return res.status(400).json({ error: "Faltan datos" });
-    const foto = `/uploads/perfiles/${req.file.filename}`;
+    const base64 = fs.readFileSync(req.file.path).toString("base64");
+    const mime = req.file.mimetype || "image/jpeg";
+    const foto = `data:${mime};base64,${base64}`;
     await Usuario.findByIdAndUpdate(userId, { foto });
+    // Limpiar archivo temporal
+    fs.unlink(req.file.path, () => {});
     io.emit("cambios");
     res.json({ ok: true, foto });
   } catch (err) {

@@ -99,7 +99,8 @@ export default function ChatInterno({ usuario }) {
   const renderAvatar = (nombre, size) => {
     const foto = fotoMap[nombre];
     if (foto) {
-      return <img src={`${IP()}${foto}`} alt="" className={size === 'sm' ? s.replyAvatarImg : s.avatarImg} />;
+      const src = foto.startsWith('data:') ? foto : `${IP()}${foto}`;
+      return <img src={src} alt="" className={size === 'sm' ? s.replyAvatarImg : s.avatarImg} />;
     }
     return <span className={size === 'sm' ? s.replyAvatar : s.avatar}>{nombre?.[0]?.toUpperCase() || '?'}</span>;
   };
@@ -167,7 +168,7 @@ export default function ChatInterno({ usuario }) {
       <div className={s.topBar}>
         <div className={s.profileChip} onClick={() => fotoInputRef.current?.click()} title="Cambiar foto de perfil">
           {fotoMap[usuario.nombre]
-            ? <img src={`${IP()}${fotoMap[usuario.nombre]}`} alt="" className={s.profileChipImg} />
+            ? <img src={fotoMap[usuario.nombre]?.startsWith('data:') ? fotoMap[usuario.nombre] : `${IP()}${fotoMap[usuario.nombre]}`} alt="" className={s.profileChipImg} />
             : <span className={s.profileChipLetter}>{usuario.nombre?.[0]?.toUpperCase() || '?'}</span>
           }
           <div className={s.profileChipOverlay}><i className="bi bi-camera" /></div>

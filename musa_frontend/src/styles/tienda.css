@@ -1,0 +1,15 @@
+/* ── Tienda Web Variables ── */
+:root {
+  --tienda-navbar-height: 72px;
+  --tienda-max-width: 1280px;
+  --tienda-hero-height: 440px;
+  --tienda-card-radius: 12px;
+  --tienda-grid-gap: 20px;
+  --tienda-footer-bg: #0b1120;
+  --tienda-footer-text: #94a3b8;
+}
+
+[data-theme="light"] {
+  --tienda-footer-bg: #1e293b;
+  --tienda-footer-text: #94a3b8;
+}

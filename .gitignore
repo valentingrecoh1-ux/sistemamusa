@@ -1,3 +1,9 @@
+node_modules/
 musa_backend/node_modules
 musa_frontend/node_modules
 musa_backend/src/facturas
+musa_backend/src/notas_de_credito
+musa_backend/.env
+musa_backend/uploads/
+dev.bat
+.dev.log

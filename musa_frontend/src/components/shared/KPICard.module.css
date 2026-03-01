@@ -1,0 +1,45 @@
+.kpi {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  text-align: center;
+  transition: all var(--transition);
+  min-width: 150px;
+  box-shadow: var(--card-shadow);
+}
+
+.kpi:hover {
+  box-shadow: var(--card-hover-shadow);
+  transform: translateY(-1px);
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.value {
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.urgent {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+}
+
+.urgent .value {
+  color: var(--danger);
+}
+
+.clickable {
+  cursor: pointer;
+}

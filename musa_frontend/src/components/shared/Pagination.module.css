@@ -1,0 +1,67 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+
+.btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.btn:hover:not(:disabled) {
+  color: var(--primary);
+  background: var(--accent-bg);
+}
+
+.btn:disabled {
+  color: var(--text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.info {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0 2px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 86px;
+  text-align: center;
+  justify-content: center;
+}
+
+.info strong {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.infoLabel {
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.separator {
+  color: var(--text-muted);
+}

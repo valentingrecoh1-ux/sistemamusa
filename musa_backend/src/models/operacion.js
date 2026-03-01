@@ -11,10 +11,13 @@ const operacion = new mongoose.Schema(
     beneficiario: { type: String },
     fecha: { type: String },
     factura: { type: String },
+    degustacionId: { type: mongoose.Schema.Types.ObjectId, ref: "Degustacion" },
+    eventoId: { type: mongoose.Schema.Types.ObjectId, ref: "Evento" },
+    mpPagoId: { type: Number, default: null },
   },
   { timestamps: true }
 );
 
-const Product = mongoose.model("Operacion", operacion);
+const Operacion = mongoose.model("Operacion", operacion);
 
-module.exports = Product;
+module.exports = Operacion;

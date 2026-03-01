@@ -1,0 +1,302 @@
+/* ── Two-column layout ── */
+.container {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Back link ── */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color var(--transition);
+  grid-column: 1 / -1;
+}
+
+.backLink:hover {
+  color: var(--primary);
+}
+
+/* ── Form card (left) ── */
+.formCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 16px;
+}
+
+.formTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inputGroup span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.inputGroup input,
+.inputGroup select,
+.inputGroup textarea {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus,
+.inputGroup textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.inputGroup textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ── Method buttons ── */
+.metodoGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metodoBtn {
+  padding: 7px 16px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  font-size: 13px;
+  font-weight: 600;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-body);
+}
+
+.metodoBtn:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.metodoBtnActive {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+}
+
+/* ── File upload ── */
+.fileLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px dashed var(--input-border);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+}
+
+.fileLabel:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.fileLabel input {
+  display: none;
+}
+
+.fileName {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Submit ── */
+.submitBtn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background-color var(--transition);
+}
+
+.submitBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* ── Table side (right) ── */
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  padding: 8px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-width: 220px;
+  flex: 1;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.paginationDock {
+  margin-left: auto;
+}
+
+/* ── Table ── */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+.emptyRow td {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Comprobante link ── */
+.comprobanteLink {
+  color: var(--info);
+  font-size: 16px;
+  transition: color var(--transition);
+}
+
+.comprobanteLink:hover {
+  color: var(--primary);
+}
+
+/* ── OC info in form ── */
+.ocInfo {
+  padding: 10px 14px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ocInfoValue {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .formCard {
+    position: static;
+  }
+}

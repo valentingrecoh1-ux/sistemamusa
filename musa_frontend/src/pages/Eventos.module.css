@@ -1,0 +1,1424 @@
+/* ── Layout ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ═══════════════════════════════
+   Form card
+   ═══════════════════════════════ */
+.formCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--card-shadow);
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.formHeader i { color: var(--accent); font-size: 16px; }
+
+.cancelEditBtn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cancelEditBtn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.form { display: flex; flex-direction: column; gap: 14px; }
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.formGroup { display: flex; flex-direction: column; gap: 5px; }
+.formGroupBtn { display: flex; align-items: flex-end; }
+
+.formGroup label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.formGroup input[type="text"],
+.formGroup select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.dateInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition);
+  white-space: nowrap;
+  width: 100%;
+  justify-content: center;
+}
+
+.saveBtn:hover { background-color: var(--primary-hover); }
+
+/* ── Vino search ── */
+.subSection {
+  padding: 14px 16px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subSectionHeader {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subSectionHeader i { color: var(--accent); }
+
+.vinoSearchWrap { position: relative; }
+
+.vinoSearchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.vinoSearchInput {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.vinoSearchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.vinoDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.vinoDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+  border-bottom: 1px solid var(--table-border);
+}
+
+.vinoDropdownItem:last-child { border-bottom: none; }
+.vinoDropdownItem:hover { background-color: var(--table-row-hover); }
+.vinoDropdownItemAdded { opacity: 0.5; background-color: rgba(34, 197, 94, 0.06); }
+.vinoDropdownItemAdded:hover { background-color: rgba(34, 197, 94, 0.12); }
+.vinoDropdownName { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.vinoDropdownDetail { font-size: 12px; color: var(--text-muted); }
+
+.vinoDropdownCode {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.vinoDropdownCode i { font-size: 10px; color: var(--accent); }
+
+.vinoDropdownPrice {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+
+.chipList { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 12px;
+  border-radius: 20px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  font-size: 12px;
+}
+
+.chipName { font-weight: 600; color: var(--text-primary); }
+.chipDetail { color: var(--text-muted); font-size: 11px; }
+.chipPrice { font-weight: 600; font-family: var(--font-heading); color: var(--text-secondary); font-size: 12px; }
+
+.chipRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.chipRemove:hover { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+.chipTotal {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: right;
+  font-family: var(--font-heading);
+}
+
+/* ═══════════════════════════════
+   Stats bar
+   ═══════════════════════════════ */
+.statsBar { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.statItem i { color: var(--accent); font-size: 16px; }
+
+.statValue { font-weight: 700; font-family: var(--font-heading); font-size: 18px; color: var(--text-primary); }
+.statPositive { color: var(--success) !important; }
+.statNegative { color: var(--danger) !important; }
+.statLabel { color: var(--text-muted); }
+
+/* ═══════════════════════════════
+   Search + Filters
+   ═══════════════════════════════ */
+.searchBar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.searchWrap { flex: 1; min-width: 200px; position: relative; }
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus { outline: none; border-color: var(--input-focus-border); box-shadow: var(--input-focus-shadow); }
+
+.paginationDock { margin-left: auto; }
+.paginationBottom { align-self: center; }
+
+.filterGroup { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--input-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.filterBtn:hover { border-color: var(--primary); color: var(--primary); }
+.filterActive { border-color: var(--primary) !important; background-color: rgba(59, 130, 246, 0.1) !important; color: var(--primary) !important; font-weight: 600; }
+
+/* ═══════════════════════════════
+   Table
+   ═══════════════════════════════ */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  overflow-x: auto;
+}
+
+.table { width: 100%; border-collapse: collapse; }
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+  white-space: nowrap;
+}
+
+.table tbody tr:nth-child(even) td { background-color: var(--table-row-even); }
+.table tbody tr:nth-child(odd) td { background-color: var(--table-row-odd); }
+.table tbody tr:hover td { background-color: var(--table-row-hover); }
+.clickableRow { cursor: pointer; }
+
+.fechaBadge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500; }
+.fechaBadge i { color: var(--accent); font-size: 12px; }
+
+.montoCell { font-weight: 600; font-family: var(--font-heading); }
+
+/* ── Estado badges ── */
+.estadoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.estadoProximo { background-color: rgba(59, 130, 246, 0.12); color: var(--primary); }
+.estadoEn_curso { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.estadoFinalizado { background-color: rgba(34, 197, 94, 0.15); color: var(--success); }
+.estadoCancelado { background-color: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
+
+/* ── Capacity badge ── */
+.capacityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.capacityOk { color: var(--success); }
+.capacityWarn { color: var(--warning); }
+.capacityFull { color: var(--danger); }
+
+/* ── Profit badge ── */
+.profitBadge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+.profitPositive { background-color: rgba(34, 197, 94, 0.15); color: var(--success); }
+.profitNegative { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); }
+.profitZero { background-color: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
+
+/* ── Action buttons ── */
+.actionsCell { display: flex; gap: 4px; align-items: center; }
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-muted);
+}
+
+.actionEditBtn:hover { color: var(--accent); background-color: rgba(99, 102, 241, 0.1); }
+.actionDeleteBtn:hover { color: var(--danger); background-color: rgba(239, 68, 68, 0.1); }
+
+/* ═══════════════════════════════
+   Detail Modal
+   ═══════════════════════════════ */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+.modalContent {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.2s ease;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover { color: var(--danger); border-color: var(--danger); background-color: rgba(239, 68, 68, 0.1); }
+
+.modalInfo { padding: 28px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalTitle i { color: var(--accent); font-size: 20px; }
+
+.modalMeta { display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; align-items: center; }
+.modalMeta i { margin-right: 4px; color: var(--accent); }
+
+/* ── Capacity bar ── */
+.capacityBar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--accent-bg);
+  overflow: hidden;
+}
+
+.capacityFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.capacityFillOk { background-color: var(--success); }
+.capacityFillWarn { background-color: var(--warning); }
+.capacityFillFull { background-color: var(--danger); }
+
+/* ── Modal sections ── */
+.modalSection { display: flex; flex-direction: column; gap: 8px; }
+
+.modalSectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modalSectionTitle i { color: var(--accent); }
+
+.modalList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+}
+
+.modalListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+.modalListDetail { font-size: 11px; color: var(--text-muted); }
+
+.modalListTotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--card-border);
+}
+
+/* ── Reserva row in modal ── */
+.reservaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+  gap: 8px;
+}
+
+.reservaRow:last-child { border-bottom: none; }
+
+.reservaInfo { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.reservaNombre { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.reservaDetail { font-size: 11px; color: var(--text-muted); }
+
+.reservaMonto {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pagoBadge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pagoPagado { background-color: rgba(34, 197, 94, 0.15); color: var(--success); }
+.pagoParcial { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+.pagoPendiente { background-color: rgba(239, 68, 68, 0.12); color: var(--danger); }
+
+.cobrarBtn {
+  padding: 4px 12px;
+  border: 1px solid var(--primary);
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cobrarBtn:hover { background-color: var(--primary); color: var(--text-inverse); }
+
+.borrarReservaBtn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.borrarReservaBtn:hover { color: var(--danger); background-color: rgba(239, 68, 68, 0.1); }
+
+/* ── Mini form for adding reserva ── */
+.miniForm {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  padding: 8px 0;
+  flex-wrap: wrap;
+}
+
+.miniInput {
+  padding: 6px 10px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.miniInput:focus { outline: none; border-color: var(--input-focus-border); }
+
+.miniSelect {
+  padding: 6px 8px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.miniAddBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: 2px solid var(--accent);
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.miniAddBtn:hover { background-color: var(--accent); color: var(--text-inverse); }
+
+/* ── Cobrar modal ── */
+.cobrarOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.cobrarModal {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  width: 380px;
+  max-width: 90vw;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cobrarTitle { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.cobrarInfo { font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px; }
+
+.cobrarField { display: flex; flex-direction: column; gap: 4px; }
+
+.cobrarField label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cobrarField input,
+.cobrarField select {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.cobrarField input:focus,
+.cobrarField select:focus { outline: none; border-color: var(--input-focus-border); }
+
+.cobrarCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 0;
+}
+
+.cobrarCheckbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.cobrarCheckbox span { flex: 1; font-weight: 600; }
+
+.toggleTrack {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background-color: var(--input-border);
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.toggleTrack::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.cobrarCheckbox input:checked ~ .toggleTrack {
+  background-color: var(--primary);
+}
+
+.cobrarCheckbox input:checked ~ .toggleTrack::after {
+  transform: translateX(16px);
+}
+
+.cobrarActions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.cobrarSubmitBtn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.cobrarSubmitBtn:hover { background-color: var(--primary-hover); }
+
+.cobrarCancelBtn {
+  padding: 10px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cobrarCancelBtn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── Modal resumen ── */
+.modalResumen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+}
+
+.modalResumenRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.modalResumenFinal {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--card-border);
+}
+
+.modalDescripcion { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.modalDescripcion strong { color: var(--text-primary); }
+
+/* ── Ingreso cobrado/total ── */
+.ingresoText { display: inline-flex; align-items: center; gap: 2px; font-size: 13px; }
+.ingresoSep { color: var(--text-muted); margin: 0 1px; font-weight: 400; }
+
+.precioPersonaHint { font-weight: 400; font-size: 11px; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+
+.ingresoIndicator { display: flex; flex-direction: column; gap: 4px; }
+
+.ingresoBarLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.ingresoBar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--accent-bg);
+  overflow: hidden;
+}
+
+.ingresoBarFill {
+  height: 100%;
+  border-radius: 4px;
+  background-color: var(--success);
+  transition: width 0.3s ease;
+}
+
+/* ── Gastos estimados ── */
+.gastoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+.gastoRow:last-of-type { border-bottom: none; }
+
+.gastoInfo { display: flex; flex: 1; justify-content: space-between; align-items: center; gap: 8px; }
+.gastoDesc { font-size: 13px; color: var(--text-primary); }
+.gastoMonto { font-size: 13px; font-weight: 600; font-family: var(--font-heading); color: var(--text-primary); white-space: nowrap; }
+
+.gastoActions { display: flex; align-items: center; gap: 4px; }
+
+.gastoConcretarBtn {
+  padding: 3px 10px;
+  border: 1px solid var(--success);
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gastoConcretarBtn:hover { background-color: var(--success); color: var(--text-inverse); }
+
+.gastoBadgeRealizado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.gastoPendienteRow { font-style: italic; color: var(--warning) !important; }
+.gastoPendienteRow span { color: var(--warning); }
+
+.resumenEstimado { font-style: italic; opacity: 0.8; }
+.resumenEstimado span:last-child { color: var(--accent); }
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) { .formRow { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .formRow { grid-template-columns: 1fr; } .miniForm { flex-direction: column; } }
+
+/* ═══════════════════════════════
+   Presupuesto button
+   ═══════════════════════════════ */
+.presupuestoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.presupuestoBtn:hover {
+  background-color: var(--accent);
+  color: var(--text-inverse);
+}
+
+/* ═══════════════════════════════
+   Presupuesto Modal
+   ═══════════════════════════════ */
+.presModal {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 880px;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  animation: slideUp 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.presHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  flex-shrink: 0;
+}
+
+.presHeader i { color: var(--accent); font-size: 18px; }
+
+.presHeaderNombre {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.presBody {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Left: inputs ── */
+.presInputs {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  border-right: 1px solid var(--card-border);
+}
+
+.presSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.presSectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presSectionTitle i { color: var(--accent); }
+
+.presRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.presField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.presField label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.presInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.presInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.presSubtotal {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 5px 10px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius-sm);
+  white-space: nowrap;
+}
+
+.presSubtotal strong {
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+
+/* Ganancia */
+.presGananciaWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.presGananciaInput {
+  padding: 8px 36px 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.presGananciaInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.presGananciaSuffix {
+  position: absolute;
+  right: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Wine list */
+.presVinoList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 8px 12px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+}
+
+.presVinoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.presVinoRow:last-of-type { border-bottom: none; }
+
+.presVinoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.presVinoNombre { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.presVinoDetail { font-size: 11px; color: var(--text-muted); }
+
+.presVinoControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.presVinoQtyLabel { font-size: 11px; color: var(--text-muted); }
+
+.presVinoQty {
+  width: 52px;
+  padding: 5px 8px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: center;
+  font-family: var(--font-heading);
+  box-sizing: border-box;
+}
+
+.presVinoQty:focus { outline: none; border-color: var(--input-focus-border); }
+
+.presVinoSubtotal {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.presVinoTotal {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: right;
+  padding-top: 8px;
+  font-family: var(--font-heading);
+  border-top: 1px solid var(--card-border);
+  margin-top: 4px;
+}
+
+/* Reset button */
+.presResetBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px dashed var(--input-border);
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: auto;
+}
+
+.presResetBtn:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ── Right: summary ── */
+.presResumen {
+  width: 300px;
+  min-width: 260px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--table-row-even);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.presResumenTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presResumenTitle i { color: var(--accent); }
+
+.presResumenDesglose {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.presResumenRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  gap: 8px;
+}
+
+.presResumenRow span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.presResumenDivider {
+  height: 1px;
+  background-color: var(--card-border);
+  margin: 2px 0;
+}
+
+.presResumenBase {
+  font-weight: 600;
+  color: var(--text-primary) !important;
+}
+
+.presResumenNeto {
+  font-weight: 700;
+  font-size: 15px !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-heading);
+}
+
+/* Price cards */
+.presResumenPrecioCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.presPrecioFactura {
+  padding: 14px 16px;
+  background-color: var(--card-bg);
+  border: 2px solid var(--primary);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.presPrecioEfectivo {
+  padding: 14px 16px;
+  background-color: var(--card-bg);
+  border: 2px solid var(--success);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.presPrecioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.presPrecioTag {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.presPrecioTagEfectivo {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.presPrecioMonto {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: var(--primary);
+  line-height: 1.1;
+}
+
+.presPrecioMontoEfectivo {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: var(--success);
+  line-height: 1.1;
+}
+
+.presPrecioPorPersona {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Ahorro */
+.presAhorro {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background-color: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: var(--border-radius);
+  font-size: 12px;
+  color: var(--success);
+}
+
+.presAhorro i { font-size: 13px; }
+.presAhorro strong { font-family: var(--font-heading); }
+
+/* Empty state */
+.presResumenEmpty {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.presResumenEmpty i { font-size: 28px; color: var(--accent); opacity: 0.5; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .presBody { flex-direction: column; overflow-y: auto; }
+  .presInputs { border-right: none; border-bottom: 1px solid var(--card-border); }
+  .presResumen { width: 100%; min-width: unset; }
+  .presModal { max-height: 95vh; }
+}

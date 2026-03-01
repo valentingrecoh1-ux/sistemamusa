@@ -1,0 +1,658 @@
+/* ── Page container ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Back link ── */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color var(--transition);
+}
+
+.backLink:hover {
+  color: var(--primary);
+}
+
+/* ── Header (detail view) ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.headerTitle {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.headerBadges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.headerActions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Card ── */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent);
+}
+
+/* ── Form layout (new OC) ── */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.formRow3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inputGroup span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.inputGroup input,
+.inputGroup select,
+.inputGroup textarea {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus,
+.inputGroup textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.inputGroup textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* ── Items table (editable) ── */
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.itemsTable th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 10px 12px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.itemsTable td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.itemsTable tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.itemsTable tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.itemsTable tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+.itemInput {
+  padding: 6px 10px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  width: 100%;
+  min-width: 60px;
+  transition: border-color var(--transition);
+}
+
+.itemInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  transition: opacity var(--transition);
+}
+
+.removeBtn:hover {
+  opacity: 0.7;
+}
+
+.addRowBtn {
+  padding: 6px 14px;
+  border: 1px dashed var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.addRowBtn:hover {
+  border-color: var(--accent);
+  color: var(--primary);
+  background-color: var(--accent-bg);
+}
+
+/* ── Action buttons ── */
+.btnRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.btnPrimary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background-color var(--transition);
+}
+
+.btnPrimary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btnSuccess {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--success);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.btnSuccess:hover {
+  opacity: 0.85;
+}
+
+.btnDanger {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--danger);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.btnDanger:hover {
+  opacity: 0.85;
+}
+
+.btnOutline {
+  padding: 8px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btnOutline:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.btnWarning {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--warning);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.btnWarning:hover {
+  opacity: 0.85;
+}
+
+.btnInfo {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--info);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.btnInfo:hover {
+  opacity: 0.85;
+}
+
+/* ── Products table (detail view - read-only) ── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+.emptyRow td {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Finanzas card ── */
+.finanzasGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.finanzasItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.finanzasLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.finanzasValue {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+.finanzasValueDanger {
+  color: var(--danger);
+}
+
+.finanzasValueSuccess {
+  color: var(--success);
+}
+
+/* ── File dropzone ── */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px 16px;
+  border: 2px dashed var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--surface-1);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+  text-align: center;
+}
+
+.dropzone:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.dropzoneActive {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.dropzoneIcon {
+  font-size: 24px;
+  color: var(--text-muted);
+}
+
+.dropzoneText {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.dropzoneFiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.dropzoneFile {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--surface-2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Facturas list ── */
+.facturaItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.facturaItem:last-child {
+  border-bottom: none;
+}
+
+/* ── Pay form (inline modal) ── */
+.payForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+  margin-top: 12px;
+}
+
+.payFormTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Two-column detail ── */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ── Total / Subtotal / Bonif rows ── */
+.totalRow {
+  font-weight: 700;
+  background-color: var(--accent-bg) !important;
+}
+
+.subtotalRow td {
+  background-color: var(--table-row-even) !important;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 7px 10px;
+}
+
+.bonifRow td {
+  background-color: rgba(34, 197, 94, 0.07) !important;
+  font-size: 13px;
+  color: var(--success);
+  padding: 7px 10px;
+}
+
+/* ── Bonificacion panel ── */
+.bonifPanel {
+  padding: 14px 16px;
+  background-color: var(--accent-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  margin-top: 10px;
+  margin-bottom: 16px;
+}
+
+/* ── Proveedor preview card ── */
+.proveedorPreview {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: var(--accent-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+.proveedorPreviewItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.proveedorPreviewLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.proveedorPreviewValue {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* ── OCR Upload Card ── */
+.ocrCard {
+  background-color: var(--card-bg);
+  border: 1px dashed var(--accent);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.ocrContent {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ocrContent > i {
+  font-size: 28px;
+  color: #a855f7;
+  flex-shrink: 0;
+}
+
+.ocrText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.ocrText strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.ocrText span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ocrBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.ocrBtn:hover {
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+  transform: translateY(-1px);
+}
+
+.ocrError {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .formRow,
+  .formRow3,
+  .detailGrid,
+  .finanzasGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerActions {
+    margin-left: 0;
+  }
+}

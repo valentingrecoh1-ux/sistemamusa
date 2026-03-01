@@ -1,0 +1,411 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  height: 100dvh;
+}
+
+/* Prevent iOS overscroll bounce */
+html {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Body scroll lock — toggled from JS when sidebar open */
+body.sidebar-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--page-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.025em; }
+h2 { font-size: 1.5rem; letter-spacing: -0.02em; }
+h3 { font-size: 1.2rem; }
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-dark);
+}
+
+ul { list-style: none; }
+
+/* ── Buttons — Apple style: clean, no heavy gradients ── */
+button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--btn-neutral-bg);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+button:hover:not(:disabled) {
+  background: var(--btn-neutral-bg-hover);
+  border-color: var(--surface-border-strong);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+  transition-duration: 0.1s;
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Inputs — Clean and crisp ── */
+input, textarea, select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  min-height: 38px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:hover, textarea:hover, select:hover {
+  border-color: var(--surface-border-strong);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--input-placeholder);
+}
+
+textarea {
+  resize: vertical;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: none;
+}
+
+/* ── Scrollbar — Subtle Apple-style ── */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ── react-datepicker overrides ── */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  position: relative;
+  display: block;
+}
+
+.react-datepicker-popper {
+  z-index: 1200 !important;
+}
+
+.react-datepicker {
+  font-family: var(--font-body) !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  overflow: hidden;
+}
+
+.react-datepicker__header {
+  background: var(--surface-2) !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  padding-top: 8px !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+}
+
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
+  color: var(--text-primary) !important;
+}
+
+.react-datepicker__day-name {
+  font-weight: 600 !important;
+  color: var(--text-secondary) !important;
+}
+
+.react-datepicker__day:hover,
+.react-datepicker__month-text:hover,
+.react-datepicker__quarter-text:hover,
+.react-datepicker__year-text:hover {
+  background: var(--accent-bg) !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--keyboard-selected,
+.react-datepicker__month-text--keyboard-selected,
+.react-datepicker__quarter-text--keyboard-selected,
+.react-datepicker__year-text--keyboard-selected {
+  background: var(--accent-bg) !important;
+  color: var(--primary) !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-selecting-range,
+.react-datepicker__day--in-range,
+.react-datepicker__month-text--selected,
+.react-datepicker__month-text--in-selecting-range,
+.react-datepicker__month-text--in-range,
+.react-datepicker__quarter-text--selected,
+.react-datepicker__quarter-text--in-selecting-range,
+.react-datepicker__quarter-text--in-range,
+.react-datepicker__year-text--selected,
+.react-datepicker__year-text--in-selecting-range,
+.react-datepicker__year-text--in-range {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--today {
+  font-weight: 700 !important;
+  border: 2px solid var(--primary) !important;
+  border-radius: 50% !important;
+}
+
+.react-datepicker__day--outside-month {
+  color: var(--text-muted) !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: var(--text-secondary) !important;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: var(--primary) !important;
+}
+
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+.react-datepicker__close-icon {
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.react-datepicker__close-icon:hover:not(:disabled),
+.react-datepicker__close-icon:focus-visible,
+.react-datepicker__close-icon:active {
+  transform: translateY(-50%) !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.react-datepicker__close-icon::after {
+  content: "\f3e1" !important;
+  font-family: "bootstrap-icons" !important;
+  font-weight: 400 !important;
+  background-color: transparent !important;
+  color: var(--text-muted) !important;
+  font-size: 11px !important;
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 1 !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all var(--transition-fast);
+}
+
+.react-datepicker__close-icon:hover::after {
+  content: "\f3e0" !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  background: var(--accent-bg) !important;
+}
+
+.rojo {
+  background-color: var(--danger) !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.amarillo {
+  background-color: var(--warning) !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.verde {
+  background-color: var(--success) !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+/* ── react-datalist-input overrides ── */
+.react-datalist-input__container {
+  width: 100%;
+  position: relative;
+}
+
+.react-datalist-input__textbox {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+}
+
+.react-datalist-input__textbox:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.react-datalist-input__listbox {
+  width: 100%;
+  position: absolute;
+  margin: 4px 0 0 0;
+  padding: 4px;
+  background-color: var(--card-bg);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  list-style-type: none;
+  z-index: 100;
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+
+.react-datalist-input__listbox-option {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: 8px 12px;
+  background-color: transparent;
+  border-radius: var(--border-radius-sm);
+}
+
+.react-datalist-input__listbox-option:focus,
+.react-datalist-input__listbox-option:hover {
+  background-color: var(--primary);
+  color: white;
+}
+
+/* ── checkbox ── */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary);
+  border-radius: 4px;
+}
+
+/* ── Apple-style selection ── */
+::selection {
+  background: rgba(0, 122, 255, 0.20);
+  color: inherit;
+}
+
+/* ══════════════════════════════════
+   MOBILE — iOS / Android fixes
+   ══════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Prevent iOS zoom on input focus (must be >= 16px) */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+
+  /* Smooth momentum scrolling everywhere */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Disable hover effects that cause sticky-hover on touch */
+  @media (hover: none) {
+    button:hover:not(:disabled) {
+      background: var(--btn-neutral-bg);
+      border-color: var(--input-border);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+  }
+}

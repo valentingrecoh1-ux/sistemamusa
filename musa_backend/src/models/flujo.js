@@ -14,6 +14,6 @@ const Flujo = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Product = mongoose.model("Flujo", Flujo);
+const FlujoModel = mongoose.model("Flujo", Flujo);
 
-module.exports = Product;
+module.exports = FlujoModel;

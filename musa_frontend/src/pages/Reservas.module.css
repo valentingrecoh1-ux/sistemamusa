@@ -1,0 +1,845 @@
+/* ── Layout ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ═══════════════════════════════
+   Form card
+   ═══════════════════════════════ */
+.formCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--card-shadow);
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.formHeader i {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.cancelEditBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cancelEditBtn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.colorSquares {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.colorSquareRojo,
+.colorSquareAmarillo {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.colorSquareRojo {
+  background-color: rgb(218, 48, 48);
+  box-shadow: 0 2px 6px rgba(218, 48, 48, 0.3);
+}
+
+.colorSquareAmarillo {
+  background-color: rgb(207, 218, 48);
+  box-shadow: 0 2px 6px rgba(207, 218, 48, 0.3);
+}
+
+.colorSquareRojo:hover,
+.colorSquareAmarillo:hover {
+  transform: scale(1.1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formGroupBtn {
+  display: flex;
+  align-items: flex-end;
+}
+
+.formGroup label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.formGroup input[type="text"],
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.dateInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.priceInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.priceInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+  white-space: nowrap;
+  width: 100%;
+  justify-content: center;
+}
+
+.saveBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* ═══════════════════════════════
+   Stats bar
+   ═══════════════════════════════ */
+.statsBar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.statItem i {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.statValue {
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════
+   Search bar
+   ═══════════════════════════════ */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.toggleBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.toggleActive {
+  background-color: var(--primary) !important;
+  color: var(--text-inverse) !important;
+  border-color: var(--primary) !important;
+}
+
+.searchWrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.paginationDock {
+  margin-left: auto;
+}
+
+.paginationBottom {
+  align-self: center;
+}
+
+/* ═══════════════════════════════
+   Table
+   ═══════════════════════════════ */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.thNombre {
+  min-width: 160px;
+}
+
+.thActions {
+  width: 120px;
+}
+
+.table td {
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+  white-space: nowrap;
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+/* ── Row payment status ── */
+.rowPaid td {
+  background-color: rgba(34, 197, 94, 0.08) !important;
+}
+
+.rowPartial td {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+}
+
+/* ── Fecha badge ── */
+.fechaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.fechaBadge i {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* ── Turno badge ── */
+.turnoBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.turno1 {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: var(--primary);
+}
+
+.turno2 {
+  background-color: rgba(99, 102, 241, 0.12);
+  color: var(--accent);
+}
+
+/* ── Nombre cell ── */
+.nombreCell {
+  font-weight: 600;
+}
+
+/* ── Cantidad badge ── */
+.cantidadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* ── Telefono button ── */
+.telefonoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: #25d366;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.telefonoBtn:hover {
+  background-color: rgba(37, 211, 102, 0.1);
+}
+
+.telefonoBtn i {
+  font-size: 14px;
+}
+
+/* ── Obs cell ── */
+.obsCell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Monto cell ── */
+.montoCell {
+  font-weight: 600;
+  font-family: var(--font-heading);
+}
+
+/* ── Text muted ── */
+.textMuted {
+  color: var(--text-muted);
+}
+
+/* ── Status badges ── */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.statusPaid {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.statusPartial {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
+
+.statusPending {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+}
+
+.statusNone {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted);
+}
+
+/* ── Action buttons ── */
+.actionsCell {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-muted);
+}
+
+.actionEditBtn:hover {
+  color: var(--accent);
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.actionChargeBtn:hover {
+  color: var(--success);
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.actionDeleteBtn:hover {
+  color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* ═══════════════════════════════
+   Modal
+   ═══════════════════════════════ */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+.modalBody {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  animation: slideUp 0.2s ease;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.modalInfo {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalTitle i {
+  color: var(--success);
+  font-size: 20px;
+}
+
+.modalClientInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modalClientName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modalClientDetail {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.modalMontoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+}
+
+.modalMontoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.modalMontoRestante {
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-top: 8px;
+  border-top: 1px solid var(--card-border);
+}
+
+.modalFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modalFormGroup label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.modalFormGroup select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.modalFormGroup select:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+  padding: 6px 0;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.checkboxLabel span { flex: 1; }
+
+.toggleTrack {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background-color: var(--input-border);
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.toggleTrack::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.checkboxLabel input:checked ~ .toggleTrack {
+  background-color: var(--primary);
+}
+
+.checkboxLabel input:checked ~ .toggleTrack::after {
+  transform: translateX(16px);
+}
+
+.modalMontoInput {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.modalMontoInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--card-border);
+}
+
+.modalBtnSecondary {
+  padding: 10px 20px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.modalBtnSecondary:hover {
+  background-color: var(--table-row-hover);
+}
+
+.modalBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--success);
+  color: white;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.modalBtnPrimary:hover {
+  filter: brightness(1.1);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .formRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}

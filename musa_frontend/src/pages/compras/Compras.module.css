@@ -1,0 +1,286 @@
+/* ── Dashboard layout ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── KPI grid ── */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+/* ── Nav links row ── */
+.nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.navPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: background-color var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+  border: none;
+}
+
+.navPill:hover {
+  background-color: var(--primary-hover);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.navPill i {
+  font-size: 15px;
+}
+
+/* ── Toolbar: search + filter + pagination ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  padding: 8px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-width: 220px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  padding: 6px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  font-size: 12px;
+  font-weight: 600;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-body);
+  text-transform: uppercase;
+}
+
+.filterBtn:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.filterBtnActive {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+}
+
+.paginationDock {
+  margin-left: auto;
+}
+
+/* ── Table ── */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.emptyRow td {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Notifications panel ── */
+.notifSection {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.notifHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.notifTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.markAllBtn {
+  padding: 5px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.markAllBtn:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.notifList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notifItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.notifItem:hover {
+  background-color: var(--table-row-hover);
+}
+
+.notifUnread {
+  background-color: var(--accent-bg);
+}
+
+.notifDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.notifDotRead {
+  background-color: transparent;
+}
+
+.notifMsg {
+  font-size: 13px;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.notifDate {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.notifEmpty {
+  padding: 30px 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Section title ── */
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent);
+  display: inline-block;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .paginationDock {
+    margin-left: 0;
+    justify-content: center;
+  }
+}

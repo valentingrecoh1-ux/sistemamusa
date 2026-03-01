@@ -1,0 +1,651 @@
+/* ── Layout ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Top bar ── */
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Profile photo chip ── */
+.profileChip {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.profileChipImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profileChipLetter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.profileChipOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s;
+  color: #fff;
+  font-size: 15px;
+}
+
+.profileChip:hover .profileChipOverlay {
+  opacity: 1;
+}
+
+/* ── Avatar images in feed ── */
+.avatarImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.replyAvatarImg {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.newBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition);
+  letter-spacing: 0.3px;
+}
+
+.newBtn:hover {
+  background: var(--btn-primary-bg-hover);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+/* ── Form ── */
+.form {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 18px;
+  box-shadow: var(--card-shadow);
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 70px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.formSelects {
+  display: flex;
+  gap: 8px;
+}
+
+.select {
+  padding: 7px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition), opacity var(--transition);
+}
+
+.sendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sendBtn:not(:disabled):hover {
+  background: var(--btn-primary-bg-hover);
+}
+
+/* ── Filters ── */
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 13px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  font-size: 12px;
+  font-weight: 600;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-body);
+}
+
+.filterBtn:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.filterActive {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-color: var(--primary);
+}
+
+/* ── Feed ── */
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 15px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.empty i {
+  font-size: 40px;
+  opacity: 0.4;
+}
+
+/* ── Message card ── */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--card-hover-shadow);
+}
+
+.pinned {
+  border-color: var(--warning);
+  border-left: 3px solid var(--warning);
+}
+
+.resolved {
+  opacity: 0.7;
+}
+
+/* Card header */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pinIcon {
+  color: var(--warning);
+  font-size: 14px;
+}
+
+/* Tags */
+.cardTags {
+  display: flex;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.tag_nota { background-color: var(--info-bg); color: var(--info); }
+.tag_tarea { background-color: var(--warning-bg); color: var(--warning); }
+.tag_aviso { background-color: var(--danger-bg); color: var(--danger); }
+.tag_vinos { background-color: rgba(139, 92, 246, 0.12); color: #a78bfa; }
+.tag_pedidos { background-color: var(--info-bg); color: var(--info); }
+.tag_faltantes { background-color: var(--warning-bg); color: var(--warning); }
+.tag_general { background-color: var(--accent-bg); color: var(--accent); }
+
+/* Card body */
+.cardBody {
+  padding: 4px 18px 10px;
+}
+
+.texto {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+/* Estado row */
+.cardStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 18px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.estadoBtns {
+  display: flex;
+  gap: 4px;
+}
+
+.estadoBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-body);
+}
+
+.estadoBtn:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.estado_pendiente {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+  border-color: var(--warning);
+}
+
+.estado_en_proceso {
+  background-color: var(--info-bg);
+  color: var(--info);
+  border-color: var(--info);
+}
+
+.estado_resuelto {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.assigned {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Replies ── */
+.replies {
+  border-top: 1px solid var(--card-border);
+  padding: 0 18px 6px;
+}
+
+.repliesToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.repliesToggle:hover {
+  color: var(--text-primary);
+}
+
+.reply {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--card-border);
+}
+
+.replyAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.replyContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.replyContent p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.replyMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.replyMeta strong {
+  color: var(--text-primary);
+}
+
+.replyTime {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* Reply form */
+.replyForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--card-border);
+}
+
+.replyInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.replyInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.replySendBtn,
+.replyCancelBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+.replySendBtn {
+  background: var(--btn-primary-bg);
+  color: var(--text-inverse);
+}
+
+.replySendBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.replySendBtn:not(:disabled):hover {
+  background: var(--btn-primary-bg-hover);
+}
+
+.replyCancelBtn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--input-border);
+}
+
+.replyCancelBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* ── Card actions ── */
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 18px 12px;
+  border-top: 1px solid var(--card-border);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-body);
+}
+
+.actionBtn:hover {
+  background-color: var(--accent-bg);
+  color: var(--text-primary);
+}
+
+.deleteBtn:hover {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .topBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newBtn {
+    justify-content: center;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cardStatus {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .formFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .formSelects {
+    justify-content: stretch;
+  }
+
+  .formSelects select {
+    flex: 1;
+  }
+
+  .sendBtn {
+    justify-content: center;
+  }
+}

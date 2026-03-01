@@ -6,6 +6,8 @@ const venta = new mongoose.Schema(
     tipoFactura: { type: String },
     numeroFactura: { type: String },
     stringNumeroFactura: { type: String },
+    numeroNotaCredito: { type: String },
+    stringNumeroNotaCredito: { type: String },
     cuit: { type: String },
     monto: { type: Number },
     formaPago: { type: String },
@@ -18,15 +20,20 @@ const venta = new mongoose.Schema(
     fecha: { type: String },
     idTurno: { type: String },
     nombreTurno: { type: String },
+    reservaFecha: { type: String },
+    reservaTurno: { type: String },
     descuento: { type: Number },
     detalle: { type: String },
     numeroVenta: { type: Number },
     montoEfectivo: { type: Number },
     montoDigital: { type: Number },
+    mpPaymentIds: { type: [Number], default: [] },
+    mpLinkedAt: { type: Date, default: null },
+    clienteId: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente", default: null },
   },
   { timestamps: true }
 );
 
-const Product = mongoose.model("Venta", venta);
+const Venta = mongoose.model("Venta", venta);
 
-module.exports = Product;
+module.exports = Venta;

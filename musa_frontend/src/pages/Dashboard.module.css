@@ -1,0 +1,343 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.section {
+  margin-bottom: 28px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border);
+  transition: all var(--transition-fast);
+}
+
+.sectionHeader:hover .sectionArrow {
+  color: var(--primary);
+  transform: translateX(2px);
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionTitle i {
+  color: var(--primary);
+  font-size: 1rem;
+}
+
+.sectionArrow {
+  color: var(--text-muted);
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+/* ── Two-column layout ── */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Mini list (últimas ventas) ── */
+.miniList {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.miniListTitle {
+  padding: 10px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  background-color: var(--table-header-bg);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.miniListItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--card-border);
+  transition: background-color var(--transition);
+}
+
+.miniListItem:last-child {
+  border-bottom: none;
+}
+
+.miniListItem:hover {
+  background-color: var(--table-row-hover);
+}
+
+.miniListLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.miniListName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.miniListSub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.miniListMonto {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── MP mini stats ── */
+.mpMiniStats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mpMiniStat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  font-size: 13px;
+}
+
+.mpMiniStatLabel {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.mpMiniStatValue {
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+}
+
+.mpMiniStatNeg {
+  color: var(--danger);
+}
+
+/* ── Cierre comisiones MP ── */
+.cierreComis {
+  margin-top: 14px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.cierreComisHeader {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  background-color: var(--table-header-bg);
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cierreComisPerio {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.cierreComisBody {
+  padding: 8px 0;
+}
+
+.cierreComisRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.cierreComisNeg {
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--danger);
+}
+
+.cierreComisTotal {
+  border-top: 1px solid var(--card-border);
+  margin-top: 4px;
+  padding-top: 10px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cierreComisTotal span:last-child {
+  font-family: var(--font-heading);
+  color: var(--danger);
+}
+
+.cierreComisBtn {
+  display: block;
+  width: calc(100% - 24px);
+  margin: 4px 12px 12px;
+  padding: 10px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cierreComisBtn:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+}
+
+.cierreComisBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.cierreComisBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Stock bajo ── */
+.stockCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.stockList {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.stockItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--card-border);
+  transition: background-color var(--transition);
+}
+
+.stockItem:last-child {
+  border-bottom: none;
+}
+
+.stockItem:hover {
+  background-color: var(--table-row-hover);
+}
+
+.stockInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stockName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stockDetail {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.stockProveedor {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stockBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stockLow {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.stockCritical {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

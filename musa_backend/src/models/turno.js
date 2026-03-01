@@ -12,6 +12,7 @@ const turno = new mongoose.Schema(
     total: { type: Number },
     facturado: { type: Boolean },
     telefono: { type: String },
+    eventoId: { type: mongoose.Schema.Types.ObjectId, ref: "Evento", default: null },
   },
   { timestamps: true }
 );

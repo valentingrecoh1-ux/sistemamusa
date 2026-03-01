@@ -1,0 +1,661 @@
+/* ── Carrito Layout ── */
+.container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 30vw, 420px);
+  gap: 20px;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ── Left: Products (70%) ── */
+.productosSection {
+  min-width: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.productosList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 10px;
+}
+
+/* ── Product Card ── */
+.productoCard {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  padding: 18px 20px;
+  transition: box-shadow var(--transition);
+  height: 190px;
+}
+
+.productoCard:hover {
+  box-shadow: var(--card-hover-shadow);
+}
+
+.productoImagen {
+  width: 130px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  align-self: stretch;
+}
+
+.productoImagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.productoDetalle {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.productoTop {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productoNombre {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 110px;
+}
+
+.productoBodega {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.productoMeta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.productoStock {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.productoBottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bottomLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.removeBtn {
+  background: rgba(255, 59, 48, 0.08);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  color: #FF3B30;
+  font-size: 17px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.removeBtn:hover {
+  background-color: #FF3B30;
+  border-color: #FF3B30;
+  color: #fff;
+}
+
+/* ── Quantity Controls ── */
+.cantidadControls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+}
+
+.cantidadBtn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.cantidadBtn:hover {
+  background-color: var(--accent-bg);
+}
+
+.cantidadBtn:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.cantidadBtn:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.cantidadInput {
+  width: 48px;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 8px 2px;
+  border: none;
+  border-left: 1px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.cantidadInput:focus {
+  outline: none;
+  background-color: var(--accent-bg);
+}
+
+/* ── Price / Subtotal ── */
+.precioSection {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.precioUnit {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.subtotalTotal {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Right: Resumen (30%) ── */
+.resumenSection {
+  --resumen-padding: 20px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  padding: var(--resumen-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: none;
+  overflow: visible;
+  min-width: 0;
+}
+
+.resumenTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* ── Totals ── */
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.totalRowFinal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 12px 0 4px;
+  border-top: 1px solid var(--card-border);
+}
+
+.totalLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.subtotalValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.totalFinalLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.totalFinalValue {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Descuento / Detalle ── */
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  background: var(--surface-2);
+}
+
+.fieldLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.fieldInput:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+/* ── Section Title ── */
+.sectionLabel {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: 0.4px;
+}
+
+.choiceSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  background: var(--surface-2);
+}
+
+/* ── Forma de Pago / Factura Buttons ── */
+.buttonGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--card-bg);
+}
+
+.optionBtn {
+  padding: 8px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.optionBtn:hover {
+  background-color: var(--surface-2);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.optionBtnActive {
+  padding: 8px 10px;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+
+.optionBtnActive:hover {
+  opacity: 0.9;
+}
+
+.optionBtn:disabled,
+.optionBtnActive:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  background: var(--surface-2);
+  border-color: var(--card-border);
+  color: var(--text-muted);
+  box-shadow: none;
+}
+
+/* ── Mixto Inputs ── */
+.mixtoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--accent-muted);
+}
+
+.mixtoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mixtoLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  min-width: 70px;
+}
+
+.mixtoInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.mixtoInput:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+/* ── CUIT / Datos fields ── */
+.dataField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dataLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.dataInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.dataInput:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.cuitInput {
+  font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.4px;
+}
+
+/* ── Finalizar Button ── */
+.finalizarWrapper {
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-top: 10px;
+}
+
+.finalizarHint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.finalizarHintTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-muted);
+}
+
+.finalizarHintText {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.finalizarBtn {
+  width: 100%;
+  padding: 13px 20px;
+  background: var(--success);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.finalizarBtn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.finalizarBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.finalizarBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Empty cart ── */
+.emptyCart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.emptyCart i {
+  font-size: 48px;
+  color: var(--accent-muted);
+}
+
+.emptyCart p {
+  font-size: 1rem;
+}
+
+.descuentoButtons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.descuentoButton {
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.descuentoButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.descuentoButtonActive {
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background-color: var(--primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.descuentoButtonActive:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .productosSection {
+    padding-right: 0;
+  }
+
+  .resumenSection {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .container {
+    gap: 10px;
+  }
+
+  .productoCard {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .productoImagen {
+    width: 100px;
+    min-height: 80px;
+  }
+
+  .productoBottom {
+    flex-wrap: wrap;
+  }
+
+  .buttonGroup {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .descuentoButtons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .totalLabel {
+    font-size: 0.98rem;
+  }
+
+  .subtotalValue {
+    font-size: 1.24rem;
+  }
+
+  .totalFinalLabel {
+    font-size: 1.1rem;
+  }
+
+  .totalFinalValue {
+    font-size: 1.6rem;
+  }
+}

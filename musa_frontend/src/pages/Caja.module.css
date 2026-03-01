@@ -1,0 +1,1122 @@
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 10px 24px;
+  border: 1px solid var(--input-border);
+  border-bottom: none;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background-color: var(--accent-bg);
+}
+
+.tabActive {
+  background-color: var(--primary) !important;
+  color: var(--text-inverse) !important;
+  border-color: var(--primary) !important;
+}
+
+/* ── Two-column layout ── */
+.container {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Form card (left) ── */
+.formCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 16px;
+}
+
+/* ── NumericFormat / inputs ── */
+.formCard input[type="text"],
+.formCard input[type="file"],
+.formCard textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.formCard input:focus,
+.formCard textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.formCard input:disabled,
+.formCard textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.montoInput {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.montoInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.montoInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Button rows ── */
+.btnRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btnRow button {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btnRow button:hover {
+  border-color: var(--primary);
+  background-color: var(--accent-bg);
+}
+
+.btnRow button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Active button ── */
+.active {
+  background-color: var(--primary) !important;
+  color: var(--text-inverse) !important;
+  border-color: var(--primary) !important;
+}
+
+/* ── Cierre de caja button ── */
+.cierreBtn {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--danger);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--danger);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cierreBtn:hover {
+  background-color: var(--danger);
+  color: var(--text-inverse);
+}
+
+.cierreBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cierreActive {
+  background-color: var(--danger) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* ── Datalist wrapper ── */
+.formCard [class*="datalist"] input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+/* ── File row ── */
+.fileRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fileInputHidden {
+  display: none;
+}
+
+.fileInputWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fileInputWrap:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.fileInputWrap i {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.fileInputWrap span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteFileBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.deleteFileBtn:hover {
+  border-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+/* ── Degustacion selector ── */
+.degustacionSelect {
+  width: 100%;
+}
+
+.degustacionSelect select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.degustacionSelect select:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+/* ── Submit button ── */
+.submitBtn {
+  width: 100%;
+  padding: 11px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.submitBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* ── Right side ── */
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Totales table ── */
+.totalesWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.totalesTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.totalesTable th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+}
+
+.totalesTable td {
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  background-color: var(--card-bg);
+}
+
+/* ── Search / date / pagination bar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar input[type="text"] {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.toolbar input[type="text"]:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.dateInput {
+  width: var(--date-box-width);
+  max-width: 100%;
+  min-height: 48px;
+  padding: 11px 44px 11px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--input-bg) 100%);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1.14rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-align: center;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+  transform: none;
+}
+
+.dateNav {
+  --date-box-width: 290px;
+  display: grid;
+  grid-template-columns: 40px var(--date-box-width) 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.dateShiftBtn {
+  width: 40px;
+  height: 40px;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: linear-gradient(180deg, var(--surface-2) 0%, var(--input-bg) 100%);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.dateShiftBtn:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+  background: var(--accent-bg);
+  transform: none;
+}
+
+.dateShiftBtn:focus,
+.dateShiftBtn:active {
+  transform: none;
+}
+
+.dateShiftPrev {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.dateShiftNext {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.datePickerWrap {
+  grid-column: 2;
+  grid-row: 1;
+  width: var(--date-box-width);
+}
+
+.datePickerWrap :global(.react-datepicker-wrapper),
+.datePickerWrap :global(.react-datepicker__input-container) {
+  width: 100%;
+  display: block;
+}
+
+.datePopper {
+  width: 290px !important;
+  position: fixed !important;
+  z-index: 1200 !important;
+}
+
+.datePopper :global(.react-datepicker) {
+  width: 100%;
+}
+
+.datePopper :global(.react-datepicker__month-container) {
+  width: 100%;
+}
+
+.datePopper :global(.react-datepicker__month) {
+  margin: 8px 10px 10px;
+}
+
+.datePopper :global(.react-datepicker__day-names),
+.datePopper :global(.react-datepicker__week) {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.datePopper :global(.react-datepicker__day-name),
+.datePopper :global(.react-datepicker__day) {
+  width: 100%;
+  height: 34px;
+  line-height: 34px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-sm);
+}
+
+.datePopper :global(.react-datepicker__current-month) {
+  font-size: 0.98rem;
+}
+
+.paginationDock {
+  margin-left: auto;
+}
+
+/* ── Operations table ── */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+/* ── Clickable row ── */
+.clickableRow {
+  cursor: pointer;
+}
+
+/* ── Edit cell ── */
+.editCell {
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+
+.editCell:hover {
+  color: var(--primary);
+}
+
+.deleteCell {
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--transition);
+}
+
+.deleteCell:hover {
+  color: var(--danger);
+}
+
+/* ── File icon ── */
+.fileIcon {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+/* ── Negative amount ── */
+.negative {
+  color: var(--danger);
+}
+
+/* ══════════════════════════════════
+   MercadoPago section
+   ══════════════════════════════════ */
+
+.mpContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── KPI row ── */
+.mpKpiRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.mpKpiCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 18px 16px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mpKpiLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-secondary);
+}
+
+.mpKpiValue {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+}
+
+.mpKpiAprobado {
+  color: var(--success);
+}
+
+.mpKpiPendiente {
+  color: var(--warning);
+}
+
+/* ── Status badges ── */
+.mpBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.mpBadge_approved {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.mpBadge_pending,
+.mpBadge_in_process {
+  background-color: rgba(234, 179, 8, 0.15);
+  color: var(--warning);
+}
+
+.mpBadge_rejected,
+.mpBadge_cancelled,
+.mpBadge_charged_back {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.mpBadge_refunded {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--accent);
+}
+
+/* ── Loading / Error ── */
+.mpLoading {
+  text-align: center;
+  padding: 32px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.mpError {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--danger);
+  border-radius: var(--border-radius);
+  padding: 12px 16px;
+  color: var(--danger);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Detail Modal ── */
+.mpOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.mpModal {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.mpModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.mpModalHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mpModalClose {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color var(--transition);
+}
+
+.mpModalClose:hover {
+  color: var(--text-primary);
+}
+
+.mpModalBody {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mpDetailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+}
+
+.mpDetailRow:last-child {
+  border-bottom: none;
+}
+
+.mpDetailLabel {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  min-width: 130px;
+}
+
+.mpDetailMonto {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--success);
+}
+
+/* ── Cargos section in modal ── */
+.mpDetailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+}
+
+.mpDetailSectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.mpDetailComision {
+  color: var(--danger);
+  font-weight: 600;
+  font-family: var(--font-heading);
+}
+
+.mpDetailNetoRow {
+  border-top: 1px solid var(--card-border);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.mpDetailNeto {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--success);
+}
+
+/* ── Table comision/neto cells ── */
+.mpComisionCell {
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.mpNetoCell {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ── KPI comision/neto ── */
+.mpKpiComision {
+  color: var(--danger) !important;
+}
+
+.mpKpiNeto {
+  color: var(--success) !important;
+}
+
+/* ── MP Link badge / button ── */
+.mpLinkBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  white-space: nowrap;
+}
+
+.mpLinkBtn {
+  padding: 4px 12px;
+  border: 1px solid var(--warning);
+  border-radius: var(--border-radius);
+  background-color: rgba(234, 179, 8, 0.1);
+  color: var(--warning);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.mpLinkBtn:hover {
+  background-color: var(--warning);
+  color: var(--text-inverse);
+}
+
+.mpNoLink {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.mpLinkInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mpUnlinkBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px;
+  transition: color var(--transition);
+}
+
+.mpUnlinkBtn:hover {
+  color: var(--danger);
+}
+
+.mpDetailVentaRow {
+  border-top: 2px solid var(--accent);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+/* ── Linking modal ── */
+.mpLinkPaymentInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mpLinkEmpty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.mpLinkList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.mpLinkItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.mpLinkItem:hover {
+  background-color: var(--accent-bg);
+}
+
+.mpLinkItemMatch {
+  background-color: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.mpLinkItemMatch:hover {
+  background-color: rgba(34, 197, 94, 0.15);
+}
+
+.mpLinkItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mpLinkItemSub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.mpLinkItemMonto {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+}
+.mpLinkItemHora {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.mpLinkSeparator {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-top: 1px solid var(--card-border);
+  margin-top: 4px;
+}
+
+/* ── Tipo pills (cobro/gasto) ── */
+.mpTipoPill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.mpTipoPillCobro {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: var(--success);
+}
+
+.mpTipoPillGasto {
+  background-color: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+}
+
+/* ── Gasto modal extras ── */
+.mpGastoDesc {
+  padding: 8px 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.mpCrearGastoBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border: 1px dashed var(--primary);
+  border-radius: var(--border-radius);
+  background-color: rgba(99, 102, 241, 0.06);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.mpCrearGastoBtn:hover {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-style: solid;
+}
+
+/* ── Nota limitaciones MP ── */
+.mpNota {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--border-radius);
+  background-color: var(--accent-bg);
+  border: 1px solid var(--card-border);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.mpNota i {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--text-muted);
+}
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .formCard {
+    position: static;
+  }
+
+  .mpKpiRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .mpKpiRow {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    width: 100%;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+  }
+}

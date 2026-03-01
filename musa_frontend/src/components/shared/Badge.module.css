@@ -1,0 +1,34 @@
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  border: none;
+  letter-spacing: 0;
+}
+
+.default { background-color: var(--surface-2); color: var(--text-secondary); }
+.success { background-color: var(--success-bg); color: var(--success); }
+.danger { background-color: var(--danger-bg); color: var(--danger); }
+.warning { background-color: var(--warning-bg); color: var(--warning); }
+.info { background-color: var(--info-bg); color: var(--info); }
+.muted { background-color: var(--surface-2); color: var(--text-muted); }
+
+/* Estado OC */
+.borrador { background-color: rgba(99, 102, 241, 0.12); color: #6366f1; }
+.pendiente_aprobacion { background-color: var(--warning-bg); color: var(--warning); }
+.aprobada { background-color: var(--success-bg); color: var(--success); }
+.enviada { background-color: var(--info-bg); color: var(--info); }
+.en_camino { background-color: rgba(0, 199, 190, 0.10); color: #00C7BE; }
+.recibida_parcial { background-color: var(--warning-bg); color: var(--warning); }
+.recibida { background-color: var(--success-bg); color: var(--success); }
+.cerrada { background-color: var(--surface-2); color: var(--text-secondary); }
+.cancelada { background-color: var(--danger-bg); color: var(--danger); }
+
+/* Pago */
+.pendiente { background-color: var(--surface-2); color: var(--text-muted); }
+.parcial { background-color: var(--warning-bg); color: var(--warning); }
+.pagado { background-color: var(--success-bg); color: var(--success); }

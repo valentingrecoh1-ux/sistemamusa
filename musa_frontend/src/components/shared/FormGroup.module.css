@@ -1,0 +1,31 @@
+.group {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 0;
+}
+
+.group input,
+.group textarea,
+.group select {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  font-size: 14px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.group textarea {
+  resize: none;
+  min-height: 80px;
+}

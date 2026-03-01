@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(dir:*)",
+      "Bash(npx vite build:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(npm ls:*)",
+      "Bash(node src/seedPlanes.js:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:www.vinosydiagonales.com.ar)",
+      "WebFetch(domain:infomendoza.info)",
+      "Bash(where:*)",
+      "Bash(ngrok version:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(tasklist:*)",
+      "WebFetch(domain:psp.bind.com.ar)",
+      "WebFetch(domain:sandbox.bind.com.ar)",
+      "Bash(ipconfig)",
+      "Bash(powershell -Command \"Get-Printer | Select-Object Name, DriverName, PortName | Format-Table -AutoSize\")"
+    ]
+  }
+}

@@ -1,0 +1,207 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+}
+
+.previewBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition);
+}
+
+.previewBtn:hover {
+  background: var(--input-bg);
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: var(--border-radius);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.saveBtn:hover { background: var(--primary-dark); }
+.saveBtn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.saveBtnDone {
+  background: var(--success);
+}
+
+.saveBtnDone:hover { background: var(--success); }
+
+/* ── Sections ── */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cardTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.cardTitle i {
+  color: var(--primary-light);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.field input,
+.field textarea {
+  padding: 10px 14px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.toggleRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  user-select: none;
+  padding: 4px 0;
+}
+
+.toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.toggle span { flex: 1; font-weight: 500; }
+
+.toggleTrack {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background-color: var(--input-border);
+  border-radius: 20px;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.toggleTrack::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle input:checked ~ .toggleTrack {
+  background-color: var(--primary);
+}
+
+.toggle input:checked ~ .toggleTrack::after {
+  transform: translateX(16px);
+}
+
+.toggleHint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 46px;
+}
+
+@media (max-width: 640px) {
+  .row { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; }
+}

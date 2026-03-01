@@ -1,0 +1,19 @@
+.empty {
+  text-align: center;
+  padding: 42px 22px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--card-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+  opacity: 0.4;
+  color: var(--text-muted);
+}
+
+.text {
+  font-size: 14px;
+}

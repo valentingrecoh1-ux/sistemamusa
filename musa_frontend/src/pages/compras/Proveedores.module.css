@@ -1,0 +1,269 @@
+/* ── Two-column layout ── */
+.container {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── Form card (left) ── */
+.formCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.formTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inputGroup span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.inputGroup input,
+.inputGroup select,
+.inputGroup textarea {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus,
+.inputGroup textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.inputGroup textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  min-width: 0;
+}
+
+.submitBtn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: background-color var(--transition);
+}
+
+.submitBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.cancelBtn {
+  padding: 10px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cancelBtn:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.btnRow {
+  display: flex;
+  gap: 10px;
+}
+
+/* ── Table side (right) ── */
+.tableSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  padding: 8px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-width: 220px;
+  flex: 1;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.paginationDock {
+  margin-left: auto;
+}
+
+/* ── Table ── */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 12px 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--table-border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 10px 14px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.emptyRow td {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ── Toggle (activo/inactivo) ── */
+.toggleBtn {
+  padding: 4px 12px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  font-family: var(--font-body);
+}
+
+.toggleActive {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
+}
+
+.toggleInactive {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.editBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  transition: color var(--transition);
+  padding: 2px 6px;
+}
+
+.editBtn:hover {
+  color: var(--primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+
+  .formCard {
+    position: static;
+  }
+}

@@ -1,0 +1,413 @@
+.club {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 48px 24px;
+  border-radius: var(--border-radius-lg);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary), var(--accent));
+  color: #fff;
+}
+
+.heroIcon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.heroSub {
+  font-size: 1rem;
+  opacity: 0.85;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ── Planes ── */
+.planesSection {
+  text-align: center;
+}
+
+.planesTitle {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.planesSub {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.planesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── Plan Card ── */
+.planCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  transition: all var(--transition);
+}
+
+.planCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.planDestacado {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.planBadge {
+  position: absolute;
+  top: -12px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 16px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.planNombre {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.planPrecio {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.planPrecioNum {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.planPrecioPeriodo {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.planVinos {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.planDesc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.planBeneficios {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planBeneficios li {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planBeneficios li i {
+  color: var(--success);
+  font-size: 14px;
+}
+
+.planBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--border-radius);
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: auto;
+}
+
+.planBtnDestacado {
+  background: var(--primary);
+  color: #fff;
+}
+
+.planBtnDestacado:hover {
+  background: var(--primary-dark);
+}
+
+.planBtnNormal {
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
+}
+
+.planBtnNormal:hover {
+  background: var(--card-border);
+}
+
+/* ── Como Funciona ── */
+.comoFunciona {
+  text-align: center;
+}
+
+.cfTitle {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+}
+
+.cfGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cfStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.cfNum {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+}
+
+.cfStepTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cfStepDesc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Modal Suscripcion ── */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 32px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.modalPlan {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--input-bg);
+  border-radius: var(--border-radius);
+}
+
+.modalPlanName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modalPlanPrice {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.field input,
+.field textarea {
+  padding: 10px 14px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+}
+
+.submitBtn {
+  padding: 12px;
+  border-radius: var(--border-radius);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.submitBtn:hover {
+  background: var(--primary-dark);
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.successMsg {
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.successIcon {
+  font-size: 3rem;
+  color: var(--success);
+}
+
+.successText {
+  font-size: 1rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.noPlanes {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 32px 16px;
+  }
+  .heroTitle {
+    font-size: 1.5rem;
+  }
+  .planesGrid {
+    grid-template-columns: 1fr;
+  }
+  .cfGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

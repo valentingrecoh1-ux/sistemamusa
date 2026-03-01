@@ -1,0 +1,912 @@
+/* ── Layout ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ═══════════════════════════════
+   Form card
+   ═══════════════════════════════ */
+.formCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--card-shadow);
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.formHeader i {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.cancelEditBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cancelEditBtn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formGroupBtn {
+  display: flex;
+  align-items: flex-end;
+}
+
+.formGroup label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+}
+
+.formGroup input[type="text"],
+.formGroup select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.dateInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.priceInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.priceInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+  white-space: nowrap;
+  width: 100%;
+  justify-content: center;
+}
+
+.saveBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* ═══════════════════════════════
+   Sub-sections (vinos + gastos)
+   ═══════════════════════════════ */
+.subSection {
+  padding: 14px 16px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.subSectionHeader {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subSectionHeader i {
+  color: var(--accent);
+}
+
+/* ── Vino search ── */
+.vinoSearchWrap {
+  position: relative;
+}
+
+.vinoSearchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.vinoSearchInput {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.vinoSearchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.vinoDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.vinoDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background-color var(--transition);
+  border-bottom: 1px solid var(--table-border);
+}
+
+.vinoDropdownItem:last-child {
+  border-bottom: none;
+}
+
+.vinoDropdownItem:hover {
+  background-color: var(--table-row-hover);
+}
+
+.vinoDropdownName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.vinoDropdownDetail {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.vinoDropdownCode {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  letter-spacing: 0.3px;
+}
+
+.vinoDropdownCode i {
+  font-size: 10px;
+  color: var(--accent);
+}
+
+.vinoDropdownPrice {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+
+/* ── Gasto input row ── */
+.gastoInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.gastoConceptoInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.gastoConceptoInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.gastoMontoInput {
+  width: 140px;
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.gastoMontoInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.gastoAddBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--accent);
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--accent);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.gastoAddBtn:hover {
+  background-color: var(--accent);
+  color: var(--text-inverse);
+}
+
+/* ── Link info banner ── */
+.linkInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--border-radius);
+  background-color: var(--info-bg);
+  color: var(--info);
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ── Chip list (vinos/gastos agregados) ── */
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 12px;
+  border-radius: 20px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  font-size: 12px;
+}
+
+.chipName {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chipDetail {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.chipPrice {
+  font-weight: 600;
+  font-family: var(--font-heading);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.chipRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.chipRemove:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.chipTotal {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: right;
+  font-family: var(--font-heading);
+}
+
+/* ═══════════════════════════════
+   Stats bar
+   ═══════════════════════════════ */
+.statsBar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.statItem i {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.statValue {
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.statPositive {
+  color: var(--success) !important;
+}
+
+.statNegative {
+  color: var(--danger) !important;
+}
+
+.statLabel {
+  color: var(--text-muted);
+}
+
+/* ═══════════════════════════════
+   Search bar
+   ═══════════════════════════════ */
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchWrap {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.paginationDock {
+  margin-left: auto;
+}
+
+.paginationBottom {
+  align-self: center;
+}
+
+/* ═══════════════════════════════
+   Table
+   ═══════════════════════════════ */
+.tableWrapper {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+
+.thNombre {
+  min-width: 200px;
+}
+
+.thActions {
+  width: 80px;
+}
+
+.table td {
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background-color var(--transition);
+  white-space: nowrap;
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: var(--table-row-even);
+}
+
+.table tbody tr:nth-child(odd) td {
+  background-color: var(--table-row-odd);
+}
+
+.table tbody tr:hover td {
+  background-color: var(--table-row-hover);
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+/* ── Fecha badge ── */
+.fechaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.fechaBadge i {
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* ── Nombre cell ── */
+.nombreCell {
+  max-width: 300px;
+}
+
+.nombreInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nombreText {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.descripcionText {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Cantidad badge ── */
+.cantidadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* ── Monto cell ── */
+.montoCell {
+  font-weight: 600;
+  font-family: var(--font-heading);
+}
+
+/* ── Profit badge ── */
+.profitBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profitPositive {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.profitNegative {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.profitZero {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: var(--text-muted);
+}
+
+/* ── Action buttons ── */
+.actionsCell {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all var(--transition);
+  color: var(--text-muted);
+}
+
+.actionEditBtn:hover {
+  color: var(--accent);
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.actionDeleteBtn:hover {
+  color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* ═══════════════════════════════
+   Modal
+   ═══════════════════════════════ */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+.modalBody {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.2s ease;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.modalInfo {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalTitle i {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.modalMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.modalMeta i {
+  margin-right: 4px;
+  color: var(--accent);
+}
+
+.modalDescripcion {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.modalDescripcion strong {
+  color: var(--text-primary);
+}
+
+.modalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modalSectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modalSectionTitle i {
+  color: var(--accent);
+}
+
+.modalList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+}
+
+.modalListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+.modalListDetail {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.modalListTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--card-border);
+}
+
+/* ── Modal resumen final ── */
+.modalResumen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius);
+}
+
+.modalResumenRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.modalResumenFinal {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--card-border);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .formRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}

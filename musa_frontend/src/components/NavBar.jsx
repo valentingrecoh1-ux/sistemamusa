@@ -1,8 +1,7 @@
 import React from "react";
+import logo from "../assets/musa.jpg";
 
-import logo from "../assets/musa.jpg"; // Ajusta la ruta según la ubicación de tu archivo
-
-const NavBar = () => {
+const NavBar = ({ usuario, onLogout }) => {
   return (
     <nav className="navbar-mio">
       <div className="navbar-left">
@@ -41,7 +40,16 @@ const NavBar = () => {
           <li>
             <a href="/flujos">FLUJOS</a>
           </li>
+          <li>
+            <a href="/compras">COMPRAS</a>
+          </li>
         </ul>
+        {usuario && (
+          <div className="navbar-user-section">
+            <span className="navbar-user">{usuario.nombre} ({usuario.rol})</span>
+            <button className="navbar-logout" onClick={onLogout}>SALIR</button>
+          </div>
+        )}
       </div>
     </nav>
   );

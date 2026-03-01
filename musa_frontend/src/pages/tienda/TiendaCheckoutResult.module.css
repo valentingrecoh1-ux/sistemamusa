@@ -1,0 +1,142 @@
+.result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 48px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.iconCircle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.success {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.pending {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.error {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.orderNum {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 24px;
+  background: var(--input-bg);
+  border-radius: var(--border-radius);
+}
+
+.orderLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.orderValue {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary-light);
+}
+
+.orderTotal {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.waBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--border-radius);
+  background: #25d366;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: filter var(--transition);
+}
+
+.waBtn:hover {
+  filter: brightness(1.1);
+}
+
+.homeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+.homeBtn:hover {
+  background: var(--input-bg);
+}
+
+.loading {
+  text-align: center;
+  padding: 80px;
+  color: var(--text-muted);
+  font-size: 15px;
+}

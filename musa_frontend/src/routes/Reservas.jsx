@@ -554,8 +554,7 @@ function Reservas() {
                   </select>
                 </div>
                 {turnoData.formaDeCobro === "EFECTIVO" && (
-                  <div className="checkbox-turno">
-                    <span>FACTURA</span>
+                  <label className="toggle-switch-label">
                     <input
                       onChange={(e) =>
                         setTurnoData((prev) => ({
@@ -566,7 +565,9 @@ function Reservas() {
                       checked={turnoData.facturado}
                       type="checkbox"
                     />
-                  </div>
+                    <span>Facturar</span>
+                    <div className="toggle-switch-track" />
+                  </label>
                 )}
                 <div>
                   <NumericFormat

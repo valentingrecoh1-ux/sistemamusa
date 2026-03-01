@@ -118,10 +118,10 @@ function Caja({ usuario }) {
   }, []);
 
   // ── Operaciones fetchers ──
-  const fetchTotales = (f) => socket.emit("request-totales", f || fecha || null);
+  const fetchTotales = () => socket.emit("request-totales", null);
   const fetchNombres = () => socket.emit("request-nombres");
-  const fetchOperaciones = (fecha, search, page) =>
-    socket.emit("request-operaciones", { fecha, search, page });
+  const fetchOperaciones = (_fecha, search, page) =>
+    socket.emit("request-operaciones", { fecha: null, search, page });
 
   // ── MercadoPago fetchers ──
   const fetchMpPagos = (fecha, page, search, silent) => {
@@ -721,39 +721,6 @@ function Caja({ usuario }) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <div className={s.dateNav}>
-                <button
-                  type="button"
-                  className={`${s.dateShiftBtn} ${s.dateShiftPrev}`}
-                  onClick={() => shiftDate(-1)}
-                  aria-label="Dia anterior"
-                >
-                  <i className="bi bi-chevron-left"></i>
-                </button>
-                <DatePicker
-                  className={s.dateInput}
-                  wrapperClassName={s.datePickerWrap}
-                  popperClassName={s.datePopper}
-                  selected={fechaSeleccionada}
-                  locale={es}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Todas las fechas"
-                  isClearable
-                  clearButtonTitle="Quitar fecha"
-                  onChange={handleDateChange}
-                  popperPlacement="bottom-start"
-                  showPopperArrow={false}
-                  popperProps={{ strategy: "fixed", placement: "bottom-start" }}
-                />
-                <button
-                  type="button"
-                  className={`${s.dateShiftBtn} ${s.dateShiftNext}`}
-                  onClick={() => shiftDate(1)}
-                  aria-label="Dia siguiente"
-                >
-                  <i className="bi bi-chevron-right"></i>
-                </button>
-              </div>
               <Pagination
                 className={s.paginationDock}
                 page={page}

@@ -223,30 +223,35 @@ function Ventas({ usuario }) {
     setOpenModal(true);
   };
 
-  const openFacturaPdf = async (venta) => {
+  const openPdfModal = async (url, label) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        alert(`No se pudo cargar ${label}: ${txt || res.status}`);
+        return;
+      }
+      const blob = await res.blob();
+      setPreviewPdfUrl(URL.createObjectURL(blob));
+    } catch (err) {
+      alert(`Error al cargar ${label}: ${err.message}`);
+    }
+  };
+
+  const openFacturaPdf = (venta) => {
     if (!venta?.stringNumeroFactura) {
       alert("La venta no tiene factura para visualizar.");
       return;
     }
-    try {
-      const res = await fetch(`${IP()}/api/factura-pdf/${venta._id}`);
-      if (!res.ok) { alert("No se pudo cargar la factura"); return; }
-      const blob = await res.blob();
-      setPreviewPdfUrl(URL.createObjectURL(blob));
-    } catch { alert("Error al cargar la factura"); }
+    openPdfModal(`${IP()}/api/factura-pdf/${venta._id}`, "la factura");
   };
 
-  const openNotaCreditoPdf = async (venta) => {
+  const openNotaCreditoPdf = (venta) => {
     if (!venta?.stringNumeroNotaCredito) {
       alert("No hay archivo de nota de credito disponible para esta venta.");
       return;
     }
-    try {
-      const res = await fetch(`${IP()}/api/nota-credito-pdf/${venta._id}`);
-      if (!res.ok) { alert("No se pudo cargar la nota de credito"); return; }
-      const blob = await res.blob();
-      setPreviewPdfUrl(URL.createObjectURL(blob));
-    } catch { alert("Error al cargar la nota de credito"); }
+    openPdfModal(`${IP()}/api/nota-credito-pdf/${venta._id}`, "la nota de credito");
   };
 
   const changeFiltroPago = (value) => {

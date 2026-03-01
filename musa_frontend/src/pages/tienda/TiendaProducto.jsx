@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchProducto, fetchResenas, crearResena, fetchAnalisis } from '../../lib/tiendaApi';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';
-import { IP } from '../../main';
+import { IP, fotoSrc } from '../../main';
 import s from './TiendaProducto.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -116,7 +116,7 @@ export default function TiendaProducto() {
       <div className={s.product}>
         <div className={s.imageCol}>
           {(p.foto || p.fotoIA) ? (
-            <img src={`${IP()}/${p.usarFotoIA && p.fotoIA ? p.fotoIA : p.foto}`} alt={p.nombre} className={s.image} />
+            <img src={fotoSrc(p.usarFotoIA && p.fotoIA ? p.fotoIA : p.foto)} alt={p.nombre} className={s.image} />
           ) : (
             <div className={s.noImage}><i className="bi bi-cup-straw" /></div>
           )}

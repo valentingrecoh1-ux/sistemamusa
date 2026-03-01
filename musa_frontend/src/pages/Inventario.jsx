@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
 import Pagination from "../components/shared/Pagination";
 
-import { IP, socket } from "../main";
+import { IP, socket, fotoSrc } from "../main";
 import { tienePermiso } from "../lib/permisos";
 import s from "./Inventario.module.css";
 
@@ -717,7 +717,7 @@ E
                   {(prod.foto || prod.fotoIA) && !brokenImgs.has(prod._id) ? (
                     <img
                       className={`${s.thumbnail} ${prod.usarFotoIA && prod.fotoIA ? s.thumbnailIA : ''}`}
-                      src={`${IP()}/${prod.usarFotoIA && prod.fotoIA ? prod.fotoIA : prod.foto}`}
+                      src={fotoSrc(prod.usarFotoIA && prod.fotoIA ? prod.fotoIA : prod.foto)}
                       alt=""
                       loading="lazy"
                       onError={() => setBrokenImgs((prev) => new Set(prev).add(prod._id))}

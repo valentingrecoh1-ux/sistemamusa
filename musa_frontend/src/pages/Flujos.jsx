@@ -215,7 +215,12 @@ function Flujos() {
                   className={`${s.clickableRow} ${f.enviado ? s.sentRow : ""}`}
                   onClick={() => {
                     if (f.filePath) {
-                      window.open(`${IP()}/${f.filePath}`);
+                      if (f.filePath.startsWith('data:')) {
+                        const w = window.open();
+                        if (w) { w.document.write(`<iframe src="${f.filePath}" style="width:100%;height:100%;border:none"></iframe>`); }
+                      } else {
+                        window.open(`${IP()}/${f.filePath}`);
+                      }
                     }
                   }}
                   key={index}
@@ -245,7 +250,7 @@ function Flujos() {
                   </td>
                   <td className={s.actionCell}>
                     {f.filePath ? (
-                      f.filePath.endsWith(".pdf") ? (
+                      (f.filePath.includes("pdf") || f.filePath.includes("application/pdf")) ? (
                         <i className="bi bi-filetype-pdf"></i>
                       ) : (
                         <i className="bi bi-file-earmark-image"></i>

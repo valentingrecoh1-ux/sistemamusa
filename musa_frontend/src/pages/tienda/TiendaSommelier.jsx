@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { IP } from '../../main';
+import { IP, fotoSrc } from '../../main';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';
 import s from './TiendaSommelier.module.css';
@@ -132,7 +132,7 @@ export default function TiendaSommelier() {
                     <div key={p._id} className={s.miniCard}>
                       <Link to={`/tienda/producto/${p._id}`} className={s.miniCardLink}>
                         {p.foto ? (
-                          <img src={`${IP()}/${p.foto}`} alt={p.nombre} className={s.miniCardImg} />
+                          <img src={fotoSrc(p.foto)} alt={p.nombre} className={s.miniCardImg} />
                         ) : (
                           <div className={s.miniCardNoImg}><i className="bi bi-cup-straw" /></div>
                         )}

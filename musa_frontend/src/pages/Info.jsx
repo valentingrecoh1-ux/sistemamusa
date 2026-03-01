@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { socket, IP } from "../main";
+import { socket, IP, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
 import Pagination from "../components/shared/Pagination";
 import s from "./Info.module.css";
@@ -386,7 +386,7 @@ function Info() {
                   {prod.foto && !brokenImgs.has(prod._id) ? (
                     <img
                       className={s.thumbnail}
-                      src={`${IP()}/${prod.foto}`}
+                      src={fotoSrc(prod.foto)}
                       alt=""
                       loading="lazy"
                       onError={() => setBrokenImgs((prev) => new Set(prev).add(prod._id))}
@@ -502,7 +502,7 @@ function Info() {
             <div className={s.modalLeft}>
               <div className={s.modalImage}>
                 {producto.foto ? (
-                  <img src={`${IP()}/${producto.usarFotoIA && producto.fotoIA ? producto.fotoIA : producto.foto}`} alt={producto.nombre} />
+                  <img src={fotoSrc(producto.usarFotoIA && producto.fotoIA ? producto.fotoIA : producto.foto)} alt={producto.nombre} />
                 ) : (
                   <div className={s.modalNoImage}>
                     <i className="bi bi-image"></i>

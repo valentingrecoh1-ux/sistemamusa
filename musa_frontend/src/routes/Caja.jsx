@@ -180,7 +180,7 @@ function Caja() {
   const editar = async (op) => {
     try {
       const response = await fetch(
-        "http://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires"
+        "https://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires"
       );
       if (!response.ok) {
         throw new Error("Fallo la API, usando la hora local");

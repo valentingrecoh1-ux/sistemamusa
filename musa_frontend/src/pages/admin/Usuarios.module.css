@@ -239,6 +239,36 @@
   color: var(--primary);
 }
 
+.deleteBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  transition: color var(--transition);
+  padding: 2px 6px;
+}
+
+.deleteBtn:hover {
+  color: var(--danger);
+}
+
+.deleteConfirmBtn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: var(--danger);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.deleteConfirmBtn:hover {
+  opacity: 0.9;
+}
+
 .actions {
   display: flex;
   gap: 4px;

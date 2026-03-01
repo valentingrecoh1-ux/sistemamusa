@@ -44,8 +44,6 @@ const afipService = new AfipService({ CUIT: 20418588897 });
 
 const PDFDocument = require("pdfkit");
 const qr = require("qr-image");
-const { print } = require("pdf-to-printer");
-
 // Fallback users: solo se usan si FALLBACK_AUTH=1 (desarrollo local)
 const FALLBACK_USERS = process.env.FALLBACK_AUTH === "1" ? [
   { nombre: "Administrador", username: "admin", password: "admin123", rol: "admin" },
@@ -584,33 +582,29 @@ app.post(
           .format("YYYY-MM-DD");
       }
 
-      // Si estamos editando (operacionData._id existe) y no hay un archivo nuevo, conservar el filePath existente
+      // Convertir comprobante a base64 para persistencia en MongoDB
       if (operacionData._id && !file) {
         const existingOperacion = await Flujo.findById(operacionData._id);
         if (existingOperacion) {
-          operacionData.filePath = existingOperacion.filePath; // Conservar el filePath existente
+          operacionData.filePath = existingOperacion.filePath;
         }
       } else if (file) {
-        // Si hay un archivo nuevo, actualizar filePath con el nuevo archivo
-        operacionData.filePath = file.path;
+        const fileBuffer = fs.readFileSync(file.path);
+        const mime = file.mimetype || "application/octet-stream";
+        operacionData.filePath = `data:${mime};base64,${fileBuffer.toString("base64")}`;
+        fs.unlink(file.path, () => {});
       }
 
-      // Crear o actualizar la operación
       if (operacionData._id) {
         await Flujo.findByIdAndUpdate(operacionData._id, operacionData);
       } else {
         await Flujo.create(operacionData);
       }
-
-      // Emitir cambios a todos los clientes conectados
       io.emit("cambios");
-
       res.json({ status: "ok", message: "Operación guardada correctamente" });
     } catch (error) {
       console.error("Error al guardar la operación:", error);
-      res
-        .status(500)
-        .json({ status: "error", message: "Error al guardar la operación" });
+      res.status(500).json({ status: "error", message: "Error al guardar la operación" });
     }
   }
 );
@@ -623,40 +617,35 @@ app.post(
     const file = req.file;
 
     try {
-      // Agregar la fecha actual a la operación si es una nueva (sin _id)
       if (!operacionData._id) {
         operacionData.fecha = moment(new Date())
           .tz("America/Argentina/Buenos_Aires")
           .format("YYYY-MM-DD");
       }
 
-      // Si estamos editando (operacionData._id existe) y no hay un archivo nuevo, conservar el filePath existente
+      // Convertir comprobante a base64 para persistencia en MongoDB
       if (operacionData._id && !file) {
         const existingOperacion = await Operacion.findById(operacionData._id);
         if (existingOperacion) {
-          operacionData.filePath = existingOperacion.filePath; // Conservar el filePath existente
+          operacionData.filePath = existingOperacion.filePath;
         }
       } else if (file) {
-        // Si hay un archivo nuevo, actualizar filePath con el nuevo archivo
-        operacionData.filePath = file.path;
+        const fileBuffer = fs.readFileSync(file.path);
+        const mime = file.mimetype || "application/octet-stream";
+        operacionData.filePath = `data:${mime};base64,${fileBuffer.toString("base64")}`;
+        fs.unlink(file.path, () => {});
       }
 
-      // Crear o actualizar la operación
       if (operacionData._id) {
         await Operacion.findByIdAndUpdate(operacionData._id, operacionData);
       } else {
         await Operacion.create(operacionData);
       }
-
-      // Emitir cambios a todos los clientes conectados
       io.emit("cambios");
-
       res.json({ status: "ok", message: "Operación guardada correctamente" });
     } catch (error) {
       console.error("Error al guardar la operación:", error);
-      res
-        .status(500)
-        .json({ status: "error", message: "Error al guardar la operación" });
+      res.status(500).json({ status: "error", message: "Error al guardar la operación" });
     }
   }
 );
@@ -665,6 +654,15 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
   const formData = req.body;
   const file = req.file;
   try {
+    // Convertir foto a base64 para persistencia en MongoDB (Render es efimero)
+    let fotoBase64 = null;
+    if (file) {
+      const fileBuffer = fs.readFileSync(file.path);
+      const mime = file.mimetype || "image/jpeg";
+      fotoBase64 = `data:${mime};base64,${fileBuffer.toString("base64")}`;
+      fs.unlink(file.path, () => {});
+    }
+
     if (formData._id) {
       // Buscar el producto existente
       const existingProduct = await Product.findById(formData._id);
@@ -692,7 +690,7 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
         posicion: formData.posicion,
         descripcion: formData.descripcion,
         tipo: formData.tipo || "vino",
-        foto: file ? file.path : existingProduct.foto,
+        foto: fotoBase64 || existingProduct.foto,
         proveedorId: formData.proveedorId || existingProduct.proveedorId,
         proveedorNombre: formData.proveedorNombre || existingProduct.proveedorNombre,
         stockMinimo: formData.stockMinimo != null ? formData.stockMinimo : existingProduct.stockMinimo,
@@ -719,7 +717,7 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
         posicion: formData.posicion,
         descripcion: formData.descripcion,
         tipo: formData.tipo || "vino",
-        foto: file ? file.path : "",
+        foto: fotoBase64 || "",
         proveedorId: formData.proveedorId || null,
         proveedorNombre: formData.proveedorNombre || "",
         stockMinimo: formData.stockMinimo || 3,
@@ -999,11 +997,18 @@ app.post("/api/oc/:id/factura", uploadFacturaOC.single("archivo"), async (req, r
   try {
     const orden = await OrdenCompra.findById(req.params.id);
     if (!orden) return res.status(404).json({ error: "OC no encontrada" });
+    let archivo = "";
+    if (req.file) {
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const mime = req.file.mimetype || "application/pdf";
+      archivo = `data:${mime};base64,${fileBuffer.toString("base64")}`;
+      fs.unlink(req.file.path, () => {});
+    }
     const factura = {
       numero: req.body.tipo || req.body.numero || "",
       monto: Number(req.body.monto) || 0,
       fecha: req.body.fecha || new Date().toISOString().slice(0, 10),
-      archivo: req.file ? `/uploads/facturas_oc/${req.file.filename}` : "",
+      archivo,
     };
     orden.facturas.push(factura);
     orden.timeline.push({ accion: "Factura adjuntada", usuario: "Sistema", fecha: new Date() });
@@ -1149,6 +1154,7 @@ io.on("connection", (socket) => {
 
         const [productos, totalProductos, stockTotal] = await Promise.all([
           Product.find(query)
+            .select("-foto -fotoIA -descripcionGenerada")
             .sort(sortOption)
             .skip((page - 1) * pageSize)
             .limit(pageSize),
@@ -1372,16 +1378,26 @@ Origen: ${producto.origen || ""}`;
         return;
       }
 
-      const imgPath = path.resolve(producto.foto);
-      if (!fs.existsSync(imgPath)) {
-        if (cb) cb({ error: "No se encontro el archivo de foto" });
-        return;
+      // Soportar tanto base64 data URI como rutas de archivo legacy
+      let base64Image, mimeType;
+      if (producto.foto.startsWith("data:")) {
+        const match = producto.foto.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (!match) {
+          if (cb) cb({ error: "Formato de foto invalido" });
+          return;
+        }
+        mimeType = match[1];
+        base64Image = match[2];
+      } else {
+        const imgPath = path.resolve(producto.foto);
+        if (!fs.existsSync(imgPath)) {
+          if (cb) cb({ error: "No se encontro el archivo de foto" });
+          return;
+        }
+        const imgBuffer = fs.readFileSync(imgPath);
+        base64Image = imgBuffer.toString("base64");
+        mimeType = imgPath.endsWith(".png") ? "image/png" : "image/jpeg";
       }
-
-      // Usar GPT-4o con vision + image_generation tool via Responses API
-      const imgBuffer = fs.readFileSync(imgPath);
-      const base64Image = imgBuffer.toString("base64");
-      const mimeType = imgPath.endsWith(".png") ? "image/png" : "image/jpeg";
 
       const imgRes = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
@@ -1416,15 +1432,10 @@ Origen: ${producto.origen || ""}`;
       // Buscar la imagen generada en el output
       const imageOutput = imgData.output?.find((o) => o.type === "image_generation_call");
       if (imageOutput?.result) {
-        const filename = `foto_ia_${Date.now()}.png`;
-        const dir = path.join("uploads", "fotos_ia");
-        fs.mkdirSync(dir, { recursive: true });
-        const filePath = path.join(dir, filename);
-        fs.writeFileSync(filePath, Buffer.from(imageOutput.result, "base64"));
-
-        await Product.findByIdAndUpdate(id, { fotoIA: filePath });
+        const fotoIA = `data:image/png;base64,${imageOutput.result}`;
+        await Product.findByIdAndUpdate(id, { fotoIA });
         io.emit("cambios");
-        if (cb) cb({ ok: true, fotoIA: filePath });
+        if (cb) cb({ ok: true, fotoIA });
       } else {
         console.error("Responses API no retorno imagen:", JSON.stringify(imgData).substring(0, 500));
         if (cb) cb({ error: "No se pudo generar la imagen" });
@@ -1464,7 +1475,7 @@ Origen: ${producto.origen || ""}`;
   });
   socket.on("productos-carrito", async () => {
     try {
-      const productosCarrito = await Product.find({ carrito: true });
+      const productosCarrito = await Product.find({ carrito: true }).select("-foto -fotoIA -descripcionGenerada");
       socket.emit("productos-carrito", productosCarrito);
     } catch (err) { console.error("Error productos-carrito:", err); }
   });
@@ -1484,8 +1495,15 @@ Origen: ${producto.origen || ""}`;
   });
   socket.on("finalizar-compra", async (datosCompra) => {
     try {
-      // Obtenemos todos los productos que están en el carrito
-      const productosCarrito = await Product.find({ carrito: true });
+      // Obtenemos todos los productos que están en el carrito (sin fotos para no guardarlas en la venta)
+      const productosCarritoRaw = await Product.find({ carrito: true });
+      const productosCarrito = productosCarritoRaw.map(p => {
+        const obj = p.toObject();
+        delete obj.foto;
+        delete obj.fotoIA;
+        delete obj.descripcionGenerada;
+        return obj;
+      });
 
       // Calculamos el total de la venta
       let totalVenta = 0;
@@ -1854,45 +1872,46 @@ Origen: ${producto.origen || ""}`;
   socket.on("request-totales", async (fecha) => {
     try {
       const filtroFecha = fecha ? { fecha } : {};
-      const [totalEfectivoResult, totalDigitalResult, totalMixtoResult] = await Promise.all([
-        Venta.aggregate([
-          { $match: { ...filtroFecha, formaPago: "EFECTIVO", notaCredito: { $ne: true } } },
-          { $group: { _id: null, total: { $sum: "$monto" } } },
-        ]),
-        Venta.aggregate([
-          { $match: { ...filtroFecha, formaPago: "DIGITAL", notaCredito: { $ne: true } } },
-          { $group: { _id: null, total: { $sum: "$monto" } } },
-        ]),
-        Venta.aggregate([
-          { $match: { ...filtroFecha, formaPago: "MIXTO", notaCredito: { $ne: true } } },
-          { $group: { _id: null, totalEfectivoMixto: { $sum: "$montoEfectivo" }, totalDigitalMixto: { $sum: "$montoDigital" } } },
-        ]),
+      // Una sola query con $group para todas las formas de pago
+      const ventaTotales = await Venta.aggregate([
+        { $match: { ...filtroFecha, notaCredito: { $ne: true } } },
+        { $group: {
+          _id: null,
+          efectivo: { $sum: { $cond: [{ $eq: ["$formaPago", "EFECTIVO"] }, "$monto", 0] } },
+          digital: { $sum: { $cond: [{ $eq: ["$formaPago", "DIGITAL"] }, "$monto", 0] } },
+          mixtoEfectivo: { $sum: { $cond: [{ $eq: ["$formaPago", "MIXTO"] }, { $ifNull: ["$montoEfectivo", 0] }, 0] } },
+          mixtoDigital: { $sum: { $cond: [{ $eq: ["$formaPago", "MIXTO"] }, { $ifNull: ["$montoDigital", 0] }, 0] } },
+        }},
       ]);
 
-      let efectivo = totalEfectivoResult.length > 0 ? totalEfectivoResult[0].total : 0;
-      let digital = totalDigitalResult.length > 0 ? totalDigitalResult[0].total : 0;
-      efectivo += totalMixtoResult.length > 0 ? totalMixtoResult[0].totalEfectivoMixto : 0;
-      digital += totalMixtoResult.length > 0 ? totalMixtoResult[0].totalDigitalMixto : 0;
+      let efectivo = 0, digital = 0;
+      if (ventaTotales.length > 0) {
+        efectivo = ventaTotales[0].efectivo + ventaTotales[0].mixtoEfectivo;
+        digital = ventaTotales[0].digital + ventaTotales[0].mixtoDigital;
+      }
 
-      const operaciones = await Operacion.find(filtroFecha).lean();
-      operaciones.forEach((operacion) => {
-        if (operacion.formaPago === "EFECTIVO") {
-          efectivo += operacion.monto;
-        } else if (operacion.formaPago === "DIGITAL") {
-          digital += operacion.monto;
-        } else if (operacion.formaPago === "MIXTO") {
-          efectivo += operacion.montoEfectivo || 0;
-          digital += operacion.montoDigital || 0;
-        }
-      });
+      // Agregar totales de operaciones via aggregate (no cargar todo en memoria)
+      const opTotales = await Operacion.aggregate([
+        { $match: filtroFecha },
+        { $group: {
+          _id: null,
+          efectivo: { $sum: { $cond: [{ $eq: ["$formaPago", "EFECTIVO"] }, "$monto", 0] } },
+          digital: { $sum: { $cond: [{ $eq: ["$formaPago", "DIGITAL"] }, "$monto", 0] } },
+          mixtoEfectivo: { $sum: { $cond: [{ $eq: ["$formaPago", "MIXTO"] }, { $ifNull: ["$montoEfectivo", 0] }, 0] } },
+          mixtoDigital: { $sum: { $cond: [{ $eq: ["$formaPago", "MIXTO"] }, { $ifNull: ["$montoDigital", 0] }, 0] } },
+        }},
+      ]);
+      if (opTotales.length > 0) {
+        efectivo += opTotales[0].efectivo + opTotales[0].mixtoEfectivo;
+        digital += opTotales[0].digital + opTotales[0].mixtoDigital;
+      }
 
       socket.emit("response-totales", { efectivo, digital });
     } catch (err) { console.error("Error request-totales:", err); }
   });
   socket.on("request-nombres", async () => {
     try {
-      const ops = await Operacion.find({}, { nombre: 1 }).lean();
-      const nombres = [...new Set(ops.map((o) => o.nombre))];
+      const nombres = await Operacion.distinct("nombre");
       socket.emit("response-nombres", nombres);
     } catch (err) { console.error("Error request-nombres:", err); }
   });
@@ -3141,7 +3160,7 @@ Origen: ${producto.origen || ""}`;
           { nombre: searchRegex },
           { bodega: searchRegex },
         ],
-      }).limit(10);
+      }).select("-foto -fotoIA -descripcionGenerada").limit(10);
       socket.emit("response-buscar-producto-degustacion", productos);
     } catch (err) {
       console.error("Error buscar-producto-degustacion:", err);
@@ -3891,7 +3910,7 @@ Reglas:
       const searchRegex = { $regex: search, $options: "i" };
       const productos = await Product.find({
         $or: [{ codigo: searchRegex }, { nombre: searchRegex }, { bodega: searchRegex }],
-      }).limit(10);
+      }).select("-foto -fotoIA -descripcionGenerada").limit(10);
       socket.emit("response-buscar-producto-evento", productos);
     } catch (err) {
       console.error("Error buscar-producto-evento:", err);
@@ -4016,7 +4035,7 @@ Reglas:
       const pct = Number(porcentaje);
       if (!pct || !productoIds?.length) return;
       const factor = 1 + pct / 100;
-      const productos = await Product.find({ _id: { $in: productoIds } });
+      const productos = await Product.find({ _id: { $in: productoIds } }).select("venta costo historialPrecios");
       const ops = [];
       for (const prod of productos) {
         const update = {};
@@ -4567,9 +4586,12 @@ Reglas:
     }
   });
 
-  socket.on("guardar-usuario", async (data) => {
+  socket.on("guardar-usuario", async (data, cb) => {
     try {
-      if (!requireAdmin(socket)) return;
+      if (!requireAdmin(socket)) {
+        if (cb) cb({ error: "No autorizado" });
+        return;
+      }
       if (data._id) {
         const { _id, password, ...fields } = data;
         if (password && password.trim()) {
@@ -4582,8 +4604,29 @@ Reglas:
         await Usuario.create({ ...data, password: hashed });
       }
       io.emit("cambios");
+      if (cb) cb({ ok: true });
     } catch (err) {
       console.error("Error guardar-usuario:", err);
+      if (cb) cb({ error: err.message });
+    }
+  });
+
+  socket.on("eliminar-usuario", async (id, cb) => {
+    try {
+      if (!requireAdmin(socket)) {
+        if (cb) cb({ error: "No autorizado" });
+        return;
+      }
+      if (socket.usuario._id.toString() === id) {
+        if (cb) cb({ error: "No podes eliminarte a vos mismo" });
+        return;
+      }
+      await Usuario.findByIdAndDelete(id);
+      io.emit("cambios");
+      if (cb) cb({ ok: true });
+    } catch (err) {
+      console.error("Error eliminar-usuario:", err);
+      if (cb) cb({ error: err.message });
     }
   });
 

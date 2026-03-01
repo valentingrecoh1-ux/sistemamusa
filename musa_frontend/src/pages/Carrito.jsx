@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { IP, socket } from "../main";
+import { IP, socket, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
 import s from "./Carrito.module.css";
 
@@ -380,7 +380,7 @@ const ProductoItem = ({
 }) => (
   <div className={s.productoCard}>
     <div className={s.productoImagen}>
-      <img src={`${IP()}/${producto.foto}`} alt={producto.nombre} />
+      <img src={fotoSrc(producto.foto)} alt={producto.nombre} />
     </div>
     <div className={s.productoDetalle}>
       <div className={s.precioSection}>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { IP } from '../../main';
+import { IP, fotoSrc } from '../../main';
 import s from './TiendaCarrito.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -29,7 +29,7 @@ export default function TiendaCarrito() {
             <div key={item.productoId} className={s.item}>
               <div className={s.itemImage}>
                 {item.foto ? (
-                  <img src={`${IP()}/${item.foto}`} alt={item.nombre} />
+                  <img src={fotoSrc(item.foto)} alt={item.nombre} />
                 ) : (
                   <i className="bi bi-cup-straw" />
                 )}

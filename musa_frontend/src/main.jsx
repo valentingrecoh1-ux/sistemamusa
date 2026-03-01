@@ -30,6 +30,14 @@ let ip_variable = getBackendCandidates()[0];
 
 export const IP = () => ip_variable;
 
+// Helper: resuelve src de foto (base64 o ruta relativa)
+export const fotoSrc = (foto) => {
+  if (!foto) return '';
+  if (foto.startsWith('data:') || foto.startsWith('http')) return foto;
+  const clean = foto.startsWith('/') ? foto : `/${foto}`;
+  return `${ip_variable}${clean}`;
+};
+
 export let socket;
 
 const probeSocketServer = async (baseUrl) => {

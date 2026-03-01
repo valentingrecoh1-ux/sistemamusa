@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
 
-import { IP, socket } from "../main";
+import { IP, socket, fotoSrc } from "../main";
 
 function Inventario() {
   const [formData, setFormData] = useState({
@@ -480,7 +480,7 @@ E
                   </td>
                   <td>{producto.cantidad}</td>
                   <td>
-                    <img width="40px" src={`${IP()}/${producto.foto}`} alt="" />
+                    <img width="40px" src={fotoSrc(producto.foto)} alt="" />
                   </td>
                   <td
                     onClick={() => imprimir(producto.codigo)}

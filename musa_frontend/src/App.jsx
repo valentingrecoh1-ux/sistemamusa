@@ -177,8 +177,17 @@ function App() {
       resolveFirstRender();
     };
 
+    // Re-autenticar al reconectarse (servidor crea nuevo socket sin usuario)
+    const handleReconnect = () => {
+      const saved = localStorage.getItem('auth');
+      if (saved) {
+        try { requestInicio(JSON.parse(saved)); } catch {}
+      }
+    };
+
     socket.on('response-inicio', handleResponseInicio);
     socket.on('connect_error', handleConnectError);
+    socket.on('connect', handleReconnect);
 
     renderTimeout = setTimeout(() => {
       setLoginError('La validacion de inicio demoro demasiado. Intenta ingresar de nuevo.');
@@ -203,6 +212,7 @@ function App() {
       if (renderTimeout) clearTimeout(renderTimeout);
       socket.off('response-inicio', handleResponseInicio);
       socket.off('connect_error', handleConnectError);
+      socket.off('connect', handleReconnect);
     };
   }, []);
 

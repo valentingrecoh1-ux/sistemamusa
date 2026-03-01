@@ -23,12 +23,12 @@ export default function Usuarios({ usuario }) {
   const [nuevaClave, setNuevaClave] = useState('');
   const [permisosModal, setPermisosModal] = useState(null);
   const [permisosTemp, setPermisosTemp] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  if (usuario?.rol !== 'admin') {
-    return <div style={{ padding: '40px', color: 'var(--text-muted)', textAlign: 'center' }}>Acceso restringido.</div>;
-  }
+  const isAdmin = usuario?.rol === 'admin';
 
   useEffect(() => {
+    if (!isAdmin) return;
     const onUsuarios = (data) => {
       setUsuarios(data.usuarios || []);
       if (data.totalPages) setTotalPages(data.totalPages);
@@ -46,8 +46,13 @@ export default function Usuarios({ usuario }) {
   }, []);
 
   useEffect(() => {
+    if (!isAdmin) return;
     socket.emit('request-usuarios', { page, search });
   }, [page, search]);
+
+  if (!isAdmin) {
+    return <div style={{ padding: '40px', color: 'var(--text-muted)', textAlign: 'center' }}>Acceso restringido.</div>;
+  }
 
   const handleChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -84,6 +89,13 @@ export default function Usuarios({ usuario }) {
   const toggleActivo = (u) => {
     if (u._id === usuario?._id) return;
     socket.emit('toggle-usuario-activo', u._id);
+  };
+
+  const handleDelete = (u) => {
+    socket.emit('eliminar-usuario', u._id, (res) => {
+      if (res?.error) alert(res.error);
+    });
+    setDeleteConfirm(null);
   };
 
   const handleCambiarClave = () => {
@@ -251,6 +263,11 @@ export default function Usuarios({ usuario }) {
                       <button className={s.editBtn} onClick={() => { setClaveModal(u); setNuevaClave(''); }} title="Cambiar contraseña">
                         <i className="bi bi-key" />
                       </button>
+                      {u._id !== usuario?._id && (
+                        <button className={s.deleteBtn} onClick={() => setDeleteConfirm(u)} title="Eliminar">
+                          <i className="bi bi-trash" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -270,6 +287,22 @@ export default function Usuarios({ usuario }) {
           <div className={s.btnRow} style={{ padding: '14px 20px 0' }}>
             <button className={s.submitBtn} onClick={handleCambiarClave}>Guardar</button>
             <button className={s.cancelBtn} onClick={() => setClaveModal(null)}>Cancelar</button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <Modal title="Confirmar eliminacion" onClose={() => setDeleteConfirm(null)}>
+          <div style={{ padding: '0 20px', textAlign: 'center' }}>
+            <p style={{ margin: '0 0 8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+              Estas seguro de eliminar a <strong>{deleteConfirm.nombre}</strong> ({deleteConfirm.username})?
+            </p>
+            <p style={{ margin: 0, fontSize: '12px', color: 'var(--danger)' }}>Esta accion no se puede deshacer.</p>
+          </div>
+          <div className={s.btnRow} style={{ padding: '14px 20px 0', justifyContent: 'center' }}>
+            <button className={s.deleteConfirmBtn} onClick={() => handleDelete(deleteConfirm)}>Eliminar</button>
+            <button className={s.cancelBtn} onClick={() => setDeleteConfirm(null)}>Cancelar</button>
           </div>
         </Modal>
       )}

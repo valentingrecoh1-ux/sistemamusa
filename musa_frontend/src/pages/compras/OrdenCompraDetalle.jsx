@@ -877,7 +877,7 @@ export default function OrdenCompraDetalle({ usuario }) {
               <div key={i} className={s.facturaItem}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{f.numero || 'Comprobante'}</span>
                 {f.archivo && (
-                  <a href={`${IP()}${f.archivo}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <a href={f.archivo.startsWith('data:') ? f.archivo : `${IP()}${f.archivo}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <i className="bi bi-file-earmark-arrow-down" /> Ver archivo
                   </a>
                 )}
@@ -1059,7 +1059,7 @@ export default function OrdenCompraDetalle({ usuario }) {
               <div key={i} className={s.facturaItem}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{f.numero || 'Comprobante'}</span>
                 {f.archivo && (
-                  <a href={`${IP()}${f.archivo}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <a href={f.archivo.startsWith('data:') ? f.archivo : `${IP()}${f.archivo}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <i className="bi bi-file-earmark-arrow-down" /> Ver archivo
                   </a>
                 )}

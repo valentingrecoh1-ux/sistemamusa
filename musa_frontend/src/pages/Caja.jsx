@@ -397,7 +397,7 @@ function Caja({ usuario }) {
     }
     try {
       const response = await fetch(
-        "http://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires"
+        "https://worldtimeapi.org/api/timezone/America/Argentina/Buenos_Aires"
       );
       if (!response.ok) {
         throw new Error("Fallo la API, usando la hora local");
@@ -750,7 +750,12 @@ function Caja({ usuario }) {
                       className={s.clickableRow}
                       onClick={() => {
                         if (operacion.filePath) {
-                          window.open(`${IP()}/${operacion.filePath}`);
+                          if (operacion.filePath.startsWith('data:')) {
+                            const w = window.open();
+                            if (w) { w.document.write(`<iframe src="${operacion.filePath}" style="width:100%;height:100%;border:none"></iframe>`); }
+                          } else {
+                            window.open(`${IP()}/${operacion.filePath}`);
+                          }
                         }
                       }}
                       key={index}
@@ -794,7 +799,7 @@ function Caja({ usuario }) {
                       <td>{operacion.descripcion}</td>
                       <td>
                         {operacion.filePath ? (
-                          operacion.filePath.endsWith(".pdf") ? (
+                          (operacion.filePath.includes("pdf") || operacion.filePath.includes("application/pdf")) ? (
                             <i className={`bi bi-filetype-pdf ${s.fileIcon}`}></i>
                           ) : (
                             <i className={`bi bi-file-earmark-image ${s.fileIcon}`}></i>

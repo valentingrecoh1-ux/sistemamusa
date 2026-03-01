@@ -30,6 +30,8 @@ const venta = new mongoose.Schema(
     mpPaymentIds: { type: [Number], default: [] },
     mpLinkedAt: { type: Date, default: null },
     clienteId: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente", default: null },
+    facturaPdf: { type: String, default: null },
+    notaCreditoPdf: { type: String, default: null },
   },
   { timestamps: true }
 );

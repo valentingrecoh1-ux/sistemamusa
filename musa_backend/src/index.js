@@ -485,6 +485,42 @@ app.use("/comprobantes", express.static("comprobantes"));
 app.use("/facturas", express.static("src/facturas"));
 app.use("/notas_de_credito", express.static("src/notas_de_credito"));
 
+// ── Servir PDFs de facturas desde MongoDB (fallback: filesystem) ──
+app.get("/api/factura-pdf/:id", async (req, res) => {
+  try {
+    const venta = await Venta.findById(req.params.id).select("facturaPdf stringNumeroFactura").lean();
+    if (!venta) return res.status(404).send("Venta no encontrada");
+    if (venta.facturaPdf) {
+      const buffer = Buffer.from(venta.facturaPdf, "base64");
+      res.set({ "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${venta.stringNumeroFactura || "factura"}.pdf"` });
+      return res.send(buffer);
+    }
+    // Fallback: archivo local
+    if (venta.stringNumeroFactura) {
+      const filePath = path.join(__dirname, "facturas", `${venta.stringNumeroFactura}.pdf`);
+      if (fs.existsSync(filePath)) return res.sendFile(filePath);
+    }
+    res.status(404).send("PDF no encontrado");
+  } catch (err) { res.status(500).send("Error"); }
+});
+
+app.get("/api/nota-credito-pdf/:id", async (req, res) => {
+  try {
+    const venta = await Venta.findById(req.params.id).select("notaCreditoPdf stringNumeroNotaCredito").lean();
+    if (!venta) return res.status(404).send("Venta no encontrada");
+    if (venta.notaCreditoPdf) {
+      const buffer = Buffer.from(venta.notaCreditoPdf, "base64");
+      res.set({ "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${venta.stringNumeroNotaCredito || "nota_credito"}.pdf"` });
+      return res.send(buffer);
+    }
+    if (venta.stringNumeroNotaCredito) {
+      const filePath = path.join(__dirname, "notas_de_credito", `${venta.stringNumeroNotaCredito}.pdf`);
+      if (fs.existsSync(filePath)) return res.sendFile(filePath);
+    }
+    res.status(404).send("PDF no encontrado");
+  } catch (err) { res.status(500).send("Error"); }
+});
+
 // ── WhatsApp API routes ──
 app.get("/api/whatsapp/status", (req, res) => {
   res.json({ status: waStatus, qr: waQR });
@@ -1530,6 +1566,7 @@ Origen: ${producto.origen || ""}`;
           // NUEVOS CAMPOS
           montoEfectivo,
           montoDigital,
+          facturaPdf: ticketA.base64,
         };
         const ventaCreada1 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada1);
@@ -1587,6 +1624,7 @@ Origen: ${producto.origen || ""}`;
           // NUEVOS CAMPOS
           montoEfectivo,
           montoDigital,
+          facturaPdf: ticketB.base64,
         };
         const ventaCreada2 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada2);
@@ -1658,6 +1696,7 @@ Origen: ${producto.origen || ""}`;
 
         // Consultar las ventas aplicando los filtros
         const ventas = await Venta.find(query)
+          .select("-facturaPdf -notaCreditoPdf")
           .sort({ createdAt: -1 })
           .skip((page - 1) * pageSize)
           .limit(pageSize);
@@ -1786,6 +1825,7 @@ Origen: ${producto.origen || ""}`;
       notaCredito: true,
       numeroNotaCredito: String(data.numeroComprobante || ""),
       stringNumeroNotaCredito,
+      notaCreditoPdf: ticketNC.base64,
     });
     if (!venta.idTurno) {
       await Promise.all(data.productosCarrito.map((producto) =>
@@ -1943,7 +1983,7 @@ Origen: ${producto.origen || ""}`;
         fecha: {
           $regex: `^${mes}`, // Filtrar donde la fecha empiece con el valor de 'mes' (YYYY-MM)
         },
-      });
+      }).select("-facturaPdf -notaCreditoPdf");
 
       let totalFacturado = 0;
       let totalNoFacturado = 0;
@@ -2376,6 +2416,7 @@ Origen: ${producto.origen || ""}`;
           reservaFecha: turno.fecha,
           reservaTurno: turno.turno,
           descuento: 0,
+          facturaPdf: ticketTurno.base64,
         };
         const ventaTurno1 = await Venta.create(venta);
         autoLinkMpPayment(ventaTurno1);
@@ -4134,7 +4175,7 @@ Reglas:
       if (!cliente) return socket.emit("response-cliente-detalle", null);
 
       const [ventas, pedidos, suscripciones] = await Promise.all([
-        Venta.find({ clienteId: id }).sort({ createdAt: -1 }).limit(50).lean(),
+        Venta.find({ clienteId: id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(50).lean(),
         PedidoWeb.find({ clienteId: id }).sort({ createdAt: -1 }).limit(50).lean(),
         SuscripcionClub.find({ clienteId: id }).sort({ createdAt: -1 }).lean(),
       ]);

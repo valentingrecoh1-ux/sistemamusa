@@ -223,21 +223,20 @@ function Ventas({ usuario }) {
   };
 
   const openFacturaPdf = (venta) => {
-    const comprobante = formatText(venta?.stringNumeroFactura, "");
-    if (!comprobante) {
+    if (!venta?.stringNumeroFactura) {
       alert("La venta no tiene factura para visualizar.");
       return;
     }
-    window.open(`${IP()}/facturas/${comprobante}.pdf`, "_blank");
+    // Primero intenta desde MongoDB, fallback a archivo estático
+    window.open(`${IP()}/api/factura-pdf/${venta._id}`, "_blank");
   };
 
   const openNotaCreditoPdf = (venta) => {
-    const comprobante = formatText(venta?.stringNumeroNotaCredito, "");
-    if (!comprobante) {
+    if (!venta?.stringNumeroNotaCredito) {
       alert("No hay archivo de nota de credito disponible para esta venta.");
       return;
     }
-    window.open(`${IP()}/notas_de_credito/${comprobante}.pdf`, "_blank");
+    window.open(`${IP()}/api/nota-credito-pdf/${venta._id}`, "_blank");
   };
 
   const changeFiltroPago = (value) => {

@@ -188,7 +188,7 @@ function Ventas() {
                 onClick={() => {
                   if (venta.numeroFactura) {
                     window.open(
-                      `${IP()}/facturas/${venta.stringNumeroFactura}.pdf`
+                      `${IP()}/api/factura-pdf/${venta._id}`
                     );
                   } else {
                     ventaClick(venta);

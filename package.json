@@ -6,7 +6,7 @@
     "dev:backend": "npm run dev --prefix musa_backend",
     "dev:frontend": "npm run dev --prefix musa_frontend",
     "install:all": "npm install --prefix musa_backend && npm install --prefix musa_frontend",
-    "build": "npm install --prefix musa_backend && npm install --prefix musa_frontend && npm run build --prefix musa_frontend",
+    "build": "npm install --prefix musa_backend && npm install --include=dev --prefix musa_frontend && npm run build --prefix musa_frontend",
     "start": "node musa_backend/src/index.js"
   },
   "devDependencies": {

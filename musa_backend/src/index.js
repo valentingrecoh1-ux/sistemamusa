@@ -37,6 +37,11 @@ const QRCode = require("qrcode");
 const AfipService = require("./AfipService");
 const afipService = new AfipService({ CUIT: 20418588897 });
 
+// Crear carpetas necesarias al iniciar (para Render y deploys frescos)
+["uploads/perfiles", "uploads/facturas_oc", "src/facturas", "src/notas_de_credito", "comprobantes"].forEach(dir => {
+  fs.mkdirSync(dir, { recursive: true });
+});
+
 const PDFDocument = require("pdfkit");
 const qr = require("qr-image");
 const { print } = require("pdf-to-printer");

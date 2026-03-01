@@ -54,6 +54,10 @@ const NAV = [
     adminOnly: true,
     items: [
       { to: '/admin/usuarios', icon: 'bi-people-fill', label: 'Usuarios' },
+    ],
+  },
+  {
+    items: [
       { to: '/admin/setup', icon: 'bi-tools', label: 'Setup' },
     ],
   },

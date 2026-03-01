@@ -39,7 +39,7 @@ function AdminApp({ usuario, onLogout }) {
   useEffect(() => {
     if (window.JSPM) {
       window.JSPM.JSPrintManager.auto_reconnect = true;
-      window.JSPM.JSPrintManager.start();
+      window.JSPM.JSPrintManager.start(false);
     }
 
     const handleTicket = ({ base64 }) => {

@@ -35,7 +35,7 @@ function Inventario() {
   useEffect(() => {
     if (window.JSPM) {
       window.JSPM.JSPrintManager.auto_reconnect = true;
-      window.JSPM.JSPrintManager.start();
+      window.JSPM.JSPrintManager.start(false);
       window.JSPM.JSPrintManager.WS.onStatusChanged = function () {
         if (jspmWSStatus()) {
           window.JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {

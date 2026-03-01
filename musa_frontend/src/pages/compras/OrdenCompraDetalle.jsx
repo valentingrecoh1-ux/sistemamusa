@@ -686,7 +686,7 @@ export default function OrdenCompraDetalle({ usuario }) {
 
   // ── EDIT VIEW ──
   if (editMode) {
-    return (
+    return (<>
       <div className={s.container}>
         <Link to="/compras" className={s.backLink}>
           <i className="bi bi-arrow-left" /> Volver a Compras
@@ -907,6 +907,11 @@ export default function OrdenCompraDetalle({ usuario }) {
           </div>
         </div>
       </div>
+
+      {previewArchivo && (
+        <PreviewModal archivo={previewArchivo} onClose={() => setPreviewArchivo(null)} />
+      )}
+    </>
     );
   }
 

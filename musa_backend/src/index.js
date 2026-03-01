@@ -112,8 +112,7 @@ function mpRawToDoc(p, ownCollectorId) {
   const fechaCreacion = p.date_created ? new Date(p.date_created) : null;
   let fecha = null;
   if (fechaCreacion) {
-    const d = new Date(fechaCreacion.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
-    fecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    fecha = moment(fechaCreacion).tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
   }
   const bruto = p.transaction_amount || 0;
   const neto = p.transaction_details?.net_received_amount ?? null;
@@ -167,13 +166,6 @@ function mpRawToDoc(p, ownCollectorId) {
 
 async function syncMpPagos(fecha) {
   if (!mpPayment || !fecha) return;
-  const hoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
-  const esHoy = fecha === hoy;
-  // Si no es hoy, ver si ya tenemos datos de ese día
-  if (!esHoy) {
-    const count = await PagoMp.countDocuments({ fecha });
-    if (count > 0) return;
-  }
   // Buscar en API de MP
   try {
     const searchParams = {

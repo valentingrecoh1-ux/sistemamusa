@@ -1851,20 +1851,20 @@ Origen: ${producto.origen || ""}`;
       io.emit("cambios");
     } catch (err) { console.error("Error devolucion:", err); }
   });
-  socket.on("request-totales", async () => {
+  socket.on("request-totales", async (fecha) => {
     try {
-      const hoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
+      const filtroFecha = fecha ? { fecha } : {};
       const [totalEfectivoResult, totalDigitalResult, totalMixtoResult] = await Promise.all([
         Venta.aggregate([
-          { $match: { fecha: hoy, formaPago: "EFECTIVO", notaCredito: { $ne: true } } },
+          { $match: { ...filtroFecha, formaPago: "EFECTIVO", notaCredito: { $ne: true } } },
           { $group: { _id: null, total: { $sum: "$monto" } } },
         ]),
         Venta.aggregate([
-          { $match: { fecha: hoy, formaPago: "DIGITAL", notaCredito: { $ne: true } } },
+          { $match: { ...filtroFecha, formaPago: "DIGITAL", notaCredito: { $ne: true } } },
           { $group: { _id: null, total: { $sum: "$monto" } } },
         ]),
         Venta.aggregate([
-          { $match: { fecha: hoy, formaPago: "MIXTO", notaCredito: { $ne: true } } },
+          { $match: { ...filtroFecha, formaPago: "MIXTO", notaCredito: { $ne: true } } },
           { $group: { _id: null, totalEfectivoMixto: { $sum: "$montoEfectivo" }, totalDigitalMixto: { $sum: "$montoDigital" } } },
         ]),
       ]);
@@ -1874,7 +1874,7 @@ Origen: ${producto.origen || ""}`;
       efectivo += totalMixtoResult.length > 0 ? totalMixtoResult[0].totalEfectivoMixto : 0;
       digital += totalMixtoResult.length > 0 ? totalMixtoResult[0].totalDigitalMixto : 0;
 
-      const operaciones = await Operacion.find({ fecha: hoy }).lean();
+      const operaciones = await Operacion.find(filtroFecha).lean();
       operaciones.forEach((operacion) => {
         if (operacion.formaPago === "EFECTIVO") {
           efectivo += operacion.monto;

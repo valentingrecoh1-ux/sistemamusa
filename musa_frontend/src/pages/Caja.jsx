@@ -118,7 +118,7 @@ function Caja({ usuario }) {
   }, []);
 
   // ── Operaciones fetchers ──
-  const fetchTotales = () => socket.emit("request-totales");
+  const fetchTotales = (f) => socket.emit("request-totales", f || fecha || null);
   const fetchNombres = () => socket.emit("request-nombres");
   const fetchOperaciones = (fecha, search, page) =>
     socket.emit("request-operaciones", { fecha, search, page });

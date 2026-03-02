@@ -126,7 +126,9 @@ function Caja() {
 
     const formDataToSend = new FormData();
     for (const key in operacion) {
-      formDataToSend.append(key, operacion[key]);
+      if (operacion[key] !== null && operacion[key] !== undefined) {
+        formDataToSend.append(key, operacion[key]);
+      }
     }
 
     if (file) {

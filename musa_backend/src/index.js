@@ -605,6 +605,13 @@ app.post(
     const operacionData = req.body;
     const file = req.file;
 
+    // Limpiar campos que llegan como string "null" desde FormData
+    for (const key of Object.keys(operacionData)) {
+      if (operacionData[key] === "null" || operacionData[key] === "undefined") {
+        delete operacionData[key];
+      }
+    }
+
     try {
       if (!operacionData._id) {
         operacionData.fecha = moment(new Date())

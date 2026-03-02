@@ -35,43 +35,30 @@ import Setup from './pages/admin/Setup';
 import { socket } from './main';
 
 function AdminApp({ usuario, onLogout }) {
-  // Inicializar JSPM globalmente para impresion de tickets y etiquetas
+  // Impresion de tickets via dialogo del navegador (sin JSPM)
   useEffect(() => {
-    if (window.JSPM) {
-      window.JSPM.JSPrintManager.auto_reconnect = true;
-      window.JSPM.JSPrintManager.start(false);
-    }
-
     const handleTicket = ({ base64 }) => {
-      const jspm = window.JSPM;
-      if (!jspm || jspm.JSPrintManager.websocket_status !== jspm.WSStatus.Open) {
-        console.warn('JSPrintManager no disponible, descargando ticket como PDF');
-        // Fallback: descargar el PDF
+      try {
+        const bytes = atob(base64);
+        const arr = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+          try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+          catch { window.open(url, '_blank'); }
+          setTimeout(() => { document.body.removeChild(iframe); URL.revokeObjectURL(url); }, 120000);
+        };
+      } catch {
         const link = document.createElement('a');
         link.href = 'data:application/pdf;base64,' + base64;
         link.download = 'ticket.pdf';
         link.click();
-        return;
       }
-      jspm.JSPrintManager.getPrinters().then(printers => {
-        const hprt = printers.find(p =>
-          p.toLowerCase().includes('hprt') || p.toLowerCase().includes('tp806')
-        );
-        const printer = hprt || printers[0];
-        if (!printer) {
-          // Sin impresora, descargar
-          const link = document.createElement('a');
-          link.href = 'data:application/pdf;base64,' + base64;
-          link.download = 'ticket.pdf';
-          link.click();
-          return;
-        }
-        const cpj = new jspm.ClientPrintJob();
-        cpj.clientPrinter = new jspm.InstalledPrinter(printer);
-        const file = new jspm.PrintFilePDF(base64, jspm.FileSourceType.Base64, 'ticket.pdf', 1);
-        cpj.files.push(file);
-        cpj.sendToClient();
-      });
     };
 
     socket.on('ticket-listo', handleTicket);

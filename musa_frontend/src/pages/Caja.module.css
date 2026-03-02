@@ -1097,20 +1097,39 @@
 @media (max-width: 960px) {
   .container {
     grid-template-columns: 1fr;
+    width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
     overflow: hidden;
   }
 
   .formCard {
     position: static;
+    width: 100%;
     min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* Cualquier hijo directo del form no puede desbordar */
+  .formCard > * {
     max-width: 100%;
     box-sizing: border-box;
   }
 
   .tableSection {
+    width: 100%;
     min-width: 0;
     max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mpContainer {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .mpKpiRow {
@@ -1122,6 +1141,14 @@
   .formCard {
     padding: 18px 14px;
     gap: 12px;
+    overflow: hidden;
+  }
+
+  /* DatalistInput wrapper: evitar desborde */
+  .formCard [class*="datalist"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .montoInput {

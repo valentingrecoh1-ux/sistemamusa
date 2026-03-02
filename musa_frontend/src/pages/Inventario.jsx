@@ -714,10 +714,10 @@ E
               <tr className={s.row} key={prod._id}>
                 {/* Producto: foto + nombre + codigo + year */}
                 <td className={s.productCell}>
-                  {(prod.foto || prod.fotoIA) && !brokenImgs.has(prod._id) ? (
+                  {!brokenImgs.has(prod._id) ? (
                     <img
-                      className={`${s.thumbnail} ${prod.usarFotoIA && prod.fotoIA ? s.thumbnailIA : ''}`}
-                      src={fotoSrc(prod.usarFotoIA && prod.fotoIA ? prod.fotoIA : prod.foto)}
+                      className={s.thumbnail}
+                      src={fotoSrc(prod.foto, prod._id)}
                       alt=""
                       loading="lazy"
                       onError={() => setBrokenImgs((prev) => new Set(prev).add(prod._id))}

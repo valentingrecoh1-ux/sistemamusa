@@ -28,11 +28,7 @@ export default function TiendaCarrito() {
           {items.map((item) => (
             <div key={item.productoId} className={s.item}>
               <div className={s.itemImage}>
-                {item.foto ? (
-                  <img src={fotoSrc(item.foto)} alt={item.nombre} />
-                ) : (
-                  <i className="bi bi-cup-straw" />
-                )}
+                <img src={fotoSrc(item.foto, item.productoId)} alt={item.nombre} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <div className={s.itemInfo}>
                 <Link to={`/tienda/producto/${item.productoId}`} className={s.itemName}>{item.nombre}</Link>

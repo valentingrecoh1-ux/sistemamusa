@@ -30,10 +30,11 @@ let ip_variable = getBackendCandidates()[0];
 
 export const IP = () => ip_variable;
 
-// Helper: resuelve src de foto (base64 o URL)
-export const fotoSrc = (foto) => {
-  if (!foto) return '';
-  return foto;
+// Helper: resuelve src de foto (base64 o URL, con fallback a API por ID)
+export const fotoSrc = (foto, productId) => {
+  if (foto) return foto;
+  if (productId) return `${ip_variable}/api/producto-foto/${productId}`;
+  return '';
 };
 
 export let socket;

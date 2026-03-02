@@ -11,13 +11,7 @@ export default function ProductCard({ product }) {
   return (
     <div className={s.card}>
       <Link to={`/tienda/producto/${product._id}`} className={s.imageLink}>
-        {(product.foto || product.fotoIA) ? (
-          <img src={fotoSrc(product.usarFotoIA && product.fotoIA ? product.fotoIA : product.foto)} alt={product.nombre} className={s.image} loading="lazy" />
-        ) : (
-          <div className={s.noImage}>
-            <i className="bi bi-cup-straw" />
-          </div>
-        )}
+        <img src={fotoSrc(product.foto, product._id)} alt={product.nombre} className={s.image} loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
       </Link>
       <div className={s.info}>
         <Link to={`/tienda/producto/${product._id}`} className={s.name}>{product.nombre}</Link>

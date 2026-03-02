@@ -115,11 +115,7 @@ export default function TiendaProducto() {
 
       <div className={s.product}>
         <div className={s.imageCol}>
-          {(p.foto || p.fotoIA) ? (
-            <img src={fotoSrc(p.usarFotoIA && p.fotoIA ? p.fotoIA : p.foto)} alt={p.nombre} className={s.image} />
-          ) : (
-            <div className={s.noImage}><i className="bi bi-cup-straw" /></div>
-          )}
+          <img src={fotoSrc(p.foto, p._id)} alt={p.nombre} className={s.image} onError={(e) => { e.target.style.display = 'none'; }} />
         </div>
 
         <div className={s.infoCol}>

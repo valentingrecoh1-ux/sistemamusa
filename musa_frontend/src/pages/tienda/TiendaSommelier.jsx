@@ -131,11 +131,7 @@ export default function TiendaSommelier() {
                   {msg.productos.map((p) => (
                     <div key={p._id} className={s.miniCard}>
                       <Link to={`/tienda/producto/${p._id}`} className={s.miniCardLink}>
-                        {p.foto ? (
-                          <img src={fotoSrc(p.foto)} alt={p.nombre} className={s.miniCardImg} />
-                        ) : (
-                          <div className={s.miniCardNoImg}><i className="bi bi-cup-straw" /></div>
-                        )}
+                        <img src={fotoSrc(p.foto, p._id)} alt={p.nombre} className={s.miniCardImg} onError={(e) => { e.target.style.display = 'none'; }} />
                         <div className={s.miniCardInfo}>
                           <span className={s.miniCardName}>{p.nombre}</span>
                           <span className={s.miniCardMeta}>{p.bodega} {p.cepa ? `· ${p.cepa}` : ''}</span>

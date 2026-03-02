@@ -273,7 +273,7 @@ const ProductoItem = ({
     </div>
     <div className="producto-item">
       <div className="producto-imagen">
-        <img src={fotoSrc(producto.foto)} alt={producto.nombre} />
+        <img src={fotoSrc(producto.foto, producto._id)} alt={producto.nombre} />
       </div>
       <div className="producto-detalle">
         <div className="producto-detalle-div">

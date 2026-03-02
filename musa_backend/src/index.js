@@ -442,6 +442,23 @@ app.use(
 app.use("/facturas", express.static("src/facturas"));
 app.use("/notas_de_credito", express.static("src/notas_de_credito"));
 
+// ── Servir foto de producto (base64 → imagen binaria, con cache) ──
+app.get("/api/producto-foto/:id", async (req, res) => {
+  try {
+    const p = await Product.findById(req.params.id).select("foto fotoIA usarFotoIA").lean();
+    if (!p) return res.status(404).send("Not found");
+    const foto = (p.usarFotoIA && p.fotoIA) ? p.fotoIA : p.foto;
+    if (!foto) return res.status(404).send("No photo");
+    const match = foto.match(/^data:(.+?);base64,(.+)$/);
+    if (!match) return res.status(404).send("Bad format");
+    res.set("Content-Type", match[1]);
+    res.set("Cache-Control", "public, max-age=86400");
+    res.send(Buffer.from(match[2], "base64"));
+  } catch (err) {
+    res.status(500).send("Error");
+  }
+});
+
 // ── Servir PDFs de facturas desde MongoDB (fallback: filesystem) ──
 app.get("/api/factura-pdf/:id", async (req, res) => {
   try {

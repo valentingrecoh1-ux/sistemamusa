@@ -387,7 +387,7 @@ const ProductoItem = ({
 }) => (
   <div className={s.productoCard}>
     <div className={s.productoImagen}>
-      <img src={fotoSrc(producto.foto)} alt={producto.nombre} />
+      <img src={fotoSrc(producto.foto, producto._id)} alt={producto.nombre} />
     </div>
     <div className={s.productoDetalle}>
       <div className={s.precioSection}>

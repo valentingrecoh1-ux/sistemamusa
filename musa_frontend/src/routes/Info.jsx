@@ -304,7 +304,7 @@ function Info() {
                   onClick={() => productoClickeado(producto.codigo)}
                   className="foto-fav"
                 >
-                  <img width="40px" src={fotoSrc(producto.foto)} alt="" />
+                  <img width="40px" src={fotoSrc(producto.foto, producto._id)} alt="" />
                   <span
                     className="fav"
                     style={{ color: producto.favorito && "red" }}
@@ -366,7 +366,7 @@ function Info() {
               <i className="bi bi-x-circle-fill"></i>
             </span>
             <div className="modal-image">
-              <img src={fotoSrc(producto.foto)} alt={producto.nombre} />
+              <img src={fotoSrc(producto.foto, producto._id)} alt={producto.nombre} />
             </div>
             <div className="modal-info">
               <div className="nombre-anio">

@@ -383,10 +383,10 @@ function Info() {
               >
                 {/* Producto: foto + nombre + codigo + year */}
                 <td className={s.productCell}>
-                  {prod.foto && !brokenImgs.has(prod._id) ? (
+                  {!brokenImgs.has(prod._id) ? (
                     <img
                       className={s.thumbnail}
-                      src={fotoSrc(prod.foto)}
+                      src={fotoSrc(prod.foto, prod._id)}
                       alt=""
                       loading="lazy"
                       onError={() => setBrokenImgs((prev) => new Set(prev).add(prod._id))}
@@ -501,14 +501,7 @@ function Info() {
             </button>
             <div className={s.modalLeft}>
               <div className={s.modalImage}>
-                {producto.foto ? (
-                  <img src={fotoSrc(producto.usarFotoIA && producto.fotoIA ? producto.fotoIA : producto.foto)} alt={producto.nombre} />
-                ) : (
-                  <div className={s.modalNoImage}>
-                    <i className="bi bi-image"></i>
-                    <span>Sin imagen</span>
-                  </div>
-                )}
+                <img src={fotoSrc(producto.foto, producto._id)} alt={producto.nombre} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
 
               {/* ── Seccion IA ── */}

@@ -480,7 +480,7 @@ E
                   </td>
                   <td>{producto.cantidad}</td>
                   <td>
-                    <img width="40px" src={fotoSrc(producto.foto)} alt="" />
+                    <img width="40px" src={fotoSrc(producto.foto, producto._id)} alt="" />
                   </td>
                   <td
                     onClick={() => imprimir(producto.codigo)}

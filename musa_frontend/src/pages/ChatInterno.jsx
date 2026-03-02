@@ -161,6 +161,10 @@ export default function ChatInterno({ usuario }) {
     socket.emit('borrar-mensaje-interno', mensajeId);
     setTimeout(() => fetchRef.current(), 800);
   };
+  const deleteRespuesta = (mensajeId, respuestaId) => {
+    socket.emit('borrar-respuesta-mensaje', { mensajeId, respuestaId });
+    setTimeout(() => fetchRef.current(), 800);
+  };
   const toggleExpand = (id) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
@@ -318,12 +322,17 @@ export default function ChatInterno({ usuario }) {
                   {msg.respuestas.length} {msg.respuestas.length === 1 ? 'respuesta' : 'respuestas'}
                 </button>
                 {expanded[msg._id] && msg.respuestas.map((r, i) => (
-                  <div key={i} className={s.reply}>
+                  <div key={r._id || i} className={s.reply}>
                     {renderAvatar(r.usuario, 'sm')}
                     <div className={s.replyContent}>
                       <div className={s.replyMeta}>
                         <strong>{r.usuario}</strong>
                         <span className={s.replyTime}>{timeAgo(r.fecha)}</span>
+                        {usuario.rol === 'admin' && (
+                          <button className={s.replyDeleteBtn} onClick={() => deleteRespuesta(msg._id, r._id)} title="Eliminar respuesta">
+                            <i className="bi bi-trash3" />
+                          </button>
+                        )}
                       </div>
                       <p>{r.texto}</p>
                     </div>

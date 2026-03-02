@@ -4654,6 +4654,18 @@ Reglas:
     }
   });
 
+  socket.on("borrar-respuesta-mensaje", async ({ mensajeId, respuestaId }) => {
+    try {
+      if (!requireAdmin(socket)) return;
+      await MensajeInterno.findByIdAndUpdate(mensajeId, {
+        $pull: { respuestas: { _id: respuestaId } },
+      });
+      io.emit("cambios-chat");
+    } catch (err) {
+      console.error("Error borrar-respuesta-mensaje:", err);
+    }
+  });
+
   // ── Web Tienda Admin handlers ──
   socket.on("request-pedidos-web", async ({ estado, search, page = 1, limit = 20 } = {}) => {
     try {

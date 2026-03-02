@@ -25,6 +25,13 @@ const facturaOCSchema = new mongoose.Schema({
   archivo: { type: String },
 });
 
+const fleteOCSchema = new mongoose.Schema({
+  descripcion: { type: String },
+  monto: { type: Number, required: true },
+  fecha: { type: String },
+  registradoPor: { type: String },
+});
+
 const ordenCompraSchema = new mongoose.Schema(
   {
     numero: { type: String, unique: true },
@@ -42,6 +49,7 @@ const ordenCompraSchema = new mongoose.Schema(
     },
     items: [itemOCSchema],
     facturas: [facturaOCSchema],
+    fletes: [fleteOCSchema],
     montoTotal: { type: Number, default: 0 },
     bonificacion: {
       tipo: { type: String },

@@ -14,6 +14,8 @@ export default function Dashboard({ usuario }) {
   const [stockBajo, setStockBajo] = useState([]);
   const [dashData, setDashData] = useState({
     ventas: { cantidad: 0, total: 0, ticketPromedio: 0 },
+    ventasVinos: { cantidad: 0, total: 0, ticketPromedio: 0 },
+    ventasReservas: { cantidad: 0, total: 0, ticketPromedio: 0 },
     mp: { totalCobrado: 0, neto: 0, comisiones: 0, gastos: 0, cantidadPagos: 0 },
     ultimasVentas: [],
   });
@@ -109,7 +111,8 @@ export default function Dashboard({ usuario }) {
             <div className={s.grid}>
               <KPICard label="Ventas" value={dashData.ventas.cantidad} />
               <KPICard label="Total" value={money(dashData.ventas.total)} />
-              <KPICard label="Ticket Prom." value={money(dashData.ventas.ticketPromedio)} />
+              <KPICard label="Ticket Vinos" value={money(dashData.ventasVinos?.ticketPromedio || 0)} />
+              <KPICard label="Ticket Reservas" value={money(dashData.ventasReservas?.ticketPromedio || 0)} />
             </div>
             {dashData.ultimasVentas.length > 0 && (
               <div className={s.miniList}>

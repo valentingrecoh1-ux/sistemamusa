@@ -87,7 +87,11 @@ function Estadisticas() {
   const totalMonto = operaciones.reduce((total, ap) => total + ap.monto, 0);
 
   const desc = analytics?.descuentos || {};
+  const descVinos = analytics?.descuentosVinos || {};
+  const descReservas = analytics?.descuentosReservas || {};
   const ticketPromedio = desc.cantidadTotal > 0 ? desc.montoTotal / desc.cantidadTotal : 0;
+  const ticketVinos = descVinos.cantidadTotal > 0 ? descVinos.montoTotal / descVinos.cantidadTotal : 0;
+  const ticketReservas = descReservas.cantidadTotal > 0 ? descReservas.montoTotal / descReservas.cantidadTotal : 0;
   const bestHour = analytics?.ventasPorHora?.length
     ? analytics.ventasPorHora.reduce((best, h) => (h.monto > best.monto ? h : best), { monto: 0 })
     : null;
@@ -144,7 +148,23 @@ function Estadisticas() {
 
           <div className={s.statsRow}>
             <div className={s.statCard}>
-              <span className={s.statLabel}>Cantidad Ventas</span>
+              <span className={s.statLabel}>Ventas Vinos</span>
+              <span className={s.statValue}>{descVinos.cantidadTotal || 0}</span>
+            </div>
+            <div className={s.statCard}>
+              <span className={s.statLabel}>Ticket Vinos</span>
+              <span className={s.statValue}>{money(ticketVinos)}</span>
+            </div>
+            <div className={s.statCard}>
+              <span className={s.statLabel}>Ventas Reservas</span>
+              <span className={s.statValue}>{descReservas.cantidadTotal || 0}</span>
+            </div>
+            <div className={s.statCard}>
+              <span className={s.statLabel}>Ticket Reservas</span>
+              <span className={s.statValue}>{money(ticketReservas)}</span>
+            </div>
+            <div className={s.statCard}>
+              <span className={s.statLabel}>Total Ventas</span>
               <span className={s.statValue}>{desc.cantidadTotal || 0}</span>
             </div>
             <div className={s.statCard}>

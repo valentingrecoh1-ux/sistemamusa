@@ -65,6 +65,11 @@ export default function OrdenCompraDetalle({ usuario }) {
   // Preview archivo modal
   const [previewArchivo, setPreviewArchivo] = useState(null);
 
+  // Flete state
+  const [showFleteForm, setShowFleteForm] = useState(false);
+  const [fleteDescripcion, setFleteDescripcion] = useState('');
+  const [fleteMonto, setFleteMonto] = useState('');
+
   // Upload factura state
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [uploadTipo, setUploadTipo] = useState('Factura');
@@ -298,6 +303,24 @@ export default function OrdenCompraDetalle({ usuario }) {
     setPagoMonto('');
     setPagoRef('');
     setPagoNotas('');
+  };
+
+  // ── Flete handlers ──
+  const handleAgregarFlete = () => {
+    if (!fleteMonto || Number(fleteMonto) <= 0) return;
+    socket.emit('agregar-flete-oc', {
+      ordenCompraId: id,
+      descripcion: fleteDescripcion || 'Flete',
+      monto: Number(fleteMonto),
+    });
+    setShowFleteForm(false);
+    setFleteDescripcion('');
+    setFleteMonto('');
+  };
+
+  const handleEliminarFlete = (index) => {
+    if (!window.confirm('Eliminar este flete?')) return;
+    socket.emit('eliminar-flete-oc', { ordenCompraId: id, fleteIndex: index });
   };
 
   // ── Upload factura handlers ──
@@ -1039,30 +1062,33 @@ export default function OrdenCompraDetalle({ usuario }) {
                 <th>Descripcion</th>
                 <th>Cant.</th>
                 <th>Precio s/IVA</th>
-                <th>Precio c/IVA</th>
+                {(orden.totalFletes > 0) && <th>Flete/u</th>}
+                {(orden.totalFletes > 0) && <th>Costo Total/u</th>}
                 <th>Subtotal c/IVA</th>
               </tr>
             </thead>
             <tbody>
               {(orden.items || []).length === 0 ? (
-                <tr className={s.emptyRow}><td colSpan={5}>Sin productos</td></tr>
+                <tr className={s.emptyRow}><td colSpan={orden.totalFletes > 0 ? 6 : 4}>Sin productos</td></tr>
               ) : (orden.items || []).map((it, i) => {
                 const cant = (it.cantidadSolicitada ?? it.cantidad) || 0;
                 const pSin = it.precioUnitario || 0;
                 const pCon = round2(pSin * 1.21);
                 const bonif = 1 - (it.bonif || 0) / 100;
+                const fpu = orden.fletePorUnidad || 0;
                 return (
                   <tr key={i}>
                     <td style={{ textAlign: 'left' }}>{it.nombre || it.descripcion}</td>
                     <td>{cant}</td>
                     <td>{money(pSin)}</td>
-                    <td>{money(pCon)}</td>
+                    {(orden.totalFletes > 0) && <td style={{ color: 'var(--info)' }}>{money(fpu)}</td>}
+                    {(orden.totalFletes > 0) && <td style={{ fontWeight: 600 }}>{money(pSin + fpu)}</td>}
                     <td>{money(cant * pCon * bonif)}</td>
                   </tr>
                 );
               })}
               <tr className={s.totalRow}>
-                <td colSpan={4} style={{ textAlign: 'right', fontWeight: 700 }}>Total c/IVA</td>
+                <td colSpan={orden.totalFletes > 0 ? 5 : 3} style={{ textAlign: 'right', fontWeight: 700 }}>Total c/IVA</td>
                 <td style={{ fontWeight: 700 }}>{money(round2((orden.total || 0) * 1.21))}</td>
               </tr>
             </tbody>
@@ -1113,6 +1139,73 @@ export default function OrdenCompraDetalle({ usuario }) {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Fletes */}
+          <div className={s.card}>
+            <h3 className={s.cardTitle}>Fletes</h3>
+
+            {(orden.fletes || []).length === 0 && !showFleteForm && (
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>Sin fletes cargados</p>
+            )}
+
+            {(orden.fletes || []).map((f, i) => (
+              <div key={i} className={s.facturaItem}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{f.descripcion || 'Flete'}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{f.fecha}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>{money(f.monto)}</span>
+                  {orden.estado !== 'cancelada' && orden.estado !== 'cerrada' && (
+                    <button className={s.removeBtn} onClick={() => handleEliminarFlete(i)} title="Eliminar flete">
+                      <i className="bi bi-trash" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {(orden.fletes || []).length > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>Total fletes</span>
+                <span style={{ fontSize: 14, fontWeight: 700 }}>{money(orden.totalFletes)}</span>
+              </div>
+            )}
+
+            {(orden.fletes || []).length > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 4 }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Flete por unidad</span>
+                <span style={{ fontSize: 13, color: 'var(--info)', fontWeight: 600 }}>{money(orden.fletePorUnidad)}</span>
+              </div>
+            )}
+
+            {orden.estado !== 'cancelada' && orden.estado !== 'cerrada' && (
+              <>
+                {showFleteForm ? (
+                  <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                    <div className={s.formRow}>
+                      <div className={s.inputGroup}>
+                        <span>Descripcion</span>
+                        <input type="text" value={fleteDescripcion} onChange={(e) => setFleteDescripcion(e.target.value)} placeholder="Ej: Flete Mendoza" />
+                      </div>
+                      <div className={s.inputGroup}>
+                        <span>Monto *</span>
+                        <input type="number" min="0" value={fleteMonto} onChange={(e) => setFleteMonto(e.target.value)} placeholder="0" />
+                      </div>
+                    </div>
+                    <div className={s.btnRow} style={{ marginTop: 8 }}>
+                      <button className={s.btnSuccess} onClick={handleAgregarFlete}>Agregar flete</button>
+                      <button className={s.btnOutline} onClick={() => { setShowFleteForm(false); setFleteDescripcion(''); setFleteMonto(''); }}>Cancelar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button className={s.btnOutline} style={{ marginTop: 10, width: '100%' }} onClick={() => setShowFleteForm(true)}>
+                    <i className="bi bi-truck" /> Agregar flete
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

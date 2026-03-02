@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { es } from "date-fns/locale/es";
 import { NumericFormat } from "react-number-format";
+import html2canvas from "html2canvas";
 import { socket } from "../main";
 import { tienePermiso } from "../lib/permisos";
 import Pagination from "../components/shared/Pagination";
@@ -86,6 +87,7 @@ function Eventos({ usuario }) {
   const [totalProfit, setTotalProfit] = useState(0);
 
   // Presupuesto modal
+  const presModalRef = useRef(null);
   const [showPresupuesto, setShowPresupuesto] = useState(false);
   const emptyPres = {
     nombre: "",
@@ -277,6 +279,23 @@ function Eventos({ usuario }) {
     const conFactura = neto * 1.25;
     const efectivo = neto;
     return { comida, empleados, vinos, sommelier, otros, base, gananciaAmt, neto, conFactura, efectivo };
+  };
+
+  const descargarPresupuesto = async () => {
+    if (!presModalRef.current) return;
+    try {
+      const canvas = await html2canvas(presModalRef.current, {
+        backgroundColor: '#1a1a2e',
+        scale: 2,
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      link.download = `presupuesto${presForm.nombre ? '-' + presForm.nombre.replace(/\s+/g, '-') : ''}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Error al descargar presupuesto:', err);
+    }
   };
 
   // ── Gastos estimados ──
@@ -1312,8 +1331,8 @@ function Eventos({ usuario }) {
         const personas = parseInt(presForm.cantPersonas) || 0;
         return (
           <div className={s.modalOverlay} onClick={(e) => e.target === e.currentTarget && setShowPresupuesto(false)}>
-            <div className={s.presModal}>
-              <button className={s.closeBtn} onClick={() => setShowPresupuesto(false)}>
+            <div className={s.presModal} ref={presModalRef}>
+              <button className={s.closeBtn} onClick={() => setShowPresupuesto(false)} data-html2canvas-ignore>
                 <i className="bi bi-x-lg"></i>
               </button>
 
@@ -1531,13 +1550,24 @@ function Eventos({ usuario }) {
                     </div>
                   </div>
 
-                  <button
-                    className={s.presResetBtn}
-                    onClick={() => { setPresForm(emptyPres); setPresVinos([]); setPresVinoBusqueda(""); setPresVinoResultados([]); }}
-                    type="button"
-                  >
-                    <i className="bi bi-arrow-counterclockwise"></i> Limpiar formulario
-                  </button>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button
+                      className={s.presResetBtn}
+                      onClick={descargarPresupuesto}
+                      type="button"
+                      data-html2canvas-ignore
+                    >
+                      <i className="bi bi-download"></i> Descargar imagen
+                    </button>
+                    <button
+                      className={s.presResetBtn}
+                      onClick={() => { setPresForm(emptyPres); setPresVinos([]); setPresVinoBusqueda(""); setPresVinoResultados([]); }}
+                      type="button"
+                      data-html2canvas-ignore
+                    >
+                      <i className="bi bi-arrow-counterclockwise"></i> Limpiar formulario
+                    </button>
+                  </div>
                 </div>
 
                 {/* ── Columna derecha: resumen ── */}

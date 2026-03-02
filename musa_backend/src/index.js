@@ -2334,18 +2334,20 @@ Origen: ${producto.origen || ""}`;
         { $sort: { _id: 1 } },
       ]);
 
-      // 6. Descuentos
-      const descuentos = await Venta.aggregate([
-        { $match: matchStage },
-        {
-          $group: {
-            _id: null,
-            totalDescuento: { $sum: { $ifNull: ["$descuento", 0] } },
-            cantidadConDescuento: { $sum: { $cond: [{ $gt: [{ $ifNull: ["$descuento", 0] }, 0] }, 1, 0] } },
-            cantidadTotal: { $sum: 1 },
-            montoTotal: { $sum: "$monto" },
-          }
-        },
+      // 6. Descuentos (total + separado vinos vs reservas)
+      const descGroupFields = {
+        _id: null,
+        totalDescuento: { $sum: { $ifNull: ["$descuento", 0] } },
+        cantidadConDescuento: { $sum: { $cond: [{ $gt: [{ $ifNull: ["$descuento", 0] }, 0] }, 1, 0] } },
+        cantidadTotal: { $sum: 1 },
+        montoTotal: { $sum: "$monto" },
+      };
+      const matchVinos = { ...matchStage, $or: [{ idTurno: { $exists: false } }, { idTurno: null }] };
+      const matchReservas = { ...matchStage, idTurno: { $exists: true, $ne: null } };
+      const [descuentos, descuentosVinos, descuentosReservas] = await Promise.all([
+        Venta.aggregate([{ $match: matchStage }, { $group: descGroupFields }]),
+        Venta.aggregate([{ $match: matchVinos }, { $group: descGroupFields }]),
+        Venta.aggregate([{ $match: matchReservas }, { $group: descGroupFields }]),
       ]);
 
       // 7. Top 10 productos
@@ -2409,6 +2411,8 @@ Origen: ${producto.origen || ""}`;
           conEvento: diasConEvento.has(d._id),
         })),
         descuentos: descuentos[0] || { totalDescuento: 0, cantidadConDescuento: 0, cantidadTotal: 0, montoTotal: 0 },
+        descuentosVinos: descuentosVinos[0] || { totalDescuento: 0, cantidadConDescuento: 0, cantidadTotal: 0, montoTotal: 0 },
+        descuentosReservas: descuentosReservas[0] || { totalDescuento: 0, cantidadConDescuento: 0, cantidadTotal: 0, montoTotal: 0 },
         topProductos: topProductos.map((p) => ({
           nombre: p._id.nombre, codigo: p._id.codigo, bodega: p._id.bodega,
           cantidad: p.cantidad, monto: Math.round(p.monto),
@@ -3469,12 +3473,17 @@ Origen: ${producto.origen || ""}`;
       if (!orden) return socket.emit("response-orden-compra-detalle", null);
       const proveedor = await Proveedor.findById(orden.proveedorId).lean();
       const pagos = await PagoProveedor.find({ ordenCompraId: id }).sort({ createdAt: -1 }).lean();
+      const totalFletes = (orden.fletes || []).reduce((s, f) => s + (f.monto || 0), 0);
+      const totalUnidades = (orden.items || []).reduce((s, it) => s + (it.cantidadSolicitada || 0), 0);
+      const fletePorUnidad = totalUnidades > 0 ? Math.round((totalFletes / totalUnidades) * 100) / 100 : 0;
       socket.emit("response-orden-compra-detalle", {
         ...orden,
         proveedor,
         pagos,
         total: orden.montoTotal,
         totalPagado: orden.montoPagado,
+        totalFletes,
+        fletePorUnidad,
       });
     } catch (err) {
       console.error("Error request-orden-compra-detalle:", err);
@@ -3566,11 +3575,14 @@ Origen: ${producto.origen || ""}`;
       orden.timeline.push({ accion: msg, usuario: usuarioNombre || "Sistema", fecha: new Date() });
       await orden.save();
 
-      // Propagar costo al producto cuando se recibe la OC
+      // Propagar costo al producto cuando se recibe la OC (incluye flete proporcional)
       if (estado === "recibida" || estado === "recibida_parcial") {
+        const totalFletesOC = (orden.fletes || []).reduce((s, f) => s + (f.monto || 0), 0);
+        const totalUnidadesOC = (orden.items || []).reduce((s, it) => s + (it.cantidadSolicitada || 0), 0);
+        const fletePorUnidadOC = totalUnidadesOC > 0 ? Math.round((totalFletesOC / totalUnidadesOC) * 100) / 100 : 0;
         for (const item of orden.items || []) {
           if (item.productoId && item.precioUnitario) {
-            await Product.findByIdAndUpdate(item.productoId, { costo: item.precioUnitario });
+            await Product.findByIdAndUpdate(item.productoId, { costo: Math.round((item.precioUnitario + fletePorUnidadOC) * 100) / 100 });
           }
         }
       }
@@ -3598,6 +3610,41 @@ Origen: ${producto.origen || ""}`;
       io.emit("cambios");
     } catch (err) {
       console.error("Error cancelar-orden-compra:", err);
+    }
+  });
+
+  // ── Fletes OC ──
+  socket.on("agregar-flete-oc", async (data) => {
+    try {
+      const orden = await OrdenCompra.findById(data.ordenCompraId);
+      if (!orden) return;
+      orden.fletes.push({
+        descripcion: data.descripcion || "Flete",
+        monto: data.monto,
+        fecha: new Date().toISOString().slice(0, 10),
+        registradoPor: data.usuario || "Sistema",
+      });
+      orden.timeline.push({ accion: `Flete agregado: $${data.monto} - ${data.descripcion || "Flete"}`, usuario: data.usuario || "Sistema", fecha: new Date() });
+      await orden.save();
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error agregar-flete-oc:", err);
+    }
+  });
+
+  socket.on("eliminar-flete-oc", async (data) => {
+    try {
+      const orden = await OrdenCompra.findById(data.ordenCompraId);
+      if (!orden) return;
+      const flete = orden.fletes[data.fleteIndex];
+      if (!flete) return;
+      const desc = `Flete eliminado: $${flete.monto} - ${flete.descripcion || "Flete"}`;
+      orden.fletes.splice(data.fleteIndex, 1);
+      orden.timeline.push({ accion: desc, usuario: "Sistema", fecha: new Date() });
+      await orden.save();
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error eliminar-flete-oc:", err);
     }
   });
 
@@ -3849,10 +3896,20 @@ Reglas:
       // Sincronizar pagos MP de hoy antes de consultar
       await syncMpPagos(hoy);
 
-      const [ventasHoy, mpHoy, ultimasVentas] = await Promise.all([
+      const matchHoy = { fecha: hoy, notaCredito: { $ne: true } };
+      const groupVentas = { _id: null, total: { $sum: "$monto" }, cantidad: { $sum: 1 } };
+      const [ventasHoy, ventasVinosHoy, ventasReservasHoy, mpHoy, ultimasVentas] = await Promise.all([
         Venta.aggregate([
-          { $match: { fecha: hoy, notaCredito: { $ne: true } } },
-          { $group: { _id: null, total: { $sum: "$monto" }, cantidad: { $sum: 1 } } },
+          { $match: matchHoy },
+          { $group: groupVentas },
+        ]),
+        Venta.aggregate([
+          { $match: { ...matchHoy, $or: [{ idTurno: { $exists: false } }, { idTurno: null }] } },
+          { $group: groupVentas },
+        ]),
+        Venta.aggregate([
+          { $match: { ...matchHoy, idTurno: { $exists: true, $ne: null } } },
+          { $group: groupVentas },
         ]),
         PagoMp.aggregate([
           { $match: { fecha: hoy, estado: "approved" } },
@@ -3875,6 +3932,8 @@ Reglas:
       ]);
 
       const v = ventasHoy[0] || { total: 0, cantidad: 0 };
+      const vVinos = ventasVinosHoy[0] || { total: 0, cantidad: 0 };
+      const vReservas = ventasReservasHoy[0] || { total: 0, cantidad: 0 };
       const mp = mpHoy[0] || { totalCobrado: 0, netoCobrado: 0, comisiones: 0, totalGastos: 0, cantidadPagos: 0 };
 
       socket.emit("response-dashboard-data", {
@@ -3882,6 +3941,16 @@ Reglas:
           cantidad: v.cantidad,
           total: v.total,
           ticketPromedio: v.cantidad > 0 ? Math.round(v.total / v.cantidad) : 0,
+        },
+        ventasVinos: {
+          cantidad: vVinos.cantidad,
+          total: vVinos.total,
+          ticketPromedio: vVinos.cantidad > 0 ? Math.round(vVinos.total / vVinos.cantidad) : 0,
+        },
+        ventasReservas: {
+          cantidad: vReservas.cantidad,
+          total: vReservas.total,
+          ticketPromedio: vReservas.cantidad > 0 ? Math.round(vReservas.total / vReservas.cantidad) : 0,
         },
         mp: {
           totalCobrado: mp.totalCobrado,

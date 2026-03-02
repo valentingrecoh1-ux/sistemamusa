@@ -934,6 +934,223 @@ async function imprimirTicket(data) {
   return { filePath, base64: pdfBase64 };
 }
 
+/* ==========================================
+   Generar PDF A4 profesional (para MongoDB)
+   ========================================== */
+async function generarFacturaA4(data) {
+  const doc = new PDFDocument({
+    size: "A4",
+    margins: { top: 30, bottom: 30, left: 40, right: 40 },
+  });
+  const buffers = [];
+  doc.on("data", (chunk) => buffers.push(chunk));
+  const finished = new Promise((resolve) => doc.on("end", resolve));
+
+  // Constantes de layout
+  const ML = 40;          // margin left
+  const CW = 515.28;      // content width
+  const CR = 555.28;      // column right edge
+  const CX = ML + CW / 2; // center X (~297.64)
+
+  const pvStr = String(data.puntoDeVenta || 0).padStart(6, "0");
+  const nroStr = String(data.numeroComprobante || 0).padStart(8, "0");
+  const stringNro = `${pvStr}-${nroStr}`;
+  const { fecha, hora } = formatFechaCortaConHora(new Date());
+  const precioTotal = Number(data.precio ?? 0);
+  const descuento = Number(data.descuento ?? 0);
+  const isNC = !!data.notaCredito;
+  const docType = isNC ? "NOTA DE CREDITO" : "FACTURA";
+  const docLetter = data.factura || "B";
+
+  // ── HEADER ──
+  doc.lineWidth(1);
+  doc.rect(ML, 30, CW, 140).stroke();
+  doc.moveTo(CX, 30).lineTo(CX, 170).stroke();
+
+  // Izquierda: datos empresa
+  doc.font("Helvetica-Bold").fontSize(20).text("MUSA PALERMO", ML + 10, 42, { width: CX - ML - 20 });
+  doc.font("Helvetica").fontSize(10);
+  doc.text("Valentin Greco", ML + 10, 68);
+  doc.fontSize(9);
+  doc.text("CUIT e IIBB: 20-41858889-7", ML + 10, 83);
+  doc.text("ARAOZ 2785", ML + 10, 96);
+  doc.font("Helvetica-Bold").fontSize(9);
+  doc.text("IVA RESP. INSCRIPTO", ML + 10, 112);
+
+  // Derecha: tipo documento
+  const rX = CX + 10;
+  const rW = CW / 2 - 20;
+  doc.font("Helvetica-Bold").fontSize(13).text(docType, rX, 38, { width: rW, align: "center" });
+  doc.fontSize(36).text(docLetter, rX, 58, { width: rW, align: "center" });
+  doc.font("Helvetica").fontSize(10);
+  doc.text(`Nro: ${stringNro}`, rX, 105, { width: rW });
+  doc.text(`Fecha: ${fecha} ${hora}`, rX, 119, { width: rW });
+  doc.text(`C.A.E: ${data.CAE || ""}`, rX, 133, { width: rW });
+  doc.text(`Vto. CAE: ${data.vtoCAE || ""}`, rX, 147, { width: rW });
+
+  // ── DATOS CLIENTE ──
+  const cY = 180;
+  doc.rect(ML, cY, CW, 55).stroke();
+
+  if (data.factura === "A") {
+    doc.font("Helvetica-Bold").fontSize(10).text("Razon Social:", ML + 10, cY + 10);
+    doc.font("Helvetica").text(data.razonSocial ?? "", ML + 100, cY + 10, { width: 190 });
+    doc.font("Helvetica-Bold").text("CUIT:", 350, cY + 10);
+    doc.font("Helvetica").text(data.cuit ?? "", 385, cY + 10);
+    doc.font("Helvetica-Bold").text("Domicilio:", ML + 10, cY + 25);
+    doc.font("Helvetica").text(data.direccion ?? "", ML + 80, cY + 25, { width: 210 });
+    doc.font("Helvetica-Bold").text("IVA:", 350, cY + 25);
+    doc.font("Helvetica").text("RESP. INSCRIPTO", 378, cY + 25);
+    const locProv = [data.localidad, data.provincia].filter(Boolean).join(", ");
+    if (locProv) {
+      doc.font("Helvetica-Bold").text("Localidad:", ML + 10, cY + 40);
+      doc.font("Helvetica").text(locProv, ML + 80, cY + 40, { width: 400 });
+    }
+  } else if (data.dni && data.nombre) {
+    doc.font("Helvetica-Bold").fontSize(10).text("Nombre:", ML + 10, cY + 12);
+    doc.font("Helvetica").text(data.nombre, ML + 70, cY + 12, { width: 250 });
+    doc.font("Helvetica-Bold").text("DNI:", 350, cY + 12);
+    doc.font("Helvetica").text(String(data.dni), 380, cY + 12);
+    if (data.domicilio) {
+      doc.font("Helvetica-Bold").text("Domicilio:", ML + 10, cY + 28);
+      doc.font("Helvetica").text(data.domicilio, ML + 80, cY + 28, { width: 250 });
+    }
+    doc.font("Helvetica-Bold").text("IVA:", 350, cY + 28);
+    doc.font("Helvetica").text("CONSUMIDOR FINAL", 378, cY + 28);
+  } else {
+    doc.font("Helvetica").fontSize(12).text("A CONSUMIDOR FINAL", ML, cY + 18, { width: CW, align: "center" });
+  }
+
+  // ── TABLA ITEMS ──
+  const COL = [
+    { x: ML,        w: 45,  label: "Cant.",       align: "center" },
+    { x: ML + 45,   w: 240, label: "Descripcion", align: "left" },
+    { x: ML + 285,  w: 80,  label: "P. Unit.",    align: "right" },
+    { x: ML + 365,  w: 50,  label: "IVA %",       align: "center" },
+    { x: ML + 415,  w: CW - 375, label: "Importe", align: "right" },
+  ];
+  const ROW_H = 20;
+  const TABLE_Y = 250;
+  const MAX_Y = 680;
+
+  function drawHeaders(y) {
+    doc.save();
+    doc.rect(ML, y, CW, 22).fill("#E0E0E0");
+    doc.restore();
+    doc.rect(ML, y, CW, 22).stroke();
+    doc.font("Helvetica-Bold").fontSize(9).fillColor("#000000");
+    COL.forEach((c) => {
+      doc.text(c.label, c.x + 4, y + 6, { width: c.w - 8, align: c.align });
+    });
+    // Verticales header
+    COL.slice(1).forEach((c) => doc.moveTo(c.x, y).lineTo(c.x, y + 22).stroke());
+    return y + 22;
+  }
+
+  let tY = drawHeaders(TABLE_Y);
+
+  (data.productosCarrito || []).forEach((prod, idx) => {
+    if (tY + ROW_H > MAX_Y) {
+      doc.moveTo(ML, tY).lineTo(CR, tY).stroke();
+      doc.addPage();
+      tY = drawHeaders(30);
+    }
+    // Fondo alterno
+    if (idx % 2 === 1) {
+      doc.save();
+      doc.rect(ML, tY, CW, ROW_H).fill("#F7F7F7");
+      doc.restore();
+    }
+    doc.font("Helvetica").fontSize(9).fillColor("#000000");
+
+    const unitPrice = data.factura === "A" ? prod.venta / 1.21 : prod.venta;
+    const lineTotal = data.factura === "A"
+      ? (prod.carritoCantidad * prod.venta) / 1.21
+      : prod.carritoCantidad * prod.venta;
+
+    doc.text(String(prod.carritoCantidad || 0), COL[0].x + 4, tY + 5, { width: COL[0].w - 8, align: "center" });
+    doc.text(String(prod.nombre ?? "").substring(0, 50), COL[1].x + 4, tY + 5, { width: COL[1].w - 8, align: "left" });
+    doc.text(`$${unitPrice.toFixed(2)}`, COL[2].x + 4, tY + 5, { width: COL[2].w - 8, align: "right" });
+    doc.text("21%", COL[3].x + 4, tY + 5, { width: COL[3].w - 8, align: "center" });
+    doc.text(`$${lineTotal.toFixed(2)}`, COL[4].x + 4, tY + 5, { width: COL[4].w - 8, align: "right" });
+
+    // Bordes fila
+    doc.moveTo(ML, tY + ROW_H).lineTo(CR, tY + ROW_H).stroke();
+    doc.moveTo(ML, tY).lineTo(ML, tY + ROW_H).stroke();
+    doc.moveTo(CR, tY).lineTo(CR, tY + ROW_H).stroke();
+    COL.slice(1).forEach((c) => doc.moveTo(c.x, tY).lineTo(c.x, tY + ROW_H).stroke());
+
+    tY += ROW_H;
+  });
+
+  // Cierre tabla
+  doc.moveTo(ML, tY).lineTo(CR, tY).stroke();
+
+  // ── TOTALES ──
+  let totY = tY + 20;
+  const TL = 350; // total label X
+  const TV = 450; // total value X
+  const TW = CR - TV;
+
+  doc.font("Helvetica").fontSize(10);
+  if (descuento > 0) {
+    doc.text("Descuento:", TL, totY);
+    doc.text(`-$${descuento.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
+    totY += 16;
+  }
+  if (data.factura === "A") {
+    const neto = precioTotal / 1.21;
+    const iva = precioTotal - neto;
+    doc.text("Subtotal Neto:", TL, totY);
+    doc.text(`$${neto.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
+    totY += 16;
+    doc.text("IVA 21%:", TL, totY);
+    doc.text(`$${iva.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
+    totY += 16;
+  }
+
+  doc.moveTo(TL, totY).lineTo(CR, totY).stroke();
+  totY += 6;
+  doc.font("Helvetica-Bold").fontSize(14);
+  doc.text("TOTAL:", TL, totY);
+  const precioFmt = precioTotal.toLocaleString("es-AR", { minimumFractionDigits: 2 });
+  doc.text(`$${precioFmt}`, TV, totY, { width: TW, align: "right" });
+  totY += 30;
+
+  // ── QR + REFERENCIA ELECTRÓNICA ──
+  if (totY + 130 > 812) { doc.addPage(); totY = 30; }
+
+  doc.lineWidth(0.5);
+  doc.moveTo(ML, totY).lineTo(CR, totY).stroke();
+  totY += 10;
+
+  const tipoCmp = mapTipoCmp({ factura: data.factura, notaCredito: data.notaCredito });
+  const { docTipo: tipoDocRec, nroDoc: nroDocRec } = pickDocTipoYNumero(data);
+  const qrPayload = {
+    ver: 1, fecha: ymd(new Date()), cuit: Number(data.cuit_afip),
+    ptoVta: Number(data.puntoDeVenta), tipoCmp,
+    nroCmp: Number(data.numeroComprobante),
+    importe: Number(precioTotal.toFixed(2)), moneda: "PES", ctz: 1,
+    tipoDocRec: Number(tipoDocRec), nroDocRec: Number(nroDocRec),
+    tipoCodAut: "E", codAut: Number.parseInt(String(data.CAE), 10),
+  };
+  const b64Str = Buffer.from(JSON.stringify(qrPayload), "utf-8").toString("base64");
+  const qrUrl = `https://serviciosweb.afip.gob.ar/genericos/comprobantes/cae.aspx?p=${b64Str}`;
+  const qrBuffer = qr.imageSync(qrUrl, { type: "png", margin: 0, size: 6 });
+
+  doc.image(qrBuffer, ML + 10, totY, { fit: [100, 100] });
+  doc.font("Helvetica-Bold").fontSize(10);
+  doc.text("REFERENCIA ELECTRONICA", ML + 130, totY + 15);
+  doc.text("DEL COMPROBANTE", ML + 130, totY + 29);
+  doc.font("Helvetica").fontSize(10);
+  doc.text(`C.A.E: ${data.CAE || ""}`, ML + 130, totY + 50);
+  doc.text(`Vto.: ${data.vtoCAE || ""}`, ML + 130, totY + 65);
+
+  doc.end();
+  await finished;
+  return { base64: Buffer.concat(buffers).toString("base64") };
+}
+
 // ── OC Facturas upload ──
 app.post("/api/oc/:id/factura", uploadFacturaOC.single("archivo"), async (req, res) => {
   try {
@@ -1481,8 +1698,11 @@ Origen: ${producto.origen || ""}`;
         data.tipoDoc = data_factura.docTipo;
         data.productosCarrito = productosCarrito;
 
-        // Generamos el ticket y enviamos al frontend para imprimir via JSPM
-        const ticketA = await imprimirTicket(data);
+        // Generamos ticket térmico + PDF A4 en paralelo
+        const [ticketA, a4A] = await Promise.all([
+          imprimirTicket(data),
+          generarFacturaA4(data),
+        ]);
         socket.emit("ticket-listo", { base64: ticketA.base64 });
 
         // Creación de la venta en la base de datos
@@ -1509,7 +1729,7 @@ Origen: ${producto.origen || ""}`;
           // NUEVOS CAMPOS
           montoEfectivo,
           montoDigital,
-          facturaPdf: ticketA.base64,
+          facturaPdf: a4A.base64,
         };
         const ventaCreada1 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada1);
@@ -1541,8 +1761,11 @@ Origen: ${producto.origen || ""}`;
         data.tipoDoc = data_factura.docTipo;
         data.productosCarrito = productosCarrito;
 
-        // Generamos el ticket y enviamos al frontend para imprimir via JSPM
-        const ticketB = await imprimirTicket(data);
+        // Generamos ticket térmico + PDF A4 en paralelo
+        const [ticketB, a4B] = await Promise.all([
+          imprimirTicket(data),
+          generarFacturaA4(data),
+        ]);
         socket.emit("ticket-listo", { base64: ticketB.base64 });
 
         // Creación de la venta en la base de datos
@@ -1567,7 +1790,7 @@ Origen: ${producto.origen || ""}`;
           // NUEVOS CAMPOS
           montoEfectivo,
           montoDigital,
-          facturaPdf: ticketB.base64,
+          facturaPdf: a4B.base64,
         };
         const ventaCreada2 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada2);
@@ -1758,8 +1981,11 @@ Origen: ${producto.origen || ""}`;
         });
       }
     }
-    // Generar ticket y enviar al frontend para imprimir via JSPM
-    const ticketNC = await imprimirTicket(data);
+    // Generar ticket térmico + PDF A4 en paralelo
+    const [ticketNC, a4NC] = await Promise.all([
+      imprimirTicket(data),
+      generarFacturaA4(data),
+    ]);
     socket.emit("ticket-listo", { base64: ticketNC.base64 });
     const ptoVtaStr = String(data.puntoDeVenta || 0).padStart(6, "0");
     const nroNcStr = String(data.numeroComprobante || 0).padStart(8, "0");
@@ -1768,7 +1994,7 @@ Origen: ${producto.origen || ""}`;
       notaCredito: true,
       numeroNotaCredito: String(data.numeroComprobante || ""),
       stringNumeroNotaCredito,
-      notaCreditoPdf: ticketNC.base64,
+      notaCreditoPdf: a4NC.base64,
     });
     if (!venta.idTurno) {
       await Promise.all(data.productosCarrito.map((producto) =>
@@ -2341,7 +2567,10 @@ Origen: ${producto.origen || ""}`;
           { nombre: "RESERVA", carritoCantidad: 1, venta: turnoData.cobrado },
         ];
         data.descuento = 0;
-        const ticketTurno = await imprimirTicket(data);
+        const [ticketTurno, a4Turno] = await Promise.all([
+          imprimirTicket(data),
+          generarFacturaA4(data),
+        ]);
         socket.emit("ticket-listo", { base64: ticketTurno.base64 });
         const venta = {
           productos: data.productosCarrito,
@@ -2360,7 +2589,7 @@ Origen: ${producto.origen || ""}`;
           reservaFecha: turno.fecha,
           reservaTurno: turno.turno,
           descuento: 0,
-          facturaPdf: ticketTurno.base64,
+          facturaPdf: a4Turno.base64,
         };
         const ventaTurno1 = await Venta.create(venta);
         autoLinkMpPayment(ventaTurno1);

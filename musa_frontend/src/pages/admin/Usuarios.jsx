@@ -116,7 +116,13 @@ export default function Usuarios({ usuario }) {
 
   const guardarPermisos = () => {
     if (!permisosModal) return;
-    socket.emit('guardar-usuario', { _id: permisosModal._id, permisos: permisosTemp });
+    socket.emit('guardar-usuario', { _id: permisosModal._id, permisos: permisosTemp }, (res) => {
+      if (res?.error) {
+        alert('Error al guardar permisos: ' + res.error);
+        return;
+      }
+      socket.emit('request-usuarios', { page, search });
+    });
     setPermisosModal(null);
     setPermisosTemp([]);
   };

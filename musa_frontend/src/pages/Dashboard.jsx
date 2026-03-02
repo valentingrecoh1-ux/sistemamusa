@@ -159,7 +159,7 @@ export default function Dashboard({ usuario }) {
         </div>
 
         <div className={s.section}>
-          <div className={s.sectionHeader} onClick={() => navegar('/caja')}>
+          <div className={s.sectionHeader} onClick={() => navegar('/caja', { state: { tab: 'mercadopago' } })}>
             <div className={s.sectionTitle}><i className="bi bi-credit-card"></i> MercadoPago Hoy</div>
             <i className={`bi bi-arrow-right ${s.sectionArrow}`}></i>
           </div>

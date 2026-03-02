@@ -341,27 +341,38 @@ async function connectWhatsApp() {
 
     waSocket = makeWASocket({
       auth: state,
-      logger: pino({ level: "silent" }),
+      logger: pino({ level: "warn" }),
       printQRInTerminal: false,
       browser: ["MUSA Palermo", "Chrome", "1.0.0"],
     });
 
     waSocket.ev.on("creds.update", saveCreds);
 
+    // Safety: si en 30s no llega QR ni conexión, resetear
+    const safetyTimer = setTimeout(() => {
+      if (waStatus === "connecting") {
+        console.warn("WhatsApp: timeout esperando QR, reseteando");
+        waStatus = "disconnected";
+      }
+    }, 30000);
+
     waSocket.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
       if (qr) {
         waQR = await QRCode.toDataURL(qr);
         waStatus = "qr";
+        clearTimeout(safetyTimer);
       }
 
       if (connection === "open") {
         waStatus = "connected";
         waQR = null;
         waReconnectDelay = 5000;
+        clearTimeout(safetyTimer);
         console.log("WhatsApp conectado");
       }
 
       if (connection === "close") {
+        clearTimeout(safetyTimer);
         waQR = null;
         const code = lastDisconnect?.error?.output?.statusCode;
 
@@ -379,7 +390,7 @@ async function connectWhatsApp() {
       }
     });
   } catch (e) {
-    console.error("WhatsApp error:", e.message);
+    console.error("WhatsApp error:", e.message, e.stack);
     waStatus = "disconnected";
     waSocket = null;
   }
@@ -476,12 +487,12 @@ app.post("/api/whatsapp/connect", async (req, res) => {
   if (waStatus === "connected" && waSocket)
     return res.json({ status: "connected", qr: null });
 
-  connectWhatsApp();
+  await connectWhatsApp();
 
-  // Esperar hasta 15s por QR o conexión
-  for (let i = 0; i < 15; i++) {
+  // Esperar hasta 20s por QR o conexión
+  for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 1000));
-    if (waQR || waStatus === "connected") break;
+    if (waQR || waStatus === "connected" || waStatus === "disconnected") break;
   }
 
   res.json({ status: waStatus, qr: waQR });

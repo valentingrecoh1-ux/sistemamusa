@@ -125,7 +125,9 @@ function Caja({ usuario }) {
         setGastoEvento(location.state.gastoEvento);
       }
       setTab("operaciones");
-      // Clear navigation state to avoid re-prefilling on re-render
+      navegar(location.pathname, { replace: true, state: null });
+    } else if (location.state?.tab) {
+      setTab(location.state.tab);
       navegar(location.pathname, { replace: true, state: null });
     }
   }, []);

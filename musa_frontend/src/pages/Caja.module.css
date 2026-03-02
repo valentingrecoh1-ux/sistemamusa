@@ -1119,13 +1119,16 @@
   }
 
   .btnRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 6px;
   }
 
   .btnRow button {
     padding: 10px 8px;
-    font-size: 11px;
+    font-size: 12px;
     min-height: 44px;
+    width: 100%;
   }
 
   .cierreBtn {
@@ -1316,11 +1319,7 @@
     gap: 10px;
   }
 
-  /* Botones tipo 2x2 en pantallas chicas */
-  .btnRow button {
-    flex: 1 1 calc(50% - 4px);
-    min-width: calc(50% - 4px);
-  }
+  /* btnRow ya usa grid 2-col desde 768px */
 }
 
 @media (max-width: 380px) {

@@ -156,6 +156,14 @@ export default function Setup() {
     setWaLoading(false);
   };
 
+  const disconnectWa = async () => {
+    try {
+      await fetch(`${IP()}/api/whatsapp/disconnect`, { method: 'POST' });
+      setWaStatus('disconnected');
+      setWaQr(null);
+    } catch (e) { /* ignore */ }
+  };
+
   const handleServiceCardClick = (key, svc) => {
     if (key === 'whatsapp' && svc.estado !== 'connected') {
       setWaModal(true);
@@ -307,6 +315,7 @@ export default function Setup() {
                 <div className={s.waConnected}>
                   <i className="bi bi-check-circle-fill" />
                   <span>WhatsApp conectado</span>
+                  <button className={s.waDisconnectBtn} onClick={disconnectWa}>Desconectar</button>
                 </div>
               ) : waQr ? (
                 <div className={s.waQrWrap}>
@@ -314,11 +323,16 @@ export default function Setup() {
                   <img src={waQr} alt="QR WhatsApp" className={s.waQrImg} />
                   <p className={s.waQrHint}>WhatsApp {'>'} Dispositivos vinculados {'>'} Vincular dispositivo</p>
                 </div>
+              ) : waLoading || waStatus === 'connecting' ? (
+                <div className={s.waConnectWrap}>
+                  <p>Conectando con WhatsApp, espera unos segundos...</p>
+                  <div className={s.waSpinner} />
+                </div>
               ) : (
                 <div className={s.waConnectWrap}>
                   <p>WhatsApp no esta conectado. Presiona para generar el codigo QR.</p>
                   <button className={s.waConnectBtn} onClick={connectWa} disabled={waLoading}>
-                    {waLoading ? 'Conectando...' : 'Conectar WhatsApp'}
+                    Conectar WhatsApp
                   </button>
                 </div>
               )}

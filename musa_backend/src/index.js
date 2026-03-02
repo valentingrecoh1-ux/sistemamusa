@@ -3987,6 +3987,7 @@ Reglas:
               totalCobrado: { $sum: { $cond: [{ $eq: ["$tipoMovimiento", "cobro"] }, "$monto", 0] } },
               netoCobrado: { $sum: { $cond: [{ $eq: ["$tipoMovimiento", "cobro"] }, "$netoRecibido", 0] } },
               comisiones: { $sum: { $cond: [{ $eq: ["$tipoMovimiento", "cobro"] }, "$comisionMp", 0] } },
+              retenciones: { $sum: { $cond: [{ $eq: ["$tipoMovimiento", "cobro"] }, "$retenciones", 0] } },
               totalGastos: { $sum: { $cond: [{ $eq: ["$tipoMovimiento", "gasto"] }, "$monto", 0] } },
               cantidadPagos: { $sum: 1 },
             },
@@ -4002,7 +4003,7 @@ Reglas:
       const v = ventasHoy[0] || { total: 0, cantidad: 0 };
       const vVinos = ventasVinosHoy[0] || { total: 0, cantidad: 0 };
       const vReservas = ventasReservasHoy[0] || { total: 0, cantidad: 0 };
-      const mp = mpHoy[0] || { totalCobrado: 0, netoCobrado: 0, comisiones: 0, totalGastos: 0, cantidadPagos: 0 };
+      const mp = mpHoy[0] || { totalCobrado: 0, netoCobrado: 0, comisiones: 0, retenciones: 0, totalGastos: 0, cantidadPagos: 0 };
 
       socket.emit("response-dashboard-data", {
         ventas: {
@@ -4024,6 +4025,7 @@ Reglas:
           totalCobrado: mp.totalCobrado,
           neto: mp.netoCobrado,
           comisiones: mp.comisiones,
+          retenciones: mp.retenciones,
           gastos: mp.totalGastos,
           cantidadPagos: mp.cantidadPagos,
         },
@@ -4041,7 +4043,7 @@ Reglas:
       console.error("Error request-dashboard-data:", err);
       socket.emit("response-dashboard-data", {
         ventas: { cantidad: 0, total: 0, ticketPromedio: 0 },
-        mp: { totalCobrado: 0, neto: 0, comisiones: 0, gastos: 0, cantidadPagos: 0 },
+        mp: { totalCobrado: 0, neto: 0, comisiones: 0, retenciones: 0, gastos: 0, cantidadPagos: 0 },
         ultimasVentas: [],
       });
     }

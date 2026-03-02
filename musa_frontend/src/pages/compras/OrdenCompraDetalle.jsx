@@ -34,6 +34,12 @@ const getUnitPrice = (it, field, parsePriceFn) => {
   return it.tipoPrecio === 'caja6' ? Math.round((raw / 6) * 100) / 100 : raw;
 };
 
+/** Cantidad real de unidades: si tipoPrecio es 'caja6', multiplica x6 */
+const getRealQty = (it) => {
+  const cant = Number(it.cantidad) || 0;
+  return it.tipoPrecio === 'caja6' ? cant * 6 : cant;
+};
+
 export default function OrdenCompraDetalle({ usuario }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -187,8 +193,8 @@ export default function OrdenCompraDetalle({ usuario }) {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const itemSubSinIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioUnitario', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
-  const itemSubConIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
+  const itemSubSinIVA = (it) => getRealQty(it) * getUnitPrice(it, 'precioUnitario', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
+  const itemSubConIVA = (it) => getRealQty(it) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
 
   const totalSinIVA = () => items.reduce((sum, it) => sum + itemSubSinIVA(it), 0);
   const totalConIVA = () => items.reduce((sum, it) => sum + itemSubConIVA(it), 0);
@@ -245,12 +251,15 @@ export default function OrdenCompraDetalle({ usuario }) {
   };
 
   const buildItems = () =>
-    items.filter((it) => it.descripcion).map((it) => ({
-      descripcion: it.descripcion,
-      cantidad: Number(it.cantidad) || 1,
-      precioUnitario: getUnitPrice(it, 'precioUnitario', parsePrice),
-      bonif: Number(it.bonif) || 0,
-    }));
+    items.filter((it) => it.descripcion).map((it) => {
+      const cant = Number(it.cantidad) || 1;
+      return {
+        descripcion: it.descripcion,
+        cantidad: it.tipoPrecio === 'caja6' ? cant * 6 : cant,
+        precioUnitario: getUnitPrice(it, 'precioUnitario', parsePrice),
+        bonif: Number(it.bonif) || 0,
+      };
+    });
 
   const submitNuevaOC = (extraValidation) => {
     if (extraValidation && !extraValidation()) return;
@@ -434,8 +443,8 @@ export default function OrdenCompraDetalle({ usuario }) {
     setEditItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const editItemSubSinIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioUnitario', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
-  const editItemSubConIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
+  const editItemSubSinIVA = (it) => getRealQty(it) * getUnitPrice(it, 'precioUnitario', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
+  const editItemSubConIVA = (it) => getRealQty(it) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
   const editTotalSinIVA = () => editItems.reduce((sum, it) => sum + editItemSubSinIVA(it), 0);
   const editTotalConIVA = () => editItems.reduce((sum, it) => sum + editItemSubConIVA(it), 0);
 
@@ -446,12 +455,15 @@ export default function OrdenCompraDetalle({ usuario }) {
       id,
       proveedor: editProveedorId,
       fecha: editFecha,
-      items: editItems.map((it) => ({
-        descripcion: it.descripcion,
-        cantidad: Number(it.cantidad) || 1,
-        precioUnitario: getUnitPrice(it, 'precioUnitario', parsePrice),
-        bonif: Number(it.bonif) || 0,
-      })),
+      items: editItems.map((it) => {
+        const cant = Number(it.cantidad) || 1;
+        return {
+          descripcion: it.descripcion,
+          cantidad: it.tipoPrecio === 'caja6' ? cant * 6 : cant,
+          precioUnitario: getUnitPrice(it, 'precioUnitario', parsePrice),
+          bonif: Number(it.bonif) || 0,
+        };
+      }),
       factura: editFactura ? `${editFacturaType} ${editFactura}` : '',
       notas: editNotas,
     });
@@ -562,23 +574,27 @@ export default function OrdenCompraDetalle({ usuario }) {
                     />
                   </td>
                   <td>
-                    <input
-                      className={s.itemInput}
-                      type="number"
-                      min="1"
-                      value={item.cantidad}
-                      onChange={(e) => handleItemChange(i, 'cantidad', e.target.value)}
-                    />
+                    <div style={{display:'flex',alignItems:'center',gap:3}}>
+                      <input
+                        className={s.itemInput}
+                        type="number"
+                        min="1"
+                        value={item.cantidad}
+                        onChange={(e) => handleItemChange(i, 'cantidad', e.target.value)}
+                        title={item.tipoPrecio === 'caja6' ? `${item.cantidad} caja(s) = ${getRealQty(item)} unid.` : ''}
+                      />
+                      {item.tipoPrecio === 'caja6' && <span style={{fontSize:'0.65rem',color:'var(--info)',whiteSpace:'nowrap'}}>{getRealQty(item)}u</span>}
+                    </div>
                   </td>
                   <td>
                     <div className={s.tipoPrecioToggle}>
                       <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
-                        <i className="bi bi-cup-straw" />
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2h8l-1 9H9L8 2z"/><path d="M12 11v7"/><path d="M8 18h8"/></svg>
                       </button>
                       <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
-                        <i className="bi bi-box-seam" />
+                        <i className="bi bi-box-seam" /><span style={{fontSize:'0.65rem',marginLeft:1}}>6</span>
                       </button>
                     </div>
                   </td>
@@ -825,18 +841,22 @@ export default function OrdenCompraDetalle({ usuario }) {
                       placeholder="Producto" />
                   </td>
                   <td>
-                    <input className={s.itemInput} type="number" min="1" value={item.cantidad}
-                      onChange={(e) => handleEditItemChange(i, 'cantidad', e.target.value)} />
+                    <div style={{display:'flex',alignItems:'center',gap:3}}>
+                      <input className={s.itemInput} type="number" min="1" value={item.cantidad}
+                        onChange={(e) => handleEditItemChange(i, 'cantidad', e.target.value)}
+                        title={item.tipoPrecio === 'caja6' ? `${item.cantidad} caja(s) = ${getRealQty(item)} unid.` : ''} />
+                      {item.tipoPrecio === 'caja6' && <span style={{fontSize:'0.65rem',color:'var(--info)',whiteSpace:'nowrap'}}>{getRealQty(item)}u</span>}
+                    </div>
                   </td>
                   <td>
                     <div className={s.tipoPrecioToggle}>
                       <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleEditItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
-                        <i className="bi bi-cup-straw" />
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2h8l-1 9H9L8 2z"/><path d="M12 11v7"/><path d="M8 18h8"/></svg>
                       </button>
                       <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleEditItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
-                        <i className="bi bi-box-seam" />
+                        <i className="bi bi-box-seam" /><span style={{fontSize:'0.65rem',marginLeft:1}}>6</span>
                       </button>
                     </div>
                   </td>

@@ -16,7 +16,7 @@ export default function Dashboard({ usuario }) {
     ventas: { cantidad: 0, total: 0, ticketPromedio: 0 },
     ventasVinos: { cantidad: 0, total: 0, ticketPromedio: 0 },
     ventasReservas: { cantidad: 0, total: 0, ticketPromedio: 0 },
-    mp: { totalCobrado: 0, neto: 0, comisiones: 0, gastos: 0, cantidadPagos: 0 },
+    mp: { totalCobrado: 0, neto: 0, comisiones: 0, retenciones: 0, gastos: 0, cantidadPagos: 0 },
     ultimasVentas: [],
   });
   const [mpComisAcum, setMpComisAcum] = useState({ comisiones: 0, retenciones: 0, desde: null, hasta: null, cantidadPagos: 0 });
@@ -169,13 +169,25 @@ export default function Dashboard({ usuario }) {
           <div className={s.grid}>
             <KPICard label="Cobrado" value={money(dashData.mp.totalCobrado)} />
             <KPICard label="Neto" value={money(dashData.mp.neto)} />
-            <KPICard label="Comisiones" value={money(dashData.mp.comisiones)} />
+            <KPICard label="Comisiones y Ret." value={money((dashData.mp.comisiones || 0) + (dashData.mp.retenciones || 0))} />
           </div>
           <div className={s.mpMiniStats}>
             <div className={s.mpMiniStat}>
               <span className={s.mpMiniStatLabel}>Pagos procesados</span>
               <span className={s.mpMiniStatValue}>{dashData.mp.cantidadPagos}</span>
             </div>
+            {dashData.mp.comisiones > 0 && (
+              <div className={s.mpMiniStat}>
+                <span className={s.mpMiniStatLabel}>Comisiones</span>
+                <span className={`${s.mpMiniStatValue} ${s.mpMiniStatNeg}`}>{money(dashData.mp.comisiones)}</span>
+              </div>
+            )}
+            {dashData.mp.retenciones > 0 && (
+              <div className={s.mpMiniStat}>
+                <span className={s.mpMiniStatLabel}>Retenciones</span>
+                <span className={`${s.mpMiniStatValue} ${s.mpMiniStatNeg}`}>{money(dashData.mp.retenciones)}</span>
+              </div>
+            )}
             {dashData.mp.gastos > 0 && (
               <div className={s.mpMiniStat}>
                 <span className={s.mpMiniStatLabel}>Gastos MP</span>

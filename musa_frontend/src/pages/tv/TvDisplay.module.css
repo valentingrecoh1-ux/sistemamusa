@@ -1,8 +1,6 @@
 .screen {
   position: fixed;
   inset: 0;
-  width: 1920px;
-  height: 1080px;
   width: 100vw;
   height: 100vh;
   background: #000;
@@ -10,6 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 99999;
 }
 
 .image {

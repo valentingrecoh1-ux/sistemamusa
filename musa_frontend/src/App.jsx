@@ -35,6 +35,9 @@ import Setup from './pages/admin/Setup';
 import { socket } from './main';
 import { connectQZ, printPDF, findPrinter } from './utils/qzPrint';
 
+// Impresoras virtuales que no sirven para tickets
+const VIRTUAL_PRINTERS = /xps|pdf|onenote|fax|send to|microsoft print|nul|file/i;
+
 // Nombre de impresora para tickets (se auto-detecta o se usa la default)
 let ticketPrinterName = null;
 
@@ -43,14 +46,13 @@ function AdminApp({ usuario, onLogout }) {
   useEffect(() => {
     connectQZ().then(async (ok) => {
       if (!ok) return;
-      // Buscar impresora termica comun (POS-80, Epson, Star, etc.)
-      // Si no encuentra, usa la default del sistema
       try {
         const printers = await import('qz-tray').then((qz) => qz.default.printers.find());
         if (Array.isArray(printers) && printers.length > 0) {
-          // Preferir impresora que NO sea Godex (la Godex es para etiquetas)
-          const nonGodex = printers.filter((p) => !/godex/i.test(p));
-          ticketPrinterName = nonGodex[0] || printers[0];
+          // Filtrar Godex (etiquetas) e impresoras virtuales (XPS, PDF, etc.)
+          const fisicas = printers.filter((p) => !VIRTUAL_PRINTERS.test(p) && !/godex/i.test(p));
+          ticketPrinterName = fisicas[0] || null; // null = fallback a dialogo navegador
+          console.log('QZ Tray impresoras:', printers, '→ ticket:', ticketPrinterName);
         }
       } catch { /* QZ no disponible, se usa fallback */ }
     });

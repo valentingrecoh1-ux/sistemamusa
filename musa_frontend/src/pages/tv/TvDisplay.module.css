@@ -32,7 +32,7 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  padding: 4px;
+  padding: 3px;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -50,11 +50,11 @@
   background: conic-gradient(
     from 0deg,
     transparent 0%,
-    transparent 70%,
-    rgba(168, 85, 247, 0.9) 78%,
-    rgba(236, 72, 153, 1) 82%,
-    rgba(251, 191, 36, 0.9) 86%,
-    transparent 92%,
+    transparent 88%,
+    rgba(255, 255, 255, 0.7) 91%,
+    rgba(255, 255, 255, 1) 93%,
+    rgba(255, 255, 255, 0.7) 95%,
+    transparent 97%,
     transparent 100%
   );
   animation: rotateBorder 4s linear infinite;

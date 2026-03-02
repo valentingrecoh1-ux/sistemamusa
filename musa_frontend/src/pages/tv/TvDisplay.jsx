@@ -89,6 +89,7 @@ export default function TvDisplay() {
         src={`${IP()}/api/tv/imagen/${medio._id}`}
         alt=""
       />
+      <div className={s.borderGlow} />
     </div>
   );
 }

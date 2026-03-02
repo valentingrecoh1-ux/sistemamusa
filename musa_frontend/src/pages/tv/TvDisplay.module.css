@@ -25,3 +25,40 @@
 .fadeOut {
   opacity: 0;
 }
+
+/* Luz giratoria en el borde */
+.borderGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.borderGlow::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    transparent 70%,
+    rgba(168, 85, 247, 0.9) 78%,
+    rgba(236, 72, 153, 1) 82%,
+    rgba(251, 191, 36, 0.9) 86%,
+    transparent 92%,
+    transparent 100%
+  );
+  animation: rotateBorder 4s linear infinite;
+}
+
+.borderGlow::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  background: #000;
+}
+
+@keyframes rotateBorder {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1076,10 +1076,8 @@ async function generarFacturaA4(data) {
 
     const pv = Number(prod.venta) || 0;
     const cant = Number(prod.carritoCantidad) || 0;
-    const unitPrice = data.factura === "A" ? pv / 1.21 : pv;
-    const lineTotal = data.factura === "A"
-      ? (cant * pv) / 1.21
-      : cant * pv;
+    const unitPrice = pv / 1.21;
+    const lineTotal = (cant * pv) / 1.21;
 
     doc.text(String(prod.carritoCantidad || 0), COL[0].x + 4, tY + 5, { width: COL[0].w - 8, align: "center" });
     doc.text(String(prod.nombre ?? "").substring(0, 50), COL[1].x + 4, tY + 5, { width: COL[1].w - 8, align: "left" });
@@ -1111,16 +1109,14 @@ async function generarFacturaA4(data) {
     doc.text(`-$${descuento.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
     totY += 16;
   }
-  if (data.factura === "A") {
-    const neto = precioTotal / 1.21;
-    const iva = precioTotal - neto;
-    doc.text("Subtotal Neto:", TL, totY);
-    doc.text(`$${neto.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
-    totY += 16;
-    doc.text("IVA 21%:", TL, totY);
-    doc.text(`$${iva.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
-    totY += 16;
-  }
+  const neto = precioTotal / 1.21;
+  const iva = precioTotal - neto;
+  doc.text("Subtotal Neto:", TL, totY);
+  doc.text(`$${neto.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
+  totY += 16;
+  doc.text("IVA 21%:", TL, totY);
+  doc.text(`$${iva.toFixed(2)}`, TV, totY, { width: TW, align: "right" });
+  totY += 16;
 
   doc.moveTo(TL, totY).lineTo(CR, totY).stroke();
   totY += 6;

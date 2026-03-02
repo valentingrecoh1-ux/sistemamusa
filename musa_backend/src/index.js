@@ -1055,7 +1055,7 @@ async function generarFacturaA4(data) {
     { x: ML + 45,   w: 240, label: "Descripcion", align: "left" },
     { x: ML + 285,  w: 80,  label: "P. Unit.",    align: "right" },
     { x: ML + 365,  w: 50,  label: "IVA %",       align: "center" },
-    { x: ML + 415,  w: CW - 375, label: "Importe", align: "right" },
+    { x: ML + 415,  w: CW - 415, label: "Importe", align: "right" },
   ];
   const ROW_H = 20;
   const TABLE_Y = 250;

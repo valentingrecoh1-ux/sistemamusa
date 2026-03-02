@@ -118,6 +118,42 @@
   background-color: var(--accent-bg);
 }
 
+.distribuidorToggle {
+  display: flex;
+  align-items: center;
+}
+
+.distribuidorToggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.distribuidorToggle input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+.distribuidorSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+}
+
+.distribuidorTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .btnRow {
   display: flex;
   gap: 10px;

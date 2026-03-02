@@ -346,6 +346,15 @@ function Ventas({ usuario }) {
     };
   }, [fecha, page, filtroPago, filtroTipo, filtroNotaCredito]);
 
+  // Auto-refresh pagos MP mientras el modal está abierto
+  useEffect(() => {
+    if (!mpLinkModal || !mpLinkVenta) return;
+    const interval = setInterval(() => {
+      socket.emit("request-mp-sin-vincular", { fecha: mpLinkVenta.fecha });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [mpLinkModal, mpLinkVenta]);
+
   // Si venimos del Carrito con una venta DIGITAL/MIXTO, abrir modal MP
   useEffect(() => {
     const info = location.state?.mpLinkVenta;

@@ -3460,9 +3460,9 @@ Origen: ${producto.origen || ""}`;
       const query = {};
       if (search) {
         query.$or = [
+          { bodega: { $regex: search, $options: "i" } },
           { nombre: { $regex: search, $options: "i" } },
           { cuit: { $regex: search, $options: "i" } },
-          { contacto: { $regex: search, $options: "i" } },
         ];
       }
       const total = await Proveedor.countDocuments(query);
@@ -4033,7 +4033,7 @@ Reglas:
           _id: vt._id,
           monto: vt.monto,
           formaPago: vt.formaPago,
-          factura: vt.stringNumeroFactura || `#${vt.numeroVenta}`,
+          factura: vt.stringNumeroFactura || (vt.numeroVenta ? `#${vt.numeroVenta}` : "Sin factura"),
           turno: vt.nombreTurno || "",
           hora: vt.createdAt,
           cantProductos: vt.productos ? vt.productos.length : 0,

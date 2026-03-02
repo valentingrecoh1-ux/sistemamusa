@@ -2,11 +2,9 @@ const mongoose = require("mongoose");
 
 const proveedorSchema = new mongoose.Schema(
   {
-    nombre: { type: String, required: true },
-    contacto: { type: String },
+    bodega: { type: String, required: true },
+    nombre: { type: String },
     telefono: { type: String },
-    email: { type: String },
-    direccion: { type: String },
     cuit: { type: String },
     cbu: { type: String },
     alias: { type: String },
@@ -14,6 +12,11 @@ const proveedorSchema = new mongoose.Schema(
     condicionPago: { type: String, default: "" },
     notas: { type: String },
     activo: { type: Boolean, default: true },
+    esDistribuidor: { type: Boolean, default: false },
+    distribuidorNombre: { type: String },
+    distribuidorContacto: { type: String },
+    distribuidorTelefono: { type: String },
+    distribuidorEmail: { type: String },
   },
   { timestamps: true }
 );

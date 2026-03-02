@@ -4,7 +4,7 @@ import { IP } from '../../main';
 import Pagination from '../../components/shared/Pagination';
 import s from './Proveedores.module.css';
 
-const EMPTY = { nombre: '', cuit: '', contacto: '', email: '', telefono: '', direccion: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '' };
+const EMPTY = { bodega: '', nombre: '', telefono: '', cuit: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '', esDistribuidor: false, distribuidorNombre: '', distribuidorContacto: '', distribuidorTelefono: '', distribuidorEmail: '' };
 
 export default function Proveedores({ usuario }) {
   const puedeEditar = usuario?.rol === 'admin';
@@ -49,7 +49,7 @@ export default function Proveedores({ usuario }) {
   };
 
   const handleSubmit = () => {
-    if (!form.nombre.trim()) return;
+    if (!form.bodega.trim()) return;
     const payload = editId ? { ...form, _id: editId } : { ...form };
     socket.emit('guardar-proveedor', payload);
     setForm({ ...EMPTY });
@@ -58,17 +58,20 @@ export default function Proveedores({ usuario }) {
 
   const handleEdit = (prov) => {
     setForm({
+      bodega: prov.bodega || '',
       nombre: prov.nombre || '',
-      cuit: prov.cuit || '',
-      contacto: prov.contacto || '',
-      email: prov.email || '',
       telefono: prov.telefono || '',
-      direccion: prov.direccion || '',
+      cuit: prov.cuit || '',
       cbu: prov.cbu || '',
       alias: prov.alias || '',
       banco: prov.banco || '',
       condicionPago: prov.condicionPago || '',
       notas: prov.notas || '',
+      esDistribuidor: prov.esDistribuidor || false,
+      distribuidorNombre: prov.distribuidorNombre || '',
+      distribuidorContacto: prov.distribuidorContacto || '',
+      distribuidorTelefono: prov.distribuidorTelefono || '',
+      distribuidorEmail: prov.distribuidorEmail || '',
     });
     setEditId(prov._id);
   };
@@ -90,25 +93,14 @@ export default function Proveedores({ usuario }) {
           <h3 className={s.formTitle}>{editId ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h3>
 
           <div className={s.inputGroup}>
-            <span>Nombre *</span>
-            <input type="text" value={form.nombre} onChange={(e) => handleChange('nombre', e.target.value)} placeholder="Razon social" />
+            <span>Bodega *</span>
+            <input type="text" value={form.bodega} onChange={(e) => handleChange('bodega', e.target.value)} placeholder="Nombre de la bodega" />
           </div>
 
           <div className={s.row2}>
-            <div className={s.inputGroup}>
-              <span>CUIT</span>
-              <input type="text" value={form.cuit} onChange={(e) => handleChange('cuit', e.target.value)} placeholder="XX-XXXXXXXX-X" />
-            </div>
             <div className={s.inputGroup}>
               <span>Contacto</span>
-              <input type="text" value={form.contacto} onChange={(e) => handleChange('contacto', e.target.value)} />
-            </div>
-          </div>
-
-          <div className={s.row2}>
-            <div className={s.inputGroup}>
-              <span>Email</span>
-              <input type="email" value={form.email} onChange={(e) => handleChange('email', e.target.value)} />
+              <input type="text" value={form.nombre} onChange={(e) => handleChange('nombre', e.target.value)} placeholder="Nombre del contacto" />
             </div>
             <div className={s.inputGroup}>
               <span>Telefono</span>
@@ -117,8 +109,8 @@ export default function Proveedores({ usuario }) {
           </div>
 
           <div className={s.inputGroup}>
-            <span>Direccion</span>
-            <input type="text" value={form.direccion} onChange={(e) => handleChange('direccion', e.target.value)} />
+            <span>CUIT</span>
+            <input type="text" value={form.cuit} onChange={(e) => handleChange('cuit', e.target.value)} placeholder="XX-XXXXXXXX-X" />
           </div>
 
           <div className={s.row2}>
@@ -146,6 +138,38 @@ export default function Proveedores({ usuario }) {
             <span>Notas</span>
             <textarea value={form.notas} onChange={(e) => handleChange('notas', e.target.value)} />
           </div>
+
+          {/* Distribuidor */}
+          <div className={s.distribuidorToggle}>
+            <label>
+              <input type="checkbox" checked={form.esDistribuidor} onChange={(e) => handleChange('esDistribuidor', e.target.checked)} />
+              <span>Tiene distribuidor</span>
+            </label>
+          </div>
+
+          {form.esDistribuidor && (
+            <div className={s.distribuidorSection}>
+              <div className={s.distribuidorTitle}>Datos del distribuidor</div>
+              <div className={s.inputGroup}>
+                <span>Nombre</span>
+                <input type="text" value={form.distribuidorNombre} onChange={(e) => handleChange('distribuidorNombre', e.target.value)} placeholder="Nombre del distribuidor" />
+              </div>
+              <div className={s.row2}>
+                <div className={s.inputGroup}>
+                  <span>Contacto</span>
+                  <input type="text" value={form.distribuidorContacto} onChange={(e) => handleChange('distribuidorContacto', e.target.value)} />
+                </div>
+                <div className={s.inputGroup}>
+                  <span>Telefono</span>
+                  <input type="text" value={form.distribuidorTelefono} onChange={(e) => handleChange('distribuidorTelefono', e.target.value)} />
+                </div>
+              </div>
+              <div className={s.inputGroup}>
+                <span>Email</span>
+                <input type="email" value={form.distribuidorEmail} onChange={(e) => handleChange('distribuidorEmail', e.target.value)} />
+              </div>
+            </div>
+          )}
 
           <div className={s.btnRow}>
             <button className={s.submitBtn} onClick={handleSubmit}>
@@ -180,10 +204,10 @@ export default function Proveedores({ usuario }) {
           <table className={s.table}>
             <thead>
               <tr>
-                <th>Nombre</th>
-                <th>CUIT</th>
+                <th>Bodega</th>
                 <th>Contacto</th>
                 <th>Telefono</th>
+                <th>Distribuidor</th>
                 <th>Cond. Pago</th>
                 <th>Estado</th>
                 {puedeEditar && <th>Acciones</th>}
@@ -194,10 +218,10 @@ export default function Proveedores({ usuario }) {
                 <tr className={s.emptyRow}><td colSpan={puedeEditar ? 7 : 6}>Sin proveedores</td></tr>
               ) : proveedores.map((prov) => (
                 <tr key={prov._id}>
-                  <td>{prov.nombre}</td>
-                  <td>{prov.cuit || '-'}</td>
-                  <td>{prov.contacto || '-'}</td>
+                  <td>{prov.bodega || prov.nombre}</td>
+                  <td>{prov.nombre || '-'}</td>
                   <td>{prov.telefono || '-'}</td>
+                  <td>{prov.esDistribuidor ? (prov.distribuidorNombre || 'Si') : '-'}</td>
                   <td>{prov.condicionPago || '-'}</td>
                   <td>
                     <button

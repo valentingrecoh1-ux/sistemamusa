@@ -120,7 +120,7 @@ export default function Dashboard({ usuario }) {
                 {dashData.ultimasVentas.map((v) => (
                   <div key={v._id} className={s.miniListItem}>
                     <div className={s.miniListLeft}>
-                      <span className={s.miniListName}>{v.factura}</span>
+                      <span className={s.miniListName}>{v.factura || `Venta #${v.numeroVenta || ''}`}</span>
                       <span className={s.miniListSub}>
                         {v.turno && `${v.turno} · `}
                         {v.cantProductos} prod. · {new Date(v.hora).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}

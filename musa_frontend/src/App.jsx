@@ -33,37 +33,47 @@ import Usuarios from './pages/admin/Usuarios';
 import Setup from './pages/admin/Setup';
 
 import { socket } from './main';
-import { connectQZ, printPDF, findPrinter } from './utils/qzPrint';
+import { connectQZ, printPDF, listPrinters } from './utils/qzPrint';
 
 // Impresoras virtuales que no sirven para tickets
 const VIRTUAL_PRINTERS = /xps|pdf|onenote|fax|send to|microsoft print|nul|file/i;
 
 // Nombre de impresora para tickets (se auto-detecta o se usa la default)
 let ticketPrinterName = null;
+let qzReady = false;
 
 function AdminApp({ usuario, onLogout }) {
   // Intentar conectar QZ Tray al montar e identificar impresora de tickets
   useEffect(() => {
-    connectQZ().then(async (ok) => {
+    const initQZ = async () => {
+      const ok = await connectQZ();
+      console.log('QZ Tray conectado:', ok);
       if (!ok) return;
       try {
-        const printers = await import('qz-tray').then((qz) => qz.default.printers.find());
+        const printers = await listPrinters();
+        console.log('QZ Tray impresoras encontradas:', printers);
         if (Array.isArray(printers) && printers.length > 0) {
           // Filtrar Godex (etiquetas) e impresoras virtuales (XPS, PDF, etc.)
           const fisicas = printers.filter((p) => !VIRTUAL_PRINTERS.test(p) && !/godex/i.test(p));
-          ticketPrinterName = fisicas[0] || null; // null = fallback a dialogo navegador
-          console.log('QZ Tray impresoras:', printers, '→ ticket:', ticketPrinterName);
+          ticketPrinterName = fisicas[0] || null;
+          console.log('QZ Tray → ticket printer:', ticketPrinterName);
         }
-      } catch { /* QZ no disponible, se usa fallback */ }
-    });
+      } catch (err) {
+        console.error('QZ Tray error detectando impresoras:', err);
+      }
+      qzReady = true;
+    };
+    initQZ();
   }, []);
 
   // Impresion de tickets: QZ Tray silencioso → fallback dialogo navegador
   useEffect(() => {
     const handleTicket = async ({ base64 }) => {
+      console.log('ticket-listo recibido, printer:', ticketPrinterName, 'qzReady:', qzReady);
       // Intentar imprimir silenciosamente via QZ Tray
       if (ticketPrinterName) {
         const ok = await printPDF(ticketPrinterName, base64);
+        console.log('QZ printPDF resultado:', ok);
         if (ok) return; // Impreso silenciosamente
       }
 

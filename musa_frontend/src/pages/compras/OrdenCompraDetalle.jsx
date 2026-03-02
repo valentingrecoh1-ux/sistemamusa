@@ -590,7 +590,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                     <div className={s.tipoPrecioToggle}>
                       <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
-                        <span style={{fontSize:'0.65rem',marginRight:2}}>1</span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 0h5l-.8 7H6.3L5.5 0zM7 8h2v5H7V8zm-2 6h6v1.5H5V14z"/></svg>
+                        <span style={{fontSize:'0.65rem',marginRight:2}}>1</span><svg width="12" height="14" viewBox="0 0 12 16" fill="currentColor"><rect x="4.5" y="0" width="3" height="4" rx="0.5"/><path d="M4 4.5h4L9 8.5v5.5a2 2 0 01-2 2H5a2 2 0 01-2-2V8.5L4 4.5z"/></svg>
                       </button>
                       <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
@@ -852,7 +852,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                     <div className={s.tipoPrecioToggle}>
                       <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleEditItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
-                        <span style={{fontSize:'0.65rem',marginRight:2}}>1</span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 0h5l-.8 7H6.3L5.5 0zM7 8h2v5H7V8zm-2 6h6v1.5H5V14z"/></svg>
+                        <span style={{fontSize:'0.65rem',marginRight:2}}>1</span><svg width="12" height="14" viewBox="0 0 12 16" fill="currentColor"><rect x="4.5" y="0" width="3" height="4" rx="0.5"/><path d="M4 4.5h4L9 8.5v5.5a2 2 0 01-2 2H5a2 2 0 01-2-2V8.5L4 4.5z"/></svg>
                       </button>
                       <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleEditItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">

@@ -965,9 +965,7 @@ function Ventas({ usuario }) {
                   <span>{mpLinkVenta.stringNumeroFactura || `Venta #${mpLinkVenta.numeroVenta}`}</span>
                   {mpLinkVenta.createdAt && (
                     <div style={{fontSize:'0.75rem',opacity:0.6,marginTop:2}}>
-                      {new Date(mpLinkVenta.createdAt).toLocaleDateString("es-AR",{day:"2-digit",month:"short",year:"2-digit"})}
-                      {" "}
-                      {new Date(mpLinkVenta.createdAt).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})}
+                      {new Date(mpLinkVenta.createdAt).toLocaleDateString("es-AR")} {new Date(mpLinkVenta.createdAt).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"})}
                     </div>
                   )}
                 </div>

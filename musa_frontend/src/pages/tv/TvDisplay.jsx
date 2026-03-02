@@ -60,6 +60,15 @@ export default function TvDisplay() {
     };
   }, [current, medios]);
 
+  // Request fullscreen on first click/tap
+  const goFullscreen = useCallback(() => {
+    const el = document.documentElement;
+    const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (rfs && !document.fullscreenElement && !document.webkitFullscreenElement) {
+      rfs.call(el).catch(() => {});
+    }
+  }, []);
+
   // Hide cursor after inactivity
   useEffect(() => {
     let cursorTimer;
@@ -89,7 +98,7 @@ export default function TvDisplay() {
   if (!medio) return <div className={s.screen} />;
 
   return (
-    <div className={s.screen}>
+    <div className={s.screen} onClick={goFullscreen}>
       <img
         key={medio._id}
         className={`${s.image} ${fade ? s.fadeIn : s.fadeOut}`}

@@ -57,7 +57,7 @@ function Estadisticas() {
   const [totalGastoFacturado, setTotalGastoFacturado] = useState(0);
   const [ivaCompra, setIvaCompra] = useState(0);
   const [reporteEventos, setReporteEventos] = useState(null);
-  const [mes, setMes] = useState("");
+  const [mes, setMes] = useState(() => new Date().toISOString().slice(0, 7));
   const [analytics, setAnalytics] = useState(null);
 
   const [periodo, setPeriodo] = useState("mes");

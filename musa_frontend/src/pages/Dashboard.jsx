@@ -169,7 +169,7 @@ export default function Dashboard({ usuario }) {
           <div className={s.grid}>
             <KPICard label="Cobrado" value={money(dashData.mp.totalCobrado)} />
             <KPICard label="Neto" value={money(dashData.mp.neto)} />
-            <KPICard label="Comisiones y Ret." value={money((dashData.mp.comisiones || 0) + (dashData.mp.retenciones || 0))} />
+            <KPICard label="Comisiones y Retenciones" value={money((dashData.mp.comisiones || 0) + (dashData.mp.retenciones || 0))} />
           </div>
           <div className={s.mpMiniStats}>
             <div className={s.mpMiniStat}>

@@ -33,11 +33,39 @@ import Usuarios from './pages/admin/Usuarios';
 import Setup from './pages/admin/Setup';
 
 import { socket } from './main';
+import { connectQZ, printPDF, findPrinter } from './utils/qzPrint';
+
+// Nombre de impresora para tickets (se auto-detecta o se usa la default)
+let ticketPrinterName = null;
 
 function AdminApp({ usuario, onLogout }) {
-  // Impresion de tickets via dialogo del navegador (sin JSPM)
+  // Intentar conectar QZ Tray al montar e identificar impresora de tickets
   useEffect(() => {
-    const handleTicket = ({ base64 }) => {
+    connectQZ().then(async (ok) => {
+      if (!ok) return;
+      // Buscar impresora termica comun (POS-80, Epson, Star, etc.)
+      // Si no encuentra, usa la default del sistema
+      try {
+        const printers = await import('qz-tray').then((qz) => qz.default.printers.find());
+        if (Array.isArray(printers) && printers.length > 0) {
+          // Preferir impresora que NO sea Godex (la Godex es para etiquetas)
+          const nonGodex = printers.filter((p) => !/godex/i.test(p));
+          ticketPrinterName = nonGodex[0] || printers[0];
+        }
+      } catch { /* QZ no disponible, se usa fallback */ }
+    });
+  }, []);
+
+  // Impresion de tickets: QZ Tray silencioso → fallback dialogo navegador
+  useEffect(() => {
+    const handleTicket = async ({ base64 }) => {
+      // Intentar imprimir silenciosamente via QZ Tray
+      if (ticketPrinterName) {
+        const ok = await printPDF(ticketPrinterName, base64);
+        if (ok) return; // Impreso silenciosamente
+      }
+
+      // Fallback: dialogo del navegador
       try {
         const bytes = atob(base64);
         const arr = new Uint8Array(bytes.length);

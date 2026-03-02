@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { IP, socket, fotoSrc } from '../main';
+import { IP, socket, userFotoUrl } from '../main';
 import Pagination from '../components/shared/Pagination';
 import s from './ChatInterno.module.css';
 
@@ -41,8 +41,9 @@ export default function ChatInterno({ usuario }) {
   // Expandir mensaje
   const [expanded, setExpanded] = useState({});
 
-  // Fotos de perfil
+  // Fotos de perfil: { nombre: userId } — las fotos se cargan por HTTP con cache
   const [fotoMap, setFotoMap] = useState({});
+  const [fotoBust, setFotoBust] = useState(0);
   const fotoInputRef = useRef(null);
 
   // Ref para evitar stale closure en el listener de cambios-chat
@@ -91,15 +92,16 @@ export default function ChatInterno({ usuario }) {
     try {
       const res = await fetch(`${IP()}/upload_foto_perfil`, { method: 'POST', body: formData });
       const data = await res.json();
-      if (data.ok) socket.emit('request-usuarios-fotos');
+      if (data.ok) { socket.emit('request-usuarios-fotos'); setFotoBust(Date.now()); }
     } catch (err) { console.error('Error subiendo foto:', err); }
     if (fotoInputRef.current) fotoInputRef.current.value = '';
   };
 
   const renderAvatar = (nombre, size) => {
-    const foto = fotoMap[nombre];
-    if (foto) {
-      return <img src={fotoSrc(foto)} alt="" className={size === 'sm' ? s.replyAvatarImg : s.avatarImg} />;
+    const userId = fotoMap[nombre];
+    if (userId) {
+      const url = userFotoUrl(userId, fotoBust || undefined);
+      return <img src={url} alt="" className={size === 'sm' ? s.replyAvatarImg : s.avatarImg} onError={(e) => { e.target.style.display = 'none'; }} />;
     }
     return <span className={size === 'sm' ? s.replyAvatar : s.avatar}>{nombre?.[0]?.toUpperCase() || '?'}</span>;
   };
@@ -167,7 +169,7 @@ export default function ChatInterno({ usuario }) {
       <div className={s.topBar}>
         <div className={s.profileChip} onClick={() => fotoInputRef.current?.click()} title="Cambiar foto de perfil">
           {fotoMap[usuario.nombre]
-            ? <img src={fotoSrc(fotoMap[usuario.nombre])} alt="" className={s.profileChipImg} />
+            ? <img src={userFotoUrl(fotoMap[usuario.nombre], fotoBust || undefined)} alt="" className={s.profileChipImg} onError={(e) => { e.target.style.display = 'none'; }} />
             : <span className={s.profileChipLetter}>{usuario.nombre?.[0]?.toUpperCase() || '?'}</span>
           }
           <div className={s.profileChipOverlay}><i className="bi bi-camera" /></div>

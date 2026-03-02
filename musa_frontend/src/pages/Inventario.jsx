@@ -4,6 +4,7 @@ import Pagination from "../components/shared/Pagination";
 
 import { IP, socket, fotoSrc } from "../main";
 import { tienePermiso } from "../lib/permisos";
+import { connectQZ, printRaw, findPrinter } from "../utils/qzPrint";
 import s from "./Inventario.module.css";
 
 function Inventario({ usuario }) {
@@ -33,6 +34,7 @@ function Inventario({ usuario }) {
   const [search, setSearch] = useState("");
   const [installedPrinters, setInstalledPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState("");
+  const [useQZ, setUseQZ] = useState(false);
   const [brokenImgs, setBrokenImgs] = useState(new Set());
   const [editingId, setEditingId] = useState(null);
   const [proveedores, setProveedores] = useState([]);
@@ -103,25 +105,42 @@ function Inventario({ usuario }) {
   };
 
   useEffect(() => {
-    if (window.JSPM) {
-      window.JSPM.JSPrintManager.auto_reconnect = true;
-      window.JSPM.JSPrintManager.start(false);
-      window.JSPM.JSPrintManager.WS.onStatusChanged = function () {
-        if (jspmWSStatus()) {
-          window.JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {
-            setInstalledPrinters(myPrinters);
-            const godexPrinter = myPrinters.find(
-              (printer) => printer === "Godex GE300"
-            );
-            if (godexPrinter) {
-              setSelectedPrinter(godexPrinter);
-            } else {
-              setSelectedPrinter(myPrinters[0]);
-            }
-          });
-        }
-      };
-    }
+    // Intentar QZ Tray primero, si falla caer a JSPM
+    connectQZ().then(async (ok) => {
+      if (ok) {
+        try {
+          const qz = await import('qz-tray').then((m) => m.default);
+          const printers = await qz.printers.find();
+          if (Array.isArray(printers) && printers.length > 0) {
+            setInstalledPrinters(printers);
+            const godex = printers.find((p) => /godex/i.test(p));
+            setSelectedPrinter(godex || printers[0]);
+            setUseQZ(true);
+            return; // QZ listo, no iniciar JSPM
+          }
+        } catch { /* QZ fallo, caer a JSPM */ }
+      }
+      // Fallback: JSPM
+      if (window.JSPM) {
+        window.JSPM.JSPrintManager.auto_reconnect = true;
+        window.JSPM.JSPrintManager.start(false);
+        window.JSPM.JSPrintManager.WS.onStatusChanged = function () {
+          if (jspmWSStatus()) {
+            window.JSPM.JSPrintManager.getPrinters().then(function (myPrinters) {
+              setInstalledPrinters(myPrinters);
+              const godexPrinter = myPrinters.find(
+                (printer) => printer === "Godex GE300"
+              );
+              if (godexPrinter) {
+                setSelectedPrinter(godexPrinter);
+              } else {
+                setSelectedPrinter(myPrinters[0]);
+              }
+            });
+          }
+        };
+      }
+    });
 
     socket.on("cambios", () => {
       fetchProductos();
@@ -287,11 +306,8 @@ function Inventario({ usuario }) {
     }
   };
 
-  const printLabel = (codigo, cantidad) => {
-    if (jspmWSStatus()) {
-      var cpj = new window.JSPM.ClientPrintJob();
-      cpj.clientPrinter = new window.JSPM.InstalledPrinter(selectedPrinter);
-      const singleCmd = `
+  const printLabel = async (codigo, cantidad) => {
+    const singleCmd = `
 ^XSETCUT,DOUBLECUT,0
 ^Q15,3
 ^W30
@@ -312,7 +328,18 @@ Th:m:s
 BE,14,13,2,5,82,0,1,${codigo}
 E
 `;
-      const cmds = singleCmd.repeat(cantidad);
+    const cmds = singleCmd.repeat(cantidad);
+
+    // Intentar QZ Tray primero
+    if (useQZ && selectedPrinter) {
+      const ok = await printRaw(selectedPrinter, cmds);
+      if (ok) return;
+    }
+
+    // Fallback: JSPM
+    if (jspmWSStatus()) {
+      var cpj = new window.JSPM.ClientPrintJob();
+      cpj.clientPrinter = new window.JSPM.InstalledPrinter(selectedPrinter);
       cpj.printerCommands = cmds;
       cpj.sendToClient();
     }

@@ -37,6 +37,12 @@ export const fotoSrc = (foto, productId) => {
   return '';
 };
 
+// Helper: URL de foto de usuario con cache HTTP (cache-bust opcional)
+export const userFotoUrl = (userId, v) => {
+  if (!userId) return '';
+  return `${ip_variable}/api/usuario-foto/${userId}${v ? `?v=${v}` : ''}`;
+};
+
 export let socket;
 
 const probeSocketServer = async (baseUrl) => {

@@ -442,6 +442,21 @@ app.use(
 app.use("/facturas", express.static("src/facturas"));
 app.use("/notas_de_credito", express.static("src/notas_de_credito"));
 
+// ── Servir foto de usuario (base64 → imagen binaria, con cache) ──
+app.get("/api/usuario-foto/:id", async (req, res) => {
+  try {
+    const u = await Usuario.findById(req.params.id).select("foto").lean();
+    if (!u || !u.foto) return res.status(404).send("No photo");
+    const match = u.foto.match(/^data:(.+?);base64,(.+)$/);
+    if (!match) return res.status(404).send("Bad format");
+    res.set("Content-Type", match[1]);
+    res.set("Cache-Control", "public, max-age=86400");
+    res.send(Buffer.from(match[2], "base64"));
+  } catch (err) {
+    res.status(500).send("Error");
+  }
+});
+
 // ── Servir foto de producto (base64 → imagen binaria, con cache) ──
 app.get("/api/producto-foto/:id", async (req, res) => {
   try {
@@ -4442,13 +4457,13 @@ Reglas:
     socket.emit("response-status-servicios", servicios);
   });
 
-  // ── Fotos de perfil (para chat) ──
+  // ── Fotos de perfil (para chat) — solo envía { nombre: userId }, las fotos se sirven por HTTP con cache ──
   socket.on("request-usuarios-fotos", async () => {
     try {
       const usuarios = await Usuario.find({}, "nombre foto").lean();
       const map = {};
       for (const u of usuarios) {
-        if (u.foto) map[u.nombre] = u.foto;
+        if (u.foto) map[u.nombre] = String(u._id);
       }
       socket.emit("response-usuarios-fotos", map);
     } catch (err) {

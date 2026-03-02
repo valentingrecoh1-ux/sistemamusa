@@ -26,7 +26,13 @@ const round2 = (n) => Math.round(n * 100) / 100;
 const ESTADOS = { borrador: 'Borrador', pendiente_aprobacion: 'Pend. Aprobacion', aprobada: 'Aprobada', enviada: 'Enviada', en_camino: 'En Camino', recibida_parcial: 'Recibida Parcial', recibida: 'Recibida', cerrada: 'Cerrada', cancelada: 'Cancelada' };
 const ESTADOS_PAGO = { pendiente: 'Pendiente', parcial: 'Parcial', pagado: 'Pagado' };
 
-const EMPTY_ITEM = { descripcion: '', cantidad: 1, precioUnitario: '', precioConIVA: '', bonif: 0 };
+const EMPTY_ITEM = { descripcion: '', cantidad: 1, precioUnitario: '', precioConIVA: '', bonif: 0, tipoPrecio: 'unidad' };
+
+/** Precio unitario real: si tipoPrecio es 'caja6', divide entre 6 */
+const getUnitPrice = (it, field, parsePriceFn) => {
+  const raw = parsePriceFn(it[field]);
+  return it.tipoPrecio === 'caja6' ? Math.round((raw / 6) * 100) / 100 : raw;
+};
 
 export default function OrdenCompraDetalle({ usuario }) {
   const { id } = useParams();
@@ -176,8 +182,8 @@ export default function OrdenCompraDetalle({ usuario }) {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const itemSubSinIVA = (it) => (Number(it.cantidad) || 0) * parsePrice(it.precioUnitario) * (1 - (Number(it.bonif) || 0) / 100);
-  const itemSubConIVA = (it) => (Number(it.cantidad) || 0) * parsePrice(it.precioConIVA) * (1 - (Number(it.bonif) || 0) / 100);
+  const itemSubSinIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioUnitario', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
+  const itemSubConIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
 
   const totalSinIVA = () => items.reduce((sum, it) => sum + itemSubSinIVA(it), 0);
   const totalConIVA = () => items.reduce((sum, it) => sum + itemSubConIVA(it), 0);
@@ -207,6 +213,7 @@ export default function OrdenCompraDetalle({ usuario }) {
               precioUnitario: fmtPrice(precio),
               precioConIVA: fmtPrice(round2(precio * 1.21)),
               bonif: 0,
+              tipoPrecio: 'unidad',
             };
           }));
         }
@@ -236,7 +243,7 @@ export default function OrdenCompraDetalle({ usuario }) {
     items.filter((it) => it.descripcion).map((it) => ({
       descripcion: it.descripcion,
       cantidad: Number(it.cantidad) || 1,
-      precioUnitario: parsePrice(it.precioUnitario),
+      precioUnitario: getUnitPrice(it, 'precioUnitario', parsePrice),
       bonif: Number(it.bonif) || 0,
     }));
 
@@ -337,6 +344,7 @@ export default function OrdenCompraDetalle({ usuario }) {
         precioUnitario: fmtPrice(precio),
         precioConIVA: fmtPrice(round2(precio * 1.21)),
         bonif: it.bonif || 0,
+        tipoPrecio: 'unidad',
       };
     }));
     if (firstFactura?.numero) {
@@ -403,8 +411,8 @@ export default function OrdenCompraDetalle({ usuario }) {
     setEditItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const editItemSubSinIVA = (it) => (Number(it.cantidad) || 0) * parsePrice(it.precioUnitario) * (1 - (Number(it.bonif) || 0) / 100);
-  const editItemSubConIVA = (it) => (Number(it.cantidad) || 0) * parsePrice(it.precioConIVA) * (1 - (Number(it.bonif) || 0) / 100);
+  const editItemSubSinIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioUnitario', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
+  const editItemSubConIVA = (it) => (Number(it.cantidad) || 0) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
   const editTotalSinIVA = () => editItems.reduce((sum, it) => sum + editItemSubSinIVA(it), 0);
   const editTotalConIVA = () => editItems.reduce((sum, it) => sum + editItemSubConIVA(it), 0);
 
@@ -418,7 +426,7 @@ export default function OrdenCompraDetalle({ usuario }) {
       items: editItems.map((it) => ({
         descripcion: it.descripcion,
         cantidad: Number(it.cantidad) || 1,
-        precioUnitario: parsePrice(it.precioUnitario),
+        precioUnitario: getUnitPrice(it, 'precioUnitario', parsePrice),
         bonif: Number(it.bonif) || 0,
       })),
       factura: editFactura ? `${editFacturaType} ${editFactura}` : '',
@@ -509,8 +517,9 @@ export default function OrdenCompraDetalle({ usuario }) {
               <tr>
                 <th>Descripcion</th>
                 <th style={{ width: 80 }}>Cantidad</th>
-                <th style={{ width: 110 }}>Precio Unit. s/IVA</th>
-                <th style={{ width: 110 }}>Precio Unit. c/IVA</th>
+                <th style={{ width: 80 }}>Precio x</th>
+                <th style={{ width: 110 }}>Precio s/IVA</th>
+                <th style={{ width: 110 }}>Precio c/IVA</th>
                 <th style={{ width: 55 }}>Bonif.</th>
                 <th style={{ width: 105 }}>Subtotal s/IVA</th>
                 <th style={{ width: 105 }}>Subtotal c/IVA</th>
@@ -537,6 +546,16 @@ export default function OrdenCompraDetalle({ usuario }) {
                       value={item.cantidad}
                       onChange={(e) => handleItemChange(i, 'cantidad', e.target.value)}
                     />
+                  </td>
+                  <td>
+                    <select
+                      className={s.itemInput}
+                      value={item.tipoPrecio || 'unidad'}
+                      onChange={(e) => handleItemChange(i, 'tipoPrecio', e.target.value)}
+                    >
+                      <option value="unidad">Unidad</option>
+                      <option value="caja6">Caja x6</option>
+                    </select>
                   </td>
                   <td>
                     <input
@@ -602,7 +621,7 @@ export default function OrdenCompraDetalle({ usuario }) {
 
               {/* Total */}
               <tr className={s.totalRow}>
-                <td colSpan={5} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
+                <td colSpan={6} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
                 <td style={{ fontWeight: 700 }}>{money(totalSinIVA())}</td>
                 <td style={{ fontWeight: 700 }}>{money(totalConIVA())}</td>
                 <td />
@@ -763,8 +782,9 @@ export default function OrdenCompraDetalle({ usuario }) {
               <tr>
                 <th>Descripcion</th>
                 <th style={{ width: 80 }}>Cantidad</th>
-                <th style={{ width: 110 }}>Precio Unit. s/IVA</th>
-                <th style={{ width: 110 }}>Precio Unit. c/IVA</th>
+                <th style={{ width: 80 }}>Precio x</th>
+                <th style={{ width: 110 }}>Precio s/IVA</th>
+                <th style={{ width: 110 }}>Precio c/IVA</th>
                 <th style={{ width: 55 }}>Bonif.</th>
                 <th style={{ width: 105 }}>Subtotal s/IVA</th>
                 <th style={{ width: 105 }}>Subtotal c/IVA</th>
@@ -782,6 +802,13 @@ export default function OrdenCompraDetalle({ usuario }) {
                   <td>
                     <input className={s.itemInput} type="number" min="1" value={item.cantidad}
                       onChange={(e) => handleEditItemChange(i, 'cantidad', e.target.value)} />
+                  </td>
+                  <td>
+                    <select className={s.itemInput} value={item.tipoPrecio || 'unidad'}
+                      onChange={(e) => handleEditItemChange(i, 'tipoPrecio', e.target.value)}>
+                      <option value="unidad">Unidad</option>
+                      <option value="caja6">Caja x6</option>
+                    </select>
                   </td>
                   <td>
                     <input className={s.itemInput} type="text" inputMode="decimal" value={item.precioUnitario}
@@ -825,7 +852,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                 </tr>
               ))}
               <tr className={s.totalRow}>
-                <td colSpan={5} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
+                <td colSpan={6} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
                 <td style={{ fontWeight: 700 }}>{money(editTotalSinIVA())}</td>
                 <td style={{ fontWeight: 700 }}>{money(editTotalConIVA())}</td>
                 <td />

@@ -1,17 +1,19 @@
 const mongoose = require("mongoose");
 
 const respuestaSchema = new mongoose.Schema({
-  texto: { type: String, required: true },
+  texto: { type: String },
   usuario: { type: String, required: true },
   usuarioId: { type: String },
   fecha: { type: Date, default: Date.now },
+  imagen: { type: String },
 });
 
 const mensajeInternoSchema = new mongoose.Schema(
   {
-    texto: { type: String, required: true },
+    texto: { type: String },
     usuario: { type: String, required: true },
     usuarioId: { type: String },
+    imagen: { type: String },
     tipo: {
       type: String,
       enum: ["nota", "tarea", "aviso"],

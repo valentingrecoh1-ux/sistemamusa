@@ -32,10 +32,14 @@ export default function ChatInterno({ usuario }) {
   // Formulario nuevo mensaje
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ texto: '', tipo: 'nota', categoria: 'general' });
+  const [formImagen, setFormImagen] = useState(null); // base64
+  const formImgRef = useRef(null);
 
   // Respuesta
   const [replyTo, setReplyTo] = useState(null);
   const [replyText, setReplyText] = useState('');
+  const [replyImagen, setReplyImagen] = useState(null);
+  const replyImgRef = useRef(null);
   const replyInputRef = useRef(null);
 
   // Expandir mensaje
@@ -112,36 +116,64 @@ export default function ChatInterno({ usuario }) {
     if (replyTo && replyInputRef.current) replyInputRef.current.focus();
   }, [replyTo]);
 
+  const uploadImagen = async (file) => {
+    const fd = new FormData();
+    fd.append('imagen', file);
+    try {
+      const res = await fetch(`${IP()}/api/chat/upload-imagen`, { method: 'POST', body: fd });
+      const data = await res.json();
+      return data.ok ? data.imagen : null;
+    } catch { return null; }
+  };
+
+  const handleFormImg = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = await uploadImagen(file);
+    if (img) setFormImagen(img);
+    if (formImgRef.current) formImgRef.current.value = '';
+  };
+
+  const handleReplyImg = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = await uploadImagen(file);
+    if (img) setReplyImagen(img);
+    if (replyImgRef.current) replyImgRef.current.value = '';
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.texto.trim()) return;
-    socket.emit('guardar-mensaje-interno', {
-      texto: form.texto.trim(),
+    if (!form.texto.trim() && !formImagen) return;
+    const data = {
+      texto: form.texto.trim() || '',
       tipo: form.tipo,
       categoria: form.categoria,
       usuario: usuario.nombre,
       usuarioId: usuario._id,
-    }, (res) => {
+    };
+    if (formImagen) data.imagen = formImagen;
+    socket.emit('guardar-mensaje-interno', data, (res) => {
       if (res?.ok) setTimeout(() => fetchRef.current(), 300);
     });
     setForm({ texto: '', tipo: 'nota', categoria: 'general' });
+    setFormImagen(null);
     setShowForm(false);
-    // Fallback: refetch después de un delay por si cambios-chat no se recibe
     setTimeout(() => fetchRef.current(), 800);
   };
 
   const handleReply = (mensajeId) => {
-    if (!replyText.trim()) return;
-    socket.emit('responder-mensaje-interno', {
-      mensajeId,
-      respuesta: {
-        texto: replyText.trim(),
-        usuario: usuario.nombre,
-        usuarioId: usuario._id,
-        fecha: new Date(),
-      },
-    });
+    if (!replyText.trim() && !replyImagen) return;
+    const resp = {
+      texto: replyText.trim() || '',
+      usuario: usuario.nombre,
+      usuarioId: usuario._id,
+      fecha: new Date(),
+    };
+    if (replyImagen) resp.imagen = replyImagen;
+    socket.emit('responder-mensaje-interno', { mensajeId, respuesta: resp });
     setReplyText('');
+    setReplyImagen(null);
     setReplyTo(null);
     setTimeout(() => fetchRef.current(), 800);
   };
@@ -202,6 +234,14 @@ export default function ChatInterno({ usuario }) {
             onChange={(e) => setForm({ ...form, texto: e.target.value })}
             rows={3}
           />
+          {formImagen && (
+            <div className={s.imgPreview}>
+              <img src={formImagen} alt="preview" />
+              <button type="button" className={s.imgRemoveBtn} onClick={() => setFormImagen(null)}>
+                <i className="bi bi-x-lg" />
+              </button>
+            </div>
+          )}
           <div className={s.formFooter}>
             <div className={s.formSelects}>
               <select className={s.select} value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })}>
@@ -210,8 +250,12 @@ export default function ChatInterno({ usuario }) {
               <select className={s.select} value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
                 {Object.entries(CATEGORIAS).filter(([k]) => k).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
+              <button type="button" className={s.imgBtn} onClick={() => formImgRef.current?.click()} title="Adjuntar imagen">
+                <i className="bi bi-image" />
+              </button>
+              <input ref={formImgRef} type="file" accept="image/*" onChange={handleFormImg} hidden />
             </div>
-            <button className={s.sendBtn} type="submit" disabled={!form.texto.trim()}>
+            <button className={s.sendBtn} type="submit" disabled={!form.texto.trim() && !formImagen}>
               <i className="bi bi-send" /> Publicar
             </button>
           </div>
@@ -290,7 +334,10 @@ export default function ChatInterno({ usuario }) {
 
             {/* Card body */}
             <div className={s.cardBody}>
-              <p className={s.texto}>{msg.texto}</p>
+              {msg.texto && <p className={s.texto}>{msg.texto}</p>}
+              {msg.imagen && (
+                <img src={msg.imagen} alt="" className={s.msgImg} onClick={() => window.open(msg.imagen, '_blank')} />
+              )}
             </div>
 
             {/* Estado + assigned */}
@@ -334,7 +381,10 @@ export default function ChatInterno({ usuario }) {
                           </button>
                         )}
                       </div>
-                      <p>{r.texto}</p>
+                      {r.texto && <p>{r.texto}</p>}
+                      {r.imagen && (
+                        <img src={r.imagen} alt="" className={s.replyImg} onClick={() => window.open(r.imagen, '_blank')} />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -344,21 +394,33 @@ export default function ChatInterno({ usuario }) {
             {/* Reply input */}
             {replyTo === msg._id ? (
               <div className={s.replyForm}>
-                <input
-                  ref={replyInputRef}
-                  className={s.replyInput}
-                  type="text"
-                  placeholder="Escribe una respuesta..."
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleReply(msg._id); }}
-                />
-                <button className={s.replySendBtn} onClick={() => handleReply(msg._id)} disabled={!replyText.trim()}>
-                  <i className="bi bi-send" />
-                </button>
-                <button className={s.replyCancelBtn} onClick={() => { setReplyTo(null); setReplyText(''); }}>
-                  <i className="bi bi-x-lg" />
-                </button>
+                {replyImagen && (
+                  <div className={s.replyImgPreview}>
+                    <img src={replyImagen} alt="" />
+                    <button className={s.imgRemoveBtn} onClick={() => setReplyImagen(null)}><i className="bi bi-x-lg" /></button>
+                  </div>
+                )}
+                <div className={s.replyFormRow}>
+                  <input
+                    ref={replyInputRef}
+                    className={s.replyInput}
+                    type="text"
+                    placeholder="Escribe una respuesta..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleReply(msg._id); }}
+                  />
+                  <button className={s.replyImgBtn} onClick={() => replyImgRef.current?.click()} title="Adjuntar imagen">
+                    <i className="bi bi-image" />
+                  </button>
+                  <input ref={replyImgRef} type="file" accept="image/*" onChange={handleReplyImg} hidden />
+                  <button className={s.replySendBtn} onClick={() => handleReply(msg._id)} disabled={!replyText.trim() && !replyImagen}>
+                    <i className="bi bi-send" />
+                  </button>
+                  <button className={s.replyCancelBtn} onClick={() => { setReplyTo(null); setReplyText(''); setReplyImagen(null); }}>
+                    <i className="bi bi-x-lg" />
+                  </button>
+                </div>
               </div>
             ) : null}
 

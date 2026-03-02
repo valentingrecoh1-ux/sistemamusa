@@ -28,6 +28,7 @@ const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
 const Notificacion = require("./models/notificacion");
 const Cliente = require("./models/cliente");
+const MediaTV = require("./models/mediaTV");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const createTiendaRouter = require("./routes/tiendaApi");
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJSON, initAuthCreds } = require("@whiskeysockets/baileys");
@@ -424,6 +425,7 @@ const upload = multer({ storage: memStorage, limits: { fileSize: 50 * 1024 * 102
 const uploadComprobante = multer({ storage: memStorage, limits: { fileSize: 50 * 1024 * 1024 } });
 const uploadFacturaOC = multer({ storage: memStorage, limits: { fileSize: 20 * 1024 * 1024 } });
 const uploadPerfil = multer({ storage: memStorage, limits: { fileSize: 5 * 1024 * 1024 } });
+const uploadMediaTV = multer({ storage: memStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -1253,6 +1255,54 @@ app.post("/upload_foto_perfil", uploadPerfil.single("foto"), async (req, res) =>
   } catch (err) {
     console.error("Error upload foto perfil:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Chat interno: upload imagen ──
+app.post("/api/chat/upload-imagen", uploadPerfil.single("imagen"), async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: "No se envió imagen" });
+    const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+    res.json({ ok: true, imagen: base64 });
+  } catch (err) {
+    console.error("Error upload imagen chat:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Media TV endpoints ──
+app.post("/api/tv/upload", uploadMediaTV.single("archivo"), async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: "No se envió archivo" });
+    const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+    const count = await MediaTV.countDocuments();
+    const doc = await MediaTV.create({
+      nombre: req.body.nombre || file.originalname,
+      archivo: base64,
+      orden: count,
+      subidoPor: req.body.usuario || "",
+    });
+    io.emit("cambios-media-tv");
+    res.json({ ok: true, media: { _id: doc._id, nombre: doc.nombre, orden: doc.orden } });
+  } catch (err) {
+    console.error("Error upload media TV:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/tv/imagen/:id", async (req, res) => {
+  try {
+    const doc = await MediaTV.findById(req.params.id).select("archivo");
+    if (!doc || !doc.archivo) return res.status(404).send("No encontrado");
+    const matches = doc.archivo.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) return res.status(500).send("Formato inválido");
+    res.set("Content-Type", matches[1]);
+    res.set("Cache-Control", "public, max-age=86400");
+    res.send(Buffer.from(matches[2], "base64"));
+  } catch (err) {
+    res.status(500).send("Error");
   }
 });
 
@@ -2167,12 +2217,16 @@ Origen: ${producto.origen || ""}`;
       socket.emit("error", { message: "Error retrieving operations", error });
     }
   });
-  socket.on("request-tipo-operacion", async (tipo, mes) => {
+  socket.on("request-tipo-operacion", async (tipo, filtro) => {
     try {
-      const operaciones = await Operacion.find({
-        tipoOperacion: tipo,
-        fecha: { $regex: `^${mes}` }, // Filtrar operaciones por mes
-      }).sort({ createdAt: -1 });
+      const q = { tipoOperacion: tipo };
+      if (typeof filtro === "object" && filtro?.desde && filtro?.hasta) {
+        q.fecha = { $gte: filtro.desde, $lte: filtro.hasta };
+      } else {
+        const mes = typeof filtro === "string" ? filtro : "";
+        if (mes) q.fecha = { $regex: `^${mes}` };
+      }
+      const operaciones = await Operacion.find(q).sort({ createdAt: -1 });
 
       let operacionesPorNombre = {};
       operaciones.forEach((operacion) => {
@@ -2193,14 +2247,16 @@ Origen: ${producto.origen || ""}`;
       socket.emit("error", { message: "Error al obtener operaciones." });
     }
   });
-  socket.on("request-facturado", async (mes) => {
+  socket.on("request-facturado", async (filtro) => {
     try {
-      // Filtrar las ventas por el mes exacto (comparando las primeras 7 posiciones de la fecha)
-      const ventas = await Venta.find({
-        fecha: {
-          $regex: `^${mes}`, // Filtrar donde la fecha empiece con el valor de 'mes' (YYYY-MM)
-        },
-      }).select("-facturaPdf -notaCreditoPdf");
+      let fechaQ;
+      if (typeof filtro === "object" && filtro?.desde && filtro?.hasta) {
+        fechaQ = { $gte: filtro.desde, $lte: filtro.hasta };
+      } else {
+        const mes = typeof filtro === "string" ? filtro : "";
+        fechaQ = mes ? { $regex: `^${mes}` } : {};
+      }
+      const ventas = await Venta.find({ fecha: fechaQ }).select("-facturaPdf -notaCreditoPdf");
 
       let totalFacturado = 0;
       let totalNoFacturado = 0;
@@ -2223,9 +2279,16 @@ Origen: ${producto.origen || ""}`;
       });
     }
   });
-  socket.on("request-gastos", async (mes) => {
+  socket.on("request-gastos", async (filtro) => {
     try {
-      const operaciones = await Operacion.find({ fecha: { $regex: `^${mes}` } });
+      let fechaQ;
+      if (typeof filtro === "object" && filtro?.desde && filtro?.hasta) {
+        fechaQ = { $gte: filtro.desde, $lte: filtro.hasta };
+      } else {
+        const mes = typeof filtro === "string" ? filtro : "";
+        fechaQ = mes ? { $regex: `^${mes}` } : {};
+      }
+      const operaciones = await Operacion.find({ fecha: fechaQ });
       let totalGastoFacturado = 0;
       let totalGastoFacturadoA = 0;
       operaciones.forEach((operacion) => {
@@ -2243,11 +2306,16 @@ Origen: ${producto.origen || ""}`;
   });
 
   // ── Estadísticas avanzadas de ventas ──
-  socket.on("request-estadisticas-ventas", async (mes) => {
+  socket.on("request-estadisticas-ventas", async (filtro) => {
     try {
       const tz = "America/Argentina/Buenos_Aires";
       let matchStage = { notaCredito: { $ne: true } };
-      if (mes) matchStage.fecha = { $regex: `^${mes}` };
+      if (typeof filtro === "object" && filtro?.desde && filtro?.hasta) {
+        matchStage.fecha = { $gte: filtro.desde, $lte: filtro.hasta };
+      } else {
+        const mes = typeof filtro === "string" ? filtro : (filtro || "");
+        if (mes) matchStage.fecha = { $regex: `^${mes}` };
+      }
 
       // 1. Ventas por hora del día
       const ventasPorHora = await Venta.aggregate([
@@ -4197,10 +4265,15 @@ Reglas:
     }
   });
 
-  socket.on("request-reporte-eventos", async (mes) => {
+  socket.on("request-reporte-eventos", async (filtro) => {
     try {
       let filter = {};
-      if (mes) filter.fecha = { $regex: `^${mes}` };
+      if (typeof filtro === "object" && filtro?.desde && filtro?.hasta) {
+        filter.fecha = { $gte: filtro.desde, $lte: filtro.hasta };
+      } else {
+        const mes = typeof filtro === "string" ? filtro : "";
+        if (mes) filter.fecha = { $regex: `^${mes}` };
+      }
       const evs = await Evento.find(filter).lean();
 
       // Batch: 2 queries en vez de 2*N
@@ -4663,6 +4736,72 @@ Reglas:
       io.emit("cambios-chat");
     } catch (err) {
       console.error("Error borrar-respuesta-mensaje:", err);
+    }
+  });
+
+  // ── Media TV (Vidriera) handlers ──
+  socket.on("request-media-tv", async () => {
+    try {
+      const medios = await MediaTV.find().sort({ orden: 1 }).select("-archivo");
+      socket.emit("response-media-tv", medios);
+    } catch (err) {
+      console.error("Error request-media-tv:", err);
+      socket.emit("response-media-tv", []);
+    }
+  });
+
+  socket.on("request-media-tv-public", async () => {
+    try {
+      const medios = await MediaTV.find({ activo: true }).sort({ orden: 1 }).select("nombre orden duracion");
+      socket.emit("response-media-tv-public", medios);
+    } catch (err) {
+      socket.emit("response-media-tv-public", []);
+    }
+  });
+
+  socket.on("eliminar-media-tv", async (mediaId) => {
+    try {
+      if (!requireAdmin(socket)) return;
+      await MediaTV.findByIdAndDelete(mediaId);
+      io.emit("cambios-media-tv");
+    } catch (err) {
+      console.error("Error eliminar-media-tv:", err);
+    }
+  });
+
+  socket.on("reordenar-media-tv", async (items) => {
+    try {
+      if (!requireAuth(socket)) return;
+      for (const item of items) {
+        await MediaTV.findByIdAndUpdate(item._id, { orden: item.orden });
+      }
+      io.emit("cambios-media-tv");
+    } catch (err) {
+      console.error("Error reordenar-media-tv:", err);
+    }
+  });
+
+  socket.on("toggle-media-tv", async (mediaId) => {
+    try {
+      if (!requireAuth(socket)) return;
+      const doc = await MediaTV.findById(mediaId);
+      if (doc) {
+        doc.activo = !doc.activo;
+        await doc.save();
+        io.emit("cambios-media-tv");
+      }
+    } catch (err) {
+      console.error("Error toggle-media-tv:", err);
+    }
+  });
+
+  socket.on("actualizar-duracion-media-tv", async ({ mediaId, duracion }) => {
+    try {
+      if (!requireAuth(socket)) return;
+      await MediaTV.findByIdAndUpdate(mediaId, { duracion });
+      io.emit("cambios-media-tv");
+    } catch (err) {
+      console.error("Error actualizar-duracion-media-tv:", err);
     }
   });
 

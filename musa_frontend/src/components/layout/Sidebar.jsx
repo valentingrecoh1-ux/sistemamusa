@@ -25,6 +25,7 @@ const NAV = [
       { to: '/eventos', icon: 'bi-calendar-event', label: 'Eventos' },
       { to: '/clientes', icon: 'bi-person-lines-fill', label: 'Clientes' },
       { to: '/chat', icon: 'bi-chat-square-text', label: 'Chat Interno' },
+      { to: '/vidriera', icon: 'bi-tv', label: 'Vidriera' },
     ],
   },
   {

@@ -537,13 +537,111 @@
   color: var(--danger);
 }
 
+/* ── Image in messages ── */
+.msgImg {
+  max-width: 100%;
+  max-height: 360px;
+  border-radius: var(--border-radius);
+  margin-top: 8px;
+  cursor: pointer;
+  transition: opacity var(--transition);
+  object-fit: contain;
+}
+
+.msgImg:hover {
+  opacity: 0.85;
+}
+
+.replyImg {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--border-radius-sm);
+  margin-top: 6px;
+  cursor: pointer;
+  object-fit: contain;
+}
+
+.replyImg:hover {
+  opacity: 0.85;
+}
+
+.imgPreview {
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.imgPreview img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--border-radius);
+  object-fit: contain;
+}
+
+.imgRemoveBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imgBtn, .replyImgBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.imgBtn:hover, .replyImgBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.replyImgPreview {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.replyImgPreview img {
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: var(--border-radius-sm);
+  object-fit: contain;
+}
+
 /* Reply form */
 .replyForm {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
   padding: 10px 18px;
   border-top: 1px solid var(--card-border);
+}
+
+.replyFormRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .replyInput {

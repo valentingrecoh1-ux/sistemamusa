@@ -571,14 +571,16 @@ export default function OrdenCompraDetalle({ usuario }) {
                     />
                   </td>
                   <td>
-                    <select
-                      className={s.itemInput}
-                      value={item.tipoPrecio || 'unidad'}
-                      onChange={(e) => handleItemChange(i, 'tipoPrecio', e.target.value)}
-                    >
-                      <option value="unidad">Unidad</option>
-                      <option value="caja6">Caja x6</option>
-                    </select>
+                    <div className={s.tipoPrecioToggle}>
+                      <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
+                        onClick={() => handleItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
+                        <i className="bi bi-cup-straw" />
+                      </button>
+                      <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
+                        onClick={() => handleItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
+                        <i className="bi bi-box-seam" />
+                      </button>
+                    </div>
                   </td>
                   <td>
                     <input
@@ -827,11 +829,16 @@ export default function OrdenCompraDetalle({ usuario }) {
                       onChange={(e) => handleEditItemChange(i, 'cantidad', e.target.value)} />
                   </td>
                   <td>
-                    <select className={s.itemInput} value={item.tipoPrecio || 'unidad'}
-                      onChange={(e) => handleEditItemChange(i, 'tipoPrecio', e.target.value)}>
-                      <option value="unidad">Unidad</option>
-                      <option value="caja6">Caja x6</option>
-                    </select>
+                    <div className={s.tipoPrecioToggle}>
+                      <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
+                        onClick={() => handleEditItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
+                        <i className="bi bi-cup-straw" />
+                      </button>
+                      <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
+                        onClick={() => handleEditItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
+                        <i className="bi bi-box-seam" />
+                      </button>
+                    </div>
                   </td>
                   <td>
                     <input className={s.itemInput} type="text" inputMode="decimal" value={item.precioUnitario}

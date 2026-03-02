@@ -35,6 +35,20 @@ const ChartTooltip = ({ active, payload, label }) => {
   );
 };
 
+// Helpers para presets de período
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const offsetDate = (days) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+const lunesEstaSemana = () => {
+  const d = new Date();
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  return d.toISOString().slice(0, 10);
+};
+
 function Estadisticas() {
   const [tipoOperacion, setTipoOperacion] = useState("APORTE");
   const [operaciones, setOperaciones] = useState([]);
@@ -46,10 +60,25 @@ function Estadisticas() {
   const [mes, setMes] = useState("");
   const [analytics, setAnalytics] = useState(null);
 
-  const getGastos = (m) => socket.emit("request-gastos", m);
-  const getOperaciones = (tipo, m) => socket.emit("request-tipo-operacion", tipo, m);
-  const getTotalFacturado = (m) => socket.emit("request-facturado", m);
-  const getAnalytics = (m) => socket.emit("request-estadisticas-ventas", m || null);
+  const [periodo, setPeriodo] = useState("mes");
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+
+  const buildFiltro = () => {
+    if (periodo === "hoy") return { desde: todayStr(), hasta: todayStr() };
+    if (periodo === "semana") return { desde: lunesEstaSemana(), hasta: todayStr() };
+    if (periodo === "7dias") return { desde: offsetDate(-6), hasta: todayStr() };
+    if (periodo === "30dias") return { desde: offsetDate(-29), hasta: todayStr() };
+    if (periodo === "rango" && desde && hasta) return { desde, hasta };
+    return mes || null;
+  };
+
+  const filtro = buildFiltro();
+
+  const getGastos = (f) => socket.emit("request-gastos", f);
+  const getOperaciones = (tipo, f) => socket.emit("request-tipo-operacion", tipo, f);
+  const getTotalFacturado = (f) => socket.emit("request-facturado", f);
+  const getAnalytics = (f) => socket.emit("request-estadisticas-ventas", f);
 
   useEffect(() => {
     socket.on("response-tipo-operacion", (ap) => setOperaciones(ap));
@@ -64,16 +93,16 @@ function Estadisticas() {
     socket.on("response-reporte-eventos", (data) => setReporteEventos(data));
     socket.on("response-estadisticas-ventas", (data) => setAnalytics(data));
     socket.on("cambios", () => {
-      getOperaciones(tipoOperacion, mes);
-      getTotalFacturado(mes);
-      getAnalytics(mes);
-      socket.emit("request-reporte-eventos", mes || null);
+      getOperaciones(tipoOperacion, filtro);
+      getTotalFacturado(filtro);
+      getAnalytics(filtro);
+      socket.emit("request-reporte-eventos", filtro);
     });
-    getOperaciones(tipoOperacion, mes);
-    getTotalFacturado(mes);
-    getGastos(mes);
-    getAnalytics(mes);
-    socket.emit("request-reporte-eventos", mes || null);
+    getOperaciones(tipoOperacion, filtro);
+    getTotalFacturado(filtro);
+    getGastos(filtro);
+    getAnalytics(filtro);
+    socket.emit("request-reporte-eventos", filtro);
     return () => {
       socket.off("response-tipo-operacion");
       socket.off("response-facturado");
@@ -82,7 +111,7 @@ function Estadisticas() {
       socket.off("response-estadisticas-ventas");
       socket.off("cambios");
     };
-  }, [tipoOperacion, mes]);
+  }, [tipoOperacion, mes, periodo, desde, hasta]);
 
   const totalMonto = operaciones.reduce((total, ap) => total + ap.monto, 0);
 
@@ -103,12 +132,39 @@ function Estadisticas() {
     <div className={s.container}>
       {/* Toolbar */}
       <div className={s.toolbar}>
-        <input
-          className={s.monthInput}
-          type="month"
-          value={mes}
-          onChange={(e) => setMes(e.target.value)}
-        />
+        <div className={s.periodBtns}>
+          {[
+            { key: "mes", label: "Mes" },
+            { key: "semana", label: "Semana" },
+            { key: "hoy", label: "Hoy" },
+            { key: "7dias", label: "7 dias" },
+            { key: "30dias", label: "30 dias" },
+            { key: "rango", label: "Rango" },
+          ].map((p) => (
+            <button
+              key={p.key}
+              className={`${s.periodBtn} ${periodo === p.key ? s.periodActive : ""}`}
+              onClick={() => setPeriodo(p.key)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        {periodo === "mes" && (
+          <input
+            className={s.monthInput}
+            type="month"
+            value={mes}
+            onChange={(e) => setMes(e.target.value)}
+          />
+        )}
+        {periodo === "rango" && (
+          <div className={s.rangoInputs}>
+            <input className={s.monthInput} type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
+            <span className={s.rangoSep}>a</span>
+            <input className={s.monthInput} type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
+          </div>
+        )}
       </div>
 
       {/* Financial stats */}

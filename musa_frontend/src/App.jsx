@@ -6,6 +6,8 @@ import Layout from './components/layout/Layout';
 import GlobalSearch from './components/shared/GlobalSearch';
 import Login from './pages/Login';
 import TiendaApp from './components/tienda/TiendaApp';
+import TvDisplay from './pages/tv/TvDisplay';
+import Vidriera from './pages/Vidriera';
 
 import Dashboard from './pages/Dashboard';
 import Info from './pages/Info';
@@ -129,6 +131,7 @@ function AdminApp({ usuario, onLogout }) {
           <Route path="/compras/pagos" element={<PagosProveedor usuario={usuario} />} />
           <Route path="/whatsapp" element={<WhatsApp />} />
           <Route path="/chat" element={<ChatInterno usuario={usuario} />} />
+          <Route path="/vidriera" element={<Vidriera usuario={usuario} />} />
           <Route path="/web" element={<WebDashboard />} />
           <Route path="/web/pedidos" element={<WebPedidos />} />
           <Route path="/web/club" element={<WebClub />} />
@@ -143,6 +146,11 @@ function AdminApp({ usuario, onLogout }) {
 
 function AppRoutes({ firstRender, usuario, loginForm, setLoginForm, loginError, handleLogin, handleLogout }) {
   const { pathname } = useLocation();
+
+  // Pantalla TV publica - sin auth
+  if (pathname.startsWith('/tv')) {
+    return <TvDisplay />;
+  }
 
   // Tienda publica - sin auth
   if (pathname.startsWith('/tienda')) {

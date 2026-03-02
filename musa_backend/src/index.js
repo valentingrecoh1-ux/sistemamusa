@@ -1074,10 +1074,12 @@ async function generarFacturaA4(data) {
     }
     doc.font("Helvetica").fontSize(9).fillColor("#000000");
 
-    const unitPrice = data.factura === "A" ? prod.venta / 1.21 : prod.venta;
+    const pv = Number(prod.venta) || 0;
+    const cant = Number(prod.carritoCantidad) || 0;
+    const unitPrice = data.factura === "A" ? pv / 1.21 : pv;
     const lineTotal = data.factura === "A"
-      ? (prod.carritoCantidad * prod.venta) / 1.21
-      : prod.carritoCantidad * prod.venta;
+      ? (cant * pv) / 1.21
+      : cant * pv;
 
     doc.text(String(prod.carritoCantidad || 0), COL[0].x + 4, tY + 5, { width: COL[0].w - 8, align: "center" });
     doc.text(String(prod.nombre ?? "").substring(0, 50), COL[1].x + 4, tY + 5, { width: COL[1].w - 8, align: "left" });

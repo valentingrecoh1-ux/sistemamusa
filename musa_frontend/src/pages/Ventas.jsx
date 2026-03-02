@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IP, socket } from "../main";
 import { NumericFormat } from "react-number-format";
 import moment from "moment-timezone";
@@ -10,6 +11,8 @@ import { tienePermiso } from "../lib/permisos";
 import s from "./Ventas.module.css";
 
 function Ventas({ usuario }) {
+  const location = useLocation();
+  const navegar = useNavigate();
   const hoyArgentina = () =>
     moment(new Date()).tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
   const toNumber = (value) => {
@@ -342,6 +345,17 @@ function Ventas({ usuario }) {
       socket.off("response-mp-sin-vincular");
     };
   }, [fecha, page, filtroPago, filtroTipo, filtroNotaCredito]);
+
+  // Si venimos del Carrito con una venta DIGITAL/MIXTO, abrir modal MP
+  useEffect(() => {
+    const info = location.state?.mpLinkVenta;
+    if (info?.ventaId) {
+      setMpLinkVenta({ _id: info.ventaId, monto: info.monto, fecha: info.fecha, stringNumeroFactura: info.stringNumeroFactura, numeroVenta: info.numeroVenta });
+      setMpLinkModal(true);
+      socket.emit("request-mp-sin-vincular", { fecha: info.fecha || hoyArgentina() });
+      navegar(location.pathname, { replace: true, state: null });
+    }
+  }, [location.state]);
 
   return (
     <div className={s.container}>

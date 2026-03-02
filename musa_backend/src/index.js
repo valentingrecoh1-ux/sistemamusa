@@ -1409,15 +1409,10 @@ io.on("connection", (socket) => {
   });
   socket.on("toggle-carrito", async (id) => {
     try {
-      const product = await Product.findById(id);
+      const product = await Product.findById(id).select("carrito").lean();
       if (product) {
-        const newCarrito = product.carrito === true ? false : true;
-        product.carrito = newCarrito;
-        product.carritoCantidad = 1;
-        await product.save();
+        await Product.updateOne({ _id: id }, { carrito: !product.carrito, carritoCantidad: 1 });
         io.emit("cambios");
-      } else {
-        console.error("Producto no encontrado");
       }
     } catch (error) {
       console.error("Error al actualizar el carrito:", error);
@@ -1632,14 +1627,7 @@ Origen: ${producto.origen || ""}`;
   });
   socket.on("actualizar-cantidad-carrito", async ({ id, cantidad }) => {
     try {
-      const product = await Product.findById(id);
-      if (product) {
-        product.carritoCantidad = cantidad;
-        await product.save();
-        io.emit("cambios");
-      } else {
-        console.error("Producto no encontrado");
-      }
+      await Product.updateOne({ _id: id }, { carritoCantidad: cantidad });
     } catch (error) {
       console.error("Error al actualizar carritoCantidad:", error);
     }
@@ -1657,6 +1645,7 @@ Origen: ${producto.origen || ""}`;
       });
 
       // Calculamos el total de la venta
+      let ventaCreada1, ventaCreada2, ventaCreada3;
       let totalVenta = 0;
       productosCarrito.forEach((producto) => {
         totalVenta += producto.carritoCantidad * parseFloat(producto.venta);
@@ -1740,7 +1729,7 @@ Origen: ${producto.origen || ""}`;
           montoDigital,
           facturaPdf: a4A.base64,
         };
-        const ventaCreada1 = await Venta.create(venta);
+        ventaCreada1 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada1);
         vincularVentaCliente(ventaCreada1);
 
@@ -1801,7 +1790,7 @@ Origen: ${producto.origen || ""}`;
           montoDigital,
           facturaPdf: a4B.base64,
         };
-        const ventaCreada2 = await Venta.create(venta);
+        ventaCreada2 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada2);
         vincularVentaCliente(ventaCreada2);
 
@@ -1822,7 +1811,7 @@ Origen: ${producto.origen || ""}`;
           montoEfectivo,
           montoDigital,
         };
-        const ventaCreada3 = await Venta.create(venta);
+        ventaCreada3 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada3);
         vincularVentaCliente(ventaCreada3);
       }
@@ -1842,7 +1831,17 @@ Origen: ${producto.origen || ""}`;
 
       // Emitimos los eventos pertinentes
       io.emit("cambios");
-      socket.emit("compra-finalizada");
+
+      // Determinamos cuál venta se creó para enviar info al frontend
+      const ventaFinal = ventaCreada1 || ventaCreada2 || ventaCreada3 || null;
+      socket.emit("compra-finalizada", {
+        ventaId: ventaFinal?._id,
+        formaPago: datosCompra.formaPago,
+        monto: totalVenta,
+        fecha: ventaFinal?.fecha,
+        stringNumeroFactura: ventaFinal?.stringNumeroFactura,
+        numeroVenta: ventaFinal?.numeroVenta,
+      });
     } catch (error) {
       console.error("Error al finalizar la compra:", error);
       socket.emit("error-finalizar-compra", {
@@ -2644,8 +2643,9 @@ Origen: ${producto.origen || ""}`;
   });
   socket.on("add-carrito", async (codigo) => {
     try {
-      await Product.findOneAndUpdate({ codigo }, { carrito: true });
-      io.emit("cambios");
+      await Product.updateOne({ codigo }, { carrito: true, carritoCantidad: 1 });
+      const productosCarrito = await Product.find({ carrito: true }).select("-foto -fotoIA -descripcionGenerada").lean();
+      socket.emit("productos-carrito", productosCarrito);
     } catch (err) { console.error("Error add-carrito:", err); }
   });
   socket.on("total-cantidad-productos", async () => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { IP, socket, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
 import s from "./Carrito.module.css";
@@ -26,6 +27,7 @@ const limitarMonto = (valor, maximo) => {
 };
 
 const Carrito = () => {
+  const navegar = useNavigate();
   const [productos, setProductos] = useState([]);
   const [total, setTotal] = useState(0);
 
@@ -127,6 +129,7 @@ const Carrito = () => {
     const cantidad = isNaN(cantidadNumerica)
       ? 1
       : Math.min(Math.max(1, cantidadNumerica), maxCantidad);
+    setProductos((prev) => prev.map((p) => p._id === id ? { ...p, carritoCantidad: cantidad } : p));
     socket.emit("actualizar-cantidad-carrito", { id, cantidad });
   }, []);
 
@@ -162,17 +165,15 @@ const Carrito = () => {
 
   const handleCantidad = useCallback(
     (id, delta, maxCantidad) => {
-      const producto = productos.find((prod) => prod._id === id);
-      const nuevaCantidad = Math.min(
-        Math.max(1, producto.carritoCantidad + delta),
-        maxCantidad
-      );
-      socket.emit("actualizar-cantidad-carrito", {
-        id,
-        cantidad: nuevaCantidad,
+      setProductos((prev) => {
+        const producto = prev.find((p) => p._id === id);
+        if (!producto) return prev;
+        const nuevaCantidad = Math.min(Math.max(1, producto.carritoCantidad + delta), maxCantidad);
+        socket.emit("actualizar-cantidad-carrito", { id, cantidad: nuevaCantidad });
+        return prev.map((p) => p._id === id ? { ...p, carritoCantidad: nuevaCantidad } : p);
       });
     },
-    [productos]
+    []
   );
 
   const finalizar = () => {
@@ -266,14 +267,18 @@ const Carrito = () => {
     setTotal(calcularTotal());
   }, [productos, calcularTotal]);
 
+  const borrarDelCarrito = useCallback((id) => {
+    setProductos((prev) => prev.filter((p) => p._id !== id));
+    socket.emit("toggle-carrito", id);
+  }, []);
+
   useEffect(() => {
-    socket.on("cambios", fetchProductosCarrito);
     socket.on("productos-carrito", setProductos);
     socket.on("error-cuit-invalido", () =>
       alert("PROBABLEMENTE EL CUIT INGRESADO ESTA MAL ESCRITO")
     );
     socket.on("error-no-cuit", () => alert("PROBABLEMENTE NO ES CUIT"));
-    socket.on("compra-finalizada", () => {
+    socket.on("compra-finalizada", (info) => {
       setFormaPago(null);
       setFactura(null);
       setPedirData(false);
@@ -287,14 +292,16 @@ const Carrito = () => {
       setDescuentoPorcentaje(null);
       setCompraEnProceso(false);
       setTodoOK(false);
-      // Limpiamos los montos mixtos
       setEfectivoMixto(0);
       setDigitalMixto(0);
+      // Si pago digital/mixto, navegar a Ventas para vincular MP
+      if (info?.ventaId && (info.formaPago === "DIGITAL" || info.formaPago === "MIXTO")) {
+        navegar("/ventas", { state: { mpLinkVenta: info } });
+      }
     });
     fetchProductosCarrito();
     document.addEventListener("keydown", handleGlobalKeyDown);
     return () => {
-      socket.off("cambios", fetchProductosCarrito);
       socket.off("error-cuit-invalido");
       socket.off("error-no-cuit");
       socket.off("compra-finalizada");
@@ -311,7 +318,7 @@ const Carrito = () => {
             <ProductoItem
               key={producto._id}
               producto={producto}
-              borrarCarrito={() => socket.emit("toggle-carrito", producto._id)}
+              borrarCarrito={() => borrarDelCarrito(producto._id)}
               handleCantidad={(delta) =>
                 handleCantidad(producto._id, delta, producto.cantidad)
               }

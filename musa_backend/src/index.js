@@ -119,12 +119,14 @@ function mpRawToDoc(p, ownCollectorId) {
   const comis = (p.fee_details || []).reduce((s, f) => s + (f.amount || 0), 0);
   const ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
 
-  // Clasificar por tipo de operacion: money_transfer = gasto, resto = cobro
+  // Clasificar: si tenemos collector_id propio, comparar; sino heurística por operation_type
   let tipo = "cobro";
-  if (p.operation_type === "money_transfer") {
-    tipo = "gasto";
-  } else if (ownCollectorId && p.collector_id) {
+  if (ownCollectorId && p.collector_id) {
+    // Si el collector_id coincide con el nuestro → dinero que recibimos (cobro)
     tipo = (String(p.collector_id) === String(ownCollectorId)) ? "cobro" : "gasto";
+  } else if (p.operation_type === "money_transfer") {
+    // Sin collector_id: transferencias con monto positivo y status approved = cobro
+    tipo = (bruto > 0 && p.status === "approved") ? "cobro" : "gasto";
   }
 
   return {

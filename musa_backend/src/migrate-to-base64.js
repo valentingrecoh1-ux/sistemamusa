@@ -16,6 +16,7 @@ const Operacion = require("./models/operacion");
 const Flujo = require("./models/flujo");
 const PagoProveedor = require("./models/pagoProveedor");
 const OrdenCompra = require("./models/ordenCompra");
+const Venta = require("./models/venta");
 
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
@@ -149,6 +150,63 @@ async function main() {
         }
       }
       if (changed) await orden.save();
+    }
+    console.log(`  ✓ Migrados: ${migrated} | ✗ No encontrados: ${failed}`);
+    totals.migrated += migrated; totals.failed += failed;
+  }
+
+  // 6. Ventas: facturaPdf desde archivos locales en src/facturas/
+  {
+    const ventas = await Venta.find({
+      stringNumeroFactura: { $exists: true, $ne: null, $ne: "" },
+      $or: [{ facturaPdf: null }, { facturaPdf: { $exists: false } }],
+    }).select("_id stringNumeroFactura").lean();
+    let migrated = 0, failed = 0;
+    console.log(`\nVentas facturaPdf: ${ventas.length} ventas sin PDF en base64`);
+    for (const v of ventas) {
+      const fileName = `${v.stringNumeroFactura}.pdf`;
+      const candidates = [
+        path.join(__dirname, "facturas", fileName),
+        ...SEARCH_DIRS.map(d => path.join(d, "facturas", fileName)),
+      ];
+      const found = candidates.find(p => fs.existsSync(p));
+      if (found) {
+        const buffer = fs.readFileSync(found);
+        await Venta.findByIdAndUpdate(v._id, { facturaPdf: buffer.toString("base64") });
+        migrated++;
+      } else {
+        console.warn(`  ✗ No encontrado: ${fileName}`);
+        failed++;
+      }
+    }
+    console.log(`  ✓ Migrados: ${migrated} | ✗ No encontrados: ${failed}`);
+    totals.migrated += migrated; totals.failed += failed;
+  }
+
+  // 7. Ventas: notaCreditoPdf desde archivos locales en src/notas_de_credito/
+  {
+    const ventas = await Venta.find({
+      stringNumeroNotaCredito: { $exists: true, $ne: null, $ne: "" },
+      $or: [{ notaCreditoPdf: null }, { notaCreditoPdf: { $exists: false } }],
+    }).select("_id stringNumeroNotaCredito").lean();
+    let migrated = 0, failed = 0;
+    console.log(`\nVentas notaCreditoPdf: ${ventas.length} ventas sin nota de crédito PDF en base64`);
+    for (const v of ventas) {
+      const fileName = `${v.stringNumeroNotaCredito}.pdf`;
+      // Buscar en src/notas_de_credito/ y en carpetas alternativas
+      const candidates = [
+        path.join(__dirname, "notas_de_credito", fileName),
+        ...SEARCH_DIRS.map(d => path.join(d, "notas_de_credito", fileName)),
+      ];
+      const found = candidates.find(p => fs.existsSync(p));
+      if (found) {
+        const buffer = fs.readFileSync(found);
+        await Venta.findByIdAndUpdate(v._id, { notaCreditoPdf: buffer.toString("base64") });
+        migrated++;
+      } else {
+        console.warn(`  ✗ No encontrado: ${fileName}`);
+        failed++;
+      }
     }
     console.log(`  ✓ Migrados: ${migrated} | ✗ No encontrados: ${failed}`);
     totals.migrated += migrated; totals.failed += failed;

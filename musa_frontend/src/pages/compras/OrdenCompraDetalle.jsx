@@ -590,11 +590,11 @@ export default function OrdenCompraDetalle({ usuario }) {
                     <div className={s.tipoPrecioToggle}>
                       <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2h8l-1 9H9L8 2z"/><path d="M12 11v7"/><path d="M8 18h8"/></svg>
+                        <span style={{fontSize:'0.65rem',marginRight:2}}>1</span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 0h5l-.8 7H6.3L5.5 0zM7 8h2v5H7V8zm-2 6h6v1.5H5V14z"/></svg>
                       </button>
                       <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
-                        <i className="bi bi-box-seam" /><span style={{fontSize:'0.65rem',marginLeft:1}}>6</span>
+                        <span style={{fontSize:'0.65rem',marginRight:2}}>6</span><i className="bi bi-box-seam" />
                       </button>
                     </div>
                   </td>
@@ -852,11 +852,11 @@ export default function OrdenCompraDetalle({ usuario }) {
                     <div className={s.tipoPrecioToggle}>
                       <button type="button" className={`${s.tipoPrecioBtn} ${(item.tipoPrecio || 'unidad') === 'unidad' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleEditItemChange(i, 'tipoPrecio', 'unidad')} title="Precio por unidad">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2h8l-1 9H9L8 2z"/><path d="M12 11v7"/><path d="M8 18h8"/></svg>
+                        <span style={{fontSize:'0.65rem',marginRight:2}}>1</span><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 0h5l-.8 7H6.3L5.5 0zM7 8h2v5H7V8zm-2 6h6v1.5H5V14z"/></svg>
                       </button>
                       <button type="button" className={`${s.tipoPrecioBtn} ${item.tipoPrecio === 'caja6' ? s.tipoPrecioActive : ''}`}
                         onClick={() => handleEditItemChange(i, 'tipoPrecio', 'caja6')} title="Precio por caja de 6">
-                        <i className="bi bi-box-seam" /><span style={{fontSize:'0.65rem',marginLeft:1}}>6</span>
+                        <span style={{fontSize:'0.65rem',marginRight:2}}>6</span><i className="bi bi-box-seam" />
                       </button>
                     </div>
                   </td>

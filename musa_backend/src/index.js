@@ -4807,6 +4807,31 @@ Reglas:
     }
   });
 
+  // Config TV (destello, etc.)
+  socket.on("request-config-tv", async () => {
+    try {
+      const cfg = await mongoose.connection.collection("tvconfig").findOne({ _id: "main" });
+      socket.emit("response-config-tv", { destello: cfg?.destello ?? true });
+    } catch (err) {
+      socket.emit("response-config-tv", { destello: true });
+    }
+  });
+
+  socket.on("toggle-destello-tv", async () => {
+    try {
+      const cfg = await mongoose.connection.collection("tvconfig").findOne({ _id: "main" });
+      const nuevoValor = !(cfg?.destello ?? true);
+      await mongoose.connection.collection("tvconfig").updateOne(
+        { _id: "main" },
+        { $set: { destello: nuevoValor } },
+        { upsert: true }
+      );
+      io.emit("cambios-config-tv", { destello: nuevoValor });
+    } catch (err) {
+      console.error("Error toggle-destello-tv:", err);
+    }
+  });
+
   // ── Web Tienda Admin handlers ──
   socket.on("request-pedidos-web", async ({ estado, search, page = 1, limit = 20 } = {}) => {
     try {

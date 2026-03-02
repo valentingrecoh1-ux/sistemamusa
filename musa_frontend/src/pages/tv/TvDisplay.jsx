@@ -6,6 +6,7 @@ export default function TvDisplay() {
   const [medios, setMedios] = useState([]);
   const [current, setCurrent] = useState(0);
   const [fade, setFade] = useState(true);
+  const [destello, setDestello] = useState(true);
   const timerRef = useRef(null);
 
   const fetchMedias = useCallback(() => {
@@ -15,14 +16,20 @@ export default function TvDisplay() {
   useEffect(() => {
     const handler = (data) => setMedios(data || []);
     const cambios = () => fetchMedias();
+    const configHandler = (cfg) => setDestello(cfg?.destello ?? true);
 
     socket.on('response-media-tv-public', handler);
     socket.on('cambios-media-tv', cambios);
+    socket.on('response-config-tv', configHandler);
+    socket.on('cambios-config-tv', configHandler);
     fetchMedias();
+    socket.emit('request-config-tv');
 
     return () => {
       socket.off('response-media-tv-public', handler);
       socket.off('cambios-media-tv', cambios);
+      socket.off('response-config-tv', configHandler);
+      socket.off('cambios-config-tv', configHandler);
     };
   }, [fetchMedias]);
 
@@ -89,7 +96,8 @@ export default function TvDisplay() {
         src={`${IP()}/api/tv/imagen/${medio._id}`}
         alt=""
       />
-      <div className={s.borderGlow} />
+      {destello && <div className={s.borderGlow} />}
+      {destello && <div className={s.borderGlow2} />}
     </div>
   );
 }

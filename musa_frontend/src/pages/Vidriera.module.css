@@ -75,6 +75,16 @@
   background: var(--accent-bg);
 }
 
+.destelloOn {
+  border-color: #e6a800;
+  color: #e6a800;
+  background: rgba(230, 168, 0, 0.1);
+}
+
+.destelloOn:hover {
+  background: rgba(230, 168, 0, 0.18);
+}
+
 /* ── URL Card ── */
 .urlCard {
   background: var(--card-bg);

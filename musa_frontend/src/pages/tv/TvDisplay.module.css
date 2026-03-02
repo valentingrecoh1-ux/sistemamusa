@@ -26,13 +26,13 @@
   opacity: 0;
 }
 
-/* Luz giratoria en el borde */
+/* Luz primaria - dorada cálida, sentido horario */
 .borderGlow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
-  padding: 3px;
+  padding: 4px;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -50,17 +50,59 @@
   background: conic-gradient(
     from 0deg,
     transparent 0%,
-    transparent 88%,
-    rgba(255, 255, 255, 0.7) 91%,
-    rgba(255, 255, 255, 1) 93%,
-    rgba(255, 255, 255, 0.7) 95%,
+    transparent 70%,
+    rgba(255, 200, 100, 0.1) 76%,
+    rgba(255, 220, 140, 0.3) 81%,
+    rgba(255, 240, 180, 0.6) 86%,
+    rgba(255, 255, 255, 1) 89%,
+    rgba(255, 240, 180, 0.6) 92%,
+    rgba(255, 220, 140, 0.3) 95%,
+    rgba(255, 200, 100, 0.1) 98%,
+    transparent 100%
+  );
+  animation: rotateBorder 3s linear infinite;
+}
+
+/* Luz secundaria - blanca, sentido antihorario */
+.borderGlow2 {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  padding: 4px;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.borderGlow2::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(
+    from 180deg,
+    transparent 0%,
+    transparent 84%,
+    rgba(255, 255, 255, 0.2) 88%,
+    rgba(255, 255, 255, 0.6) 91%,
+    rgba(255, 255, 255, 0.2) 94%,
     transparent 97%,
     transparent 100%
   );
-  animation: rotateBorder 4s linear infinite;
+  animation: rotateBorderReverse 5s linear infinite;
 }
 
 @keyframes rotateBorder {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes rotateBorderReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }

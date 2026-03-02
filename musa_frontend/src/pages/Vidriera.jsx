@@ -5,6 +5,7 @@ import s from './Vidriera.module.css';
 export default function Vidriera({ usuario }) {
   const [medios, setMedios] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [destello, setDestello] = useState(true);
   const fileRef = useRef(null);
 
   const tvUrl = `${window.location.origin}/tv`;
@@ -14,14 +15,20 @@ export default function Vidriera({ usuario }) {
   useEffect(() => {
     const handler = (data) => setMedios(data || []);
     const cambios = () => fetchMedias();
+    const configHandler = (cfg) => setDestello(cfg?.destello ?? true);
 
     socket.on('response-media-tv', handler);
     socket.on('cambios-media-tv', cambios);
+    socket.on('response-config-tv', configHandler);
+    socket.on('cambios-config-tv', configHandler);
     fetchMedias();
+    socket.emit('request-config-tv');
 
     return () => {
       socket.off('response-media-tv', handler);
       socket.off('cambios-media-tv', cambios);
+      socket.off('response-config-tv', configHandler);
+      socket.off('cambios-config-tv', configHandler);
     };
   }, []);
 
@@ -76,6 +83,9 @@ export default function Vidriera({ usuario }) {
           <p className={s.subtitle}>Administra las imagenes que se muestran en el televisor</p>
         </div>
         <div className={s.headerActions}>
+          <button className={`${s.previewBtn} ${destello ? s.destelloOn : ''}`} onClick={() => socket.emit('toggle-destello-tv')} title={destello ? 'Desactivar destello' : 'Activar destello'}>
+            <i className={`bi ${destello ? 'bi-stars' : 'bi-star'}`} /> Destello {destello ? 'ON' : 'OFF'}
+          </button>
           <button className={s.previewBtn} onClick={() => window.open('/tv', '_blank')}>
             <i className="bi bi-eye" /> Vista previa
           </button>

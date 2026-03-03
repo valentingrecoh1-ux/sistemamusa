@@ -2324,10 +2324,11 @@ Origen: ${producto.origen || ""}`;
     try {
       const tz = "America/Argentina/Buenos_Aires";
       let matchStage = { notaCredito: { $ne: true } };
+      let mes = "";
       if (typeof filtro === "object" && filtro?.desde && filtro?.hasta) {
         matchStage.fecha = { $gte: filtro.desde, $lte: filtro.hasta };
       } else {
-        const mes = typeof filtro === "string" ? filtro : (filtro || "");
+        mes = typeof filtro === "string" ? filtro : (filtro || "");
         if (mes) matchStage.fecha = { $regex: `^${mes}` };
       }
 

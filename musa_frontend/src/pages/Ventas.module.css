@@ -309,128 +309,107 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   box-shadow: var(--card-shadow);
-  padding: 8px;
+  overflow-x: auto;
 }
 
-.salesList {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+/* ── Sales Table ── */
+.salesTable {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.saleCard {
-  border: 1px solid var(--table-border);
-  border-radius: var(--border-radius);
-  background: linear-gradient(170deg, var(--table-row-odd) 0%, var(--table-row-even) 100%);
-  padding: 8px 9px;
-  cursor: pointer;
-  transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
-}
-
-.saleCard:hover {
-  border-color: var(--primary-light);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.12);
-  background: linear-gradient(170deg, rgba(59, 130, 246, 0.09) 0%, rgba(59, 130, 246, 0.03) 100%);
-}
-
-.saleCardCredito {
-  border-color: rgba(239, 68, 68, 0.28);
-  background: linear-gradient(170deg, rgba(239, 68, 68, 0.09) 0%, rgba(239, 68, 68, 0.04) 100%);
-}
-
-.saleHead {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 6px;
+.salesTable thead th {
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 14px;
+  text-align: left;
   border-bottom: 1px solid var(--table-border);
+  white-space: nowrap;
 }
 
-.saleHeadCenter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
+.salesTable thead th:nth-child(3),
+.salesTable thead th:nth-child(4),
+.salesTable thead th:nth-child(5) {
+  text-align: right;
+}
+
+.saleRow {
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.saleRow:hover {
+  background-color: var(--table-row-hover);
+}
+
+.saleRow td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.saleRow:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+.saleRow:nth-child(odd) {
+  background-color: var(--table-row-odd);
+}
+
+.saleRowCredito {
+  background: rgba(239, 68, 68, 0.06) !important;
+}
+
+.saleRowCredito td {
+  border-bottom-color: rgba(239, 68, 68, 0.15);
 }
 
 .saleDate {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.saleComp {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.saleMonto, .saleDesc {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.saleNeto {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary-light);
+  white-space: nowrap;
 }
 
 .saleBadges {
   display: flex;
   align-items: center;
   gap: 5px;
-}
-
-.saleDetailInlineMobile {
-  display: none;
-}
-
-.saleGrid {
-  margin-top: 7px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(95px, 1fr));
-  gap: 6px;
-}
-
-.saleGridAction {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-}
-
-.saleGridAction .saleActionBtn {
-  flex: 0 0 auto;
-}
-
-.saleItem {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.saleItemHeadWithDetail {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.saleItemLabel {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-muted);
-}
-
-.saleItemValue {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.15;
-}
-
-.saleItemValueStrong {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--primary-light);
-  line-height: 1.15;
+  flex-wrap: wrap;
 }
 
 .saleActions {
-  margin-top: 7px;
-  padding-top: 7px;
-  border-top: 1px solid var(--table-border);
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 5px;
   flex-wrap: wrap;
-  gap: 6px;
 }
 
 .saleActionBtn {
@@ -993,10 +972,6 @@
     margin-left: 0;
   }
 
-  .salesList {
-    grid-template-columns: 1fr;
-  }
-
 }
 
 @media (max-width: 920px) {
@@ -1036,24 +1011,6 @@
     min-width: 0;
   }
 
-  .saleHead {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .saleDate {
-    text-align: center;
-  }
-
-  .saleHeadCenter {
-    justify-content: stretch;
-  }
-
-  .saleBadges {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
   .paginationTools {
     width: 100%;
     justify-content: space-between;
@@ -1069,55 +1026,15 @@
     justify-content: center;
   }
 
-  .saleGrid {
-    grid-template-columns: repeat(2, minmax(110px, 1fr));
-  }
-
-  .saleGridAction {
-    grid-column: span 2;
-    justify-content: flex-end;
-  }
-
-  .saleGridActionDesktop {
+  /* Table: hide less important columns on mobile */
+  .salesTable thead th:nth-child(4),
+  .salesTable .saleRow td:nth-child(4) {
     display: none;
   }
 
-  .saleGridAction .saleActionBtn {
-    flex: 0 0 auto;
-    min-width: 120px;
-  }
-
   .saleActionBtn {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .saleItemHeadWithDetail {
-    position: relative;
-    justify-content: flex-start;
-  }
-
-  .saleDetailInlineMobile {
-    display: inline-flex;
-    position: absolute;
-    right: 0;
-    top: 12px;
-    align-items: center;
-    gap: 4px;
-    padding: 1px 2px;
+    padding: 4px 8px;
     font-size: 10px;
-    font-weight: 700;
-    color: var(--text-muted);
-    background: transparent;
-    pointer-events: none;
-    user-select: none;
-    text-transform: uppercase;
-    letter-spacing: 0.25px;
-  }
-
-  .saleDetailInlineMobile i {
-    font-size: 10px;
-    opacity: 0.9;
   }
 
   .modalBody {

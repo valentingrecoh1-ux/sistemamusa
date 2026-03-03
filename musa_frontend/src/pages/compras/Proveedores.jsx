@@ -4,7 +4,7 @@ import { IP } from '../../main';
 import Pagination from '../../components/shared/Pagination';
 import s from './Proveedores.module.css';
 
-const EMPTY = { bodega: '', nombre: '', telefono: '', cuit: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '', esDistribuidor: false, distribuidorNombre: '', distribuidorContacto: '', distribuidorTelefono: '', distribuidorEmail: '' };
+const EMPTY = { bodega: '', nombre: '', telefono: '', cuit: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '', esDistribuidor: false, distribuidorNombre: '', distribuidorContacto: '', distribuidorTelefono: '' };
 
 export default function Proveedores({ usuario }) {
   const puedeEditar = usuario?.rol === 'admin';
@@ -71,7 +71,6 @@ export default function Proveedores({ usuario }) {
       distribuidorNombre: prov.distribuidorNombre || '',
       distribuidorContacto: prov.distribuidorContacto || '',
       distribuidorTelefono: prov.distribuidorTelefono || '',
-      distribuidorEmail: prov.distribuidorEmail || '',
     });
     setEditId(prov._id);
   };
@@ -104,7 +103,14 @@ export default function Proveedores({ usuario }) {
             </div>
             <div className={s.inputGroup}>
               <span>Telefono</span>
-              <input type="text" value={form.telefono} onChange={(e) => handleChange('telefono', e.target.value)} />
+              <div className={s.phoneRow}>
+                <input type="text" value={form.telefono} onChange={(e) => handleChange('telefono', e.target.value)} />
+                {form.telefono.trim() && (
+                  <a className={s.waBtn} href={`https://wa.me/${form.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp">
+                    <i className="bi bi-whatsapp" />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 
@@ -143,6 +149,7 @@ export default function Proveedores({ usuario }) {
           <div className={s.distribuidorToggle}>
             <label>
               <input type="checkbox" checked={form.esDistribuidor} onChange={(e) => handleChange('esDistribuidor', e.target.checked)} />
+              <span className={`${s.toggleSwitch} ${form.esDistribuidor ? s.toggleSwitchOn : ''}`} />
               <span>Tiene distribuidor</span>
             </label>
           </div>
@@ -161,12 +168,15 @@ export default function Proveedores({ usuario }) {
                 </div>
                 <div className={s.inputGroup}>
                   <span>Telefono</span>
-                  <input type="text" value={form.distribuidorTelefono} onChange={(e) => handleChange('distribuidorTelefono', e.target.value)} />
+                  <div className={s.phoneRow}>
+                    <input type="text" value={form.distribuidorTelefono} onChange={(e) => handleChange('distribuidorTelefono', e.target.value)} />
+                    {form.distribuidorTelefono.trim() && (
+                      <a className={s.waBtn} href={`https://wa.me/${form.distribuidorTelefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp">
+                        <i className="bi bi-whatsapp" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className={s.inputGroup}>
-                <span>Email</span>
-                <input type="email" value={form.distribuidorEmail} onChange={(e) => handleChange('distribuidorEmail', e.target.value)} />
               </div>
             </div>
           )}

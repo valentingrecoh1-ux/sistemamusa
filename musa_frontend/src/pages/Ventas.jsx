@@ -507,164 +507,89 @@ function Ventas({ usuario }) {
       {/* Sales list */}
       <div className={s.tableWrapper}>
         {ventas?.length > 0 ? (
-          <div className={s.salesList}>
-            {ventas
-              .filter((venta) => venta && typeof venta === "object")
-              .map((venta, index) => {
-              const netoVenta = Math.max(
-                toNumber(venta.monto) - toNumber(venta.descuento),
-                0
-              );
-
-              return (
-                <article
-                  className={`${s.saleCard} ${venta.notaCredito ? s.saleCardCredito : ""}`}
-                  onClick={() => ventaClick(venta)}
-                  key={venta._id || index}
-                >
-                  <div className={s.saleHead}>
-                    <div className={s.saleDate}>
-                      {formatDateTime(venta.createdAt)}
-                    </div>
-                    <div className={s.saleHeadCenter}>
-                      {venta.stringNumeroFactura ? (
-                        <button
-                          type="button"
-                          className={`${s.saleActionBtn} ${s.saleActionDoc}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openFacturaPdf(venta);
-                          }}
-                        >
-                          <i className="bi bi-receipt"></i>
-                          Ver factura
-                        </button>
-                      ) : (
-                        <span
-                          aria-hidden="true"
-                          className={`${s.saleActionBtn} ${s.saleActionDoc} ${s.saleActionGhost}`}
-                        >
-                          <i className="bi bi-receipt"></i>
-                          Ver factura
+          <table className={s.salesTable}>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Comp.</th>
+                <th>Monto</th>
+                <th>Desc.</th>
+                <th>Neto</th>
+                <th>Tipo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ventas
+                .filter((venta) => venta && typeof venta === "object")
+                .map((venta, index) => {
+                const netoVenta = Math.max(
+                  toNumber(venta.monto) - toNumber(venta.descuento),
+                  0
+                );
+                return (
+                  <tr
+                    key={venta._id || index}
+                    className={`${s.saleRow} ${venta.notaCredito ? s.saleRowCredito : ""}`}
+                    onClick={() => ventaClick(venta)}
+                  >
+                    <td className={s.saleDate}>{formatDateTime(venta.createdAt)}</td>
+                    <td className={s.saleComp}>{venta.numeroFactura || "-"}</td>
+                    <td className={s.saleMonto}>
+                      <NumericFormat prefix="$" displayType="text" value={toNumber(venta.monto).toFixed(2)} thousandSeparator="." decimalSeparator="," />
+                    </td>
+                    <td className={s.saleDesc}>
+                      <NumericFormat prefix="$" displayType="text" value={toNumber(venta.descuento).toFixed(2)} thousandSeparator="." decimalSeparator="," />
+                    </td>
+                    <td className={s.saleNeto}>
+                      <NumericFormat prefix="$" displayType="text" value={netoVenta.toFixed(2)} thousandSeparator="." decimalSeparator="," />
+                    </td>
+                    <td>
+                      <div className={s.saleBadges}>
+                        <span className={facturaPillClass(venta.tipoFactura || "")}>
+                          {venta.tipoFactura ? venta.tipoFactura : "SF"}
                         </span>
-                      )}
-                      {venta.notaCredito && (
-                        <button
-                          type="button"
-                          className={`${s.saleActionBtn} ${s.saleActionCreditDoc}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openNotaCreditoPdf(venta);
-                          }}
-                        >
-                          <i className="bi bi-file-earmark-text"></i>
-                          Ver nota
-                        </button>
-                      )}
-                      {!venta.notaCredito && tienePermiso(usuario, 'anular_venta') && (
-                        <button
-                          type="button"
-                          className={`${s.saleActionBtn} ${s.saleActionDanger}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            notaCredito(venta);
-                          }}
-                        >
-                          <i className="bi bi-file-earmark-break-fill"></i>
-                          Nota de credito
-                        </button>
-                      )}
-                    </div>
-                    <div className={s.saleBadges}>
-                      <span className={facturaPillClass(venta.tipoFactura || "")}>
-                        {venta.tipoFactura ? venta.tipoFactura : "SF"}
-                      </span>
-                      <span className={pagoPillClass(venta.formaPago)}>
-                        {venta.formaPago}
-                      </span>
-                      {(venta.formaPago === "DIGITAL" || venta.formaPago === "MIXTO") && (
-                        <span
-                          className={`${s.pill} ${venta.mpPaymentIds?.length ? s.pillMpLinked : s.pillMpUnlinked} ${!venta.mpPaymentIds?.length ? s.pillClickable : ""}`}
-                          onClick={(e) => {
-                            if (!venta.mpPaymentIds?.length) {
-                              e.stopPropagation();
-                              abrirMpLink(venta);
-                            }
-                          }}
-                        >
-                          {venta.mpPaymentIds?.length ? `MP ✓${venta.mpPaymentIds.length > 1 ? ` (${venta.mpPaymentIds.length})` : ""}` : "MP ?"}
+                        <span className={pagoPillClass(venta.formaPago)}>
+                          {venta.formaPago}
                         </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={s.saleGrid}>
-                    <div className={s.saleItem}>
-                      <span className={s.saleItemLabel}>Comprobante</span>
-                      <span className={s.saleItemValue}>
-                        {venta.numeroFactura ? venta.numeroFactura : "-"}
-                      </span>
-                    </div>
-                    <div className={s.saleItem}>
-                      <span className={s.saleItemLabel}>Monto</span>
-                      <span className={s.saleItemValue}>
-                        <NumericFormat
-                          prefix="$"
-                          displayType="text"
-                          value={toNumber(venta.monto).toFixed(2)}
-                          thousandSeparator="."
-                          decimalSeparator=","
-                        />
-                      </span>
-                    </div>
-                    <div className={s.saleItem}>
-                      <span className={s.saleItemLabel}>Descuento</span>
-                      <span className={s.saleItemValue}>
-                        <NumericFormat
-                          prefix="$"
-                          displayType="text"
-                          value={toNumber(venta.descuento).toFixed(2)}
-                          thousandSeparator="."
-                          decimalSeparator=","
-                        />
-                      </span>
-                    </div>
-                    <div className={s.saleItem}>
-                      <div className={s.saleItemHeadWithDetail}>
-                        <span className={s.saleItemLabel}>Neto</span>
-                        <span aria-hidden="true" className={s.saleDetailInlineMobile}>
-                          <i className="bi bi-info-circle"></i>
-                          Detalle
-                        </span>
+                        {(venta.formaPago === "DIGITAL" || venta.formaPago === "MIXTO") && (
+                          <span
+                            className={`${s.pill} ${venta.mpPaymentIds?.length ? s.pillMpLinked : s.pillMpUnlinked} ${!venta.mpPaymentIds?.length ? s.pillClickable : ""}`}
+                            onClick={(e) => {
+                              if (!venta.mpPaymentIds?.length) {
+                                e.stopPropagation();
+                                abrirMpLink(venta);
+                              }
+                            }}
+                          >
+                            {venta.mpPaymentIds?.length ? `MP ✓${venta.mpPaymentIds.length > 1 ? ` (${venta.mpPaymentIds.length})` : ""}` : "MP ?"}
+                          </span>
+                        )}
                       </div>
-                      <span className={s.saleItemValueStrong}>
-                        <NumericFormat
-                          prefix="$"
-                          displayType="text"
-                          value={netoVenta.toFixed(2)}
-                          thousandSeparator="."
-                          decimalSeparator=","
-                        />
-                      </span>
-                    </div>
-                    <div className={`${s.saleGridAction} ${s.saleGridActionDesktop}`}>
-                      <button
-                        type="button"
-                        className={s.saleActionBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          ventaClick(venta);
-                        }}
-                      >
-                        <i className="bi bi-info-circle"></i>
-                        Detalle
-                      </button>
-                    </div>
-                  </div>
-
-                </article>
-              );
-            })}
-          </div>
+                    </td>
+                    <td>
+                      <div className={s.saleActions}>
+                        {venta.stringNumeroFactura && (
+                          <button type="button" className={`${s.saleActionBtn} ${s.saleActionDoc}`} onClick={(e) => { e.stopPropagation(); openFacturaPdf(venta); }}>
+                            <i className="bi bi-receipt"></i> Factura
+                          </button>
+                        )}
+                        {venta.notaCredito ? (
+                          <button type="button" className={`${s.saleActionBtn} ${s.saleActionCreditDoc}`} onClick={(e) => { e.stopPropagation(); openNotaCreditoPdf(venta); }}>
+                            <i className="bi bi-file-earmark-text"></i> Nota
+                          </button>
+                        ) : tienePermiso(usuario, 'anular_venta') ? (
+                          <button type="button" className={`${s.saleActionBtn} ${s.saleActionDanger}`} onClick={(e) => { e.stopPropagation(); notaCredito(venta); }}>
+                            <i className="bi bi-file-earmark-break-fill"></i> NC
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         ) : (
           <div className={s.emptyRow}>
             No hay ventas disponibles

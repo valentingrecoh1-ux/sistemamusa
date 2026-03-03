@@ -2505,6 +2505,7 @@ Origen: ${producto.origen || ""}`;
       });
     } catch (err) {
       console.error("Error request-estadisticas-ventas:", err);
+      socket.emit("response-estadisticas-ventas", null);
     }
   });
 

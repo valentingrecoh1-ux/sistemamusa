@@ -111,6 +111,31 @@
   background: #1ebe57;
 }
 
+.phoneCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.waBtnSm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.waBtnSm:hover {
+  background: #1ebe57;
+}
+
 .submitBtn {
   padding: 10px 16px;
   border: none;

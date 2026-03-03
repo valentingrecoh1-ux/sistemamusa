@@ -70,7 +70,7 @@ function Estadisticas() {
     if (periodo === "7dias") return { desde: offsetDate(-6), hasta: todayStr() };
     if (periodo === "30dias") return { desde: offsetDate(-29), hasta: todayStr() };
     if (periodo === "rango" && desde && hasta) return { desde, hasta };
-    return mes || null;
+    return mes || new Date().toISOString().slice(0, 7);
   };
 
   const filtro = buildFiltro();

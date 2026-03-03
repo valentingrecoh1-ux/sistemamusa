@@ -230,7 +230,16 @@ export default function Proveedores({ usuario }) {
                 <tr key={prov._id}>
                   <td>{prov.bodega || prov.nombre}</td>
                   <td>{prov.nombre || '-'}</td>
-                  <td>{prov.telefono || '-'}</td>
+                  <td>
+                    {prov.telefono ? (
+                      <span className={s.phoneCell}>
+                        {prov.telefono}
+                        <a className={s.waBtnSm} href={`https://wa.me/${prov.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp" onClick={e => e.stopPropagation()}>
+                          <i className="bi bi-whatsapp" />
+                        </a>
+                      </span>
+                    ) : '-'}
+                  </td>
                   <td>{prov.esDistribuidor ? (prov.distribuidorNombre || 'Si') : '-'}</td>
                   <td>{prov.condicionPago || '-'}</td>
                   <td>

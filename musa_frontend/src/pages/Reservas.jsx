@@ -4,6 +4,7 @@ import { es } from "date-fns/locale/es";
 import { NumericFormat } from "react-number-format";
 import { socket } from "../main";
 import Pagination from "../components/shared/Pagination";
+import { dialog } from "../components/shared/dialog";
 import s from "./Reservas.module.css";
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -110,8 +111,8 @@ function Reservas() {
     setPage(1);
   };
 
-  const cambiarCantidadColor = (color) => {
-    const cant = window.prompt(`Nueva cantidad para el color ${color}`);
+  const cambiarCantidadColor = async (color) => {
+    const cant = await dialog.prompt(`Nueva cantidad para el color ${color}`);
     if (cant) socket.emit("cambiar-cantidad-color", color, cant);
   };
 
@@ -134,10 +135,10 @@ function Reservas() {
     setOpenModal(false);
   };
 
-  const deleteTurno = (t, e) => {
+  const deleteTurno = async (t, e) => {
     e.stopPropagation();
     if (
-      window.confirm(
+      await dialog.confirm(
         `¿Estas seguro que quieres borrar el turno de ${t.nombre}?`
       )
     ) {

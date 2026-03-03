@@ -3,6 +3,7 @@ import moment from "moment-timezone";
 import { NumericFormat } from "react-number-format";
 
 import { IP, socket } from "../main";
+import { dialog } from '../components/shared/dialog';
 
 function Flujos() {
   const fileInputRef = useRef(null);
@@ -57,7 +58,7 @@ function Flujos() {
       console.log("Resultado del servidor:", result);
 
       if (result.status === "error") {
-        alert(result.message);
+        await dialog.alert(result.message);
         return;
       }
       setOperacion({

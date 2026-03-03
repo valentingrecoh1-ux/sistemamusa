@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { socket } from '../main';
 import { tienePermiso } from '../lib/permisos';
 import KPICard from '../components/shared/KPICard';
+import { dialog } from '../components/shared/dialog';
 import s from './Dashboard.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -50,17 +51,17 @@ export default function Dashboard({ usuario }) {
     };
   }, []);
 
-  const cerrarComisiones = () => {
+  const cerrarComisiones = async () => {
     if (mpComisAcum.cantidadPagos === 0) return;
     const total = mpComisAcum.comisiones + mpComisAcum.retenciones;
-    if (!window.confirm(`¿Cerrar comisiones y retenciones MP por ${money(total)}?\n\nSe crearán gastos en Caja por:\n• Comisiones: ${money(mpComisAcum.comisiones)}\n• Retenciones: ${money(mpComisAcum.retenciones)}\n\n(${mpComisAcum.cantidadPagos} pagos)`)) return;
+    if (!await dialog.confirm(`¿Cerrar comisiones y retenciones MP por ${money(total)}?\n\nSe crearán gastos en Caja por:\n• Comisiones: ${money(mpComisAcum.comisiones)}\n• Retenciones: ${money(mpComisAcum.retenciones)}\n\n(${mpComisAcum.cantidadPagos} pagos)`)) return;
     setCerrandoComis(true);
     socket.emit('cerrar-comisiones-mp', {}, (res) => {
       setCerrandoComis(false);
       if (res?.ok) {
         fetchAll();
       } else {
-        alert(res?.error || 'Error al cerrar comisiones');
+        dialog.alert(res?.error || 'Error al cerrar comisiones');
       }
     });
   };

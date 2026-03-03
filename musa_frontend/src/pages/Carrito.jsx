@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { IP, socket, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
+import { dialog } from "../components/shared/dialog";
 import s from "./Carrito.module.css";
 
 const LIMITE_EFECTIVO = 10000000;
@@ -275,9 +276,9 @@ const Carrito = () => {
   useEffect(() => {
     socket.on("productos-carrito", setProductos);
     socket.on("error-cuit-invalido", () =>
-      alert("PROBABLEMENTE EL CUIT INGRESADO ESTA MAL ESCRITO")
+      dialog.alert("PROBABLEMENTE EL CUIT INGRESADO ESTA MAL ESCRITO")
     );
-    socket.on("error-no-cuit", () => alert("PROBABLEMENTE NO ES CUIT"));
+    socket.on("error-no-cuit", () => dialog.alert("PROBABLEMENTE NO ES CUIT"));
     socket.on("compra-finalizada", (info) => {
       setFormaPago(null);
       setFactura(null);

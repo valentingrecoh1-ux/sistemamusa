@@ -7,6 +7,7 @@ import moment from "moment-timezone";
 import DatePicker from "react-datepicker";
 import { es } from "date-fns/locale/es";
 import Pagination from "../components/shared/Pagination";
+import { dialog } from "../components/shared/dialog";
 
 import { IP } from "../main";
 import s from "./Caja.module.css";
@@ -308,7 +309,7 @@ function Caja({ usuario }) {
 
   const enviar = async () => {
     if (!operacion.monto || operacion.monto === 0) {
-      alert("FALTA MONTO");
+      await dialog.alert("FALTA MONTO");
       return;
     }
     if (
@@ -316,7 +317,7 @@ function Caja({ usuario }) {
         operacion.tipoOperacion === "RETIRO") &&
       operacion.monto > 0
     ) {
-      alert("Para GASTO o RETIRO el monto debe ser negativo");
+      await dialog.alert("Para GASTO o RETIRO el monto debe ser negativo");
       return;
     }
     if (
@@ -324,15 +325,15 @@ function Caja({ usuario }) {
         operacion.tipoOperacion === "APORTE") &&
       operacion.monto < 0
     ) {
-      alert("Para INGRESO o APORTE el monto debe ser positivo");
+      await dialog.alert("Para INGRESO o APORTE el monto debe ser positivo");
       return;
     }
     if (!operacion.formaPago) {
-      alert("FALTA FORMA DE PAGO");
+      await dialog.alert("FALTA FORMA DE PAGO");
       return;
     }
     if (!operacion.tipoOperacion) {
-      alert("FALTA TIPO DE OPERACION");
+      await dialog.alert("FALTA TIPO DE OPERACION");
       return;
     }
 
@@ -354,7 +355,7 @@ function Caja({ usuario }) {
       });
       const result = await response.json();
       if (result.status === "error") {
-        alert(result.message);
+        await dialog.alert(result.message);
         return;
       }
 
@@ -400,9 +401,9 @@ function Caja({ usuario }) {
     }
   };
 
-  const eliminarOperacion = (id) => {
+  const eliminarOperacion = async (id) => {
     if (!puedeBorrarOp) return;
-    if (!window.confirm("¿Eliminar esta operacion?")) return;
+    if (!await dialog.confirm("¿Eliminar esta operacion?")) return;
     socket.emit("borrar-operacion", id);
   };
 

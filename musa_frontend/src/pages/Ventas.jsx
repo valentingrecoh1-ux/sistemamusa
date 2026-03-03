@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IP, socket } from "../main";
+import { dialog } from '../components/shared/dialog';
 import { NumericFormat } from "react-number-format";
 import moment from "moment-timezone";
 import DatePicker from "react-datepicker";
@@ -170,10 +171,10 @@ function Ventas({ usuario }) {
     });
   };
 
-  const notaCredito = (venta) => {
+  const notaCredito = async (venta) => {
     if (!venta.tipoFactura) {
       if (
-        window.confirm(
+        await dialog.confirm(
           "NO HAY FACTURA PARA HACER NOTA DE CREDITO\n\n\u00bfDesea cancelar la compra?"
         )
       ) {
@@ -182,10 +183,10 @@ function Ventas({ usuario }) {
       return;
     }
     if (
-      window.confirm("\u00bfESTAS SEGURO QUE QUIERES HACER UNA NOTA DE CREDITO?")
+      await dialog.confirm("\u00bfESTAS SEGURO QUE QUIERES HACER UNA NOTA DE CREDITO?")
     ) {
       if (alreadyClicked) {
-        alert("NOTA DE CREDITO EN PROCESO");
+        await dialog.alert("NOTA DE CREDITO EN PROCESO");
         return;
       }
       setAlreadyClicked(true);
@@ -231,27 +232,27 @@ function Ventas({ usuario }) {
       const res = await fetch(url);
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
-        alert(`No se pudo cargar ${label}: ${txt || res.status}`);
+        await dialog.alert(`No se pudo cargar ${label}: ${txt || res.status}`);
         return;
       }
       const blob = await res.blob();
       setPreviewPdfUrl(URL.createObjectURL(blob));
     } catch (err) {
-      alert(`Error al cargar ${label}: ${err.message}`);
+      await dialog.alert(`Error al cargar ${label}: ${err.message}`);
     }
   };
 
-  const openFacturaPdf = (venta) => {
+  const openFacturaPdf = async (venta) => {
     if (!venta?.stringNumeroFactura) {
-      alert("La venta no tiene factura para visualizar.");
+      await dialog.alert("La venta no tiene factura para visualizar.");
       return;
     }
     openPdfModal(`${IP()}/api/factura-pdf/${venta._id}`, "la factura");
   };
 
-  const openNotaCreditoPdf = (venta) => {
+  const openNotaCreditoPdf = async (venta) => {
     if (!venta?.stringNumeroNotaCredito) {
-      alert("No hay archivo de nota de credito disponible para esta venta.");
+      await dialog.alert("No hay archivo de nota de credito disponible para esta venta.");
       return;
     }
     openPdfModal(`${IP()}/api/nota-credito-pdf/${venta._id}`, "la nota de credito");
@@ -552,19 +553,27 @@ function Ventas({ usuario }) {
                         <span className={pagoPillClass(venta.formaPago)}>
                           {venta.formaPago}
                         </span>
-                        {(venta.formaPago === "DIGITAL" || venta.formaPago === "MIXTO") && (
-                          <span
-                            className={`${s.pill} ${venta.mpPaymentIds?.length ? s.pillMpLinked : s.pillMpUnlinked} ${!venta.mpPaymentIds?.length ? s.pillClickable : ""}`}
-                            onClick={(e) => {
-                              if (!venta.mpPaymentIds?.length) {
-                                e.stopPropagation();
-                                abrirMpLink(venta);
-                              }
-                            }}
-                          >
-                            {venta.mpPaymentIds?.length ? `MP ✓${venta.mpPaymentIds.length > 1 ? ` (${venta.mpPaymentIds.length})` : ""}` : "MP ?"}
-                          </span>
-                        )}
+                        {(venta.formaPago === "DIGITAL" || venta.formaPago === "MIXTO") && (() => {
+                          const linked = venta.mpPaymentIds?.length || 0;
+                          const montoVenta = toNumber(venta.monto) - toNumber(venta.descuento);
+                          const mpCubre = linked > 0 && (venta.mpMontoVinculado || 0) >= montoVenta - 0.01;
+                          const mpParcial = linked > 0 && !mpCubre;
+                          const pillClass = mpCubre ? s.pillMpLinked : mpParcial ? s.pillMpPartial : s.pillMpUnlinked;
+                          const clickable = !mpCubre;
+                          return (
+                            <span
+                              className={`${s.pill} ${pillClass} ${clickable ? s.pillClickable : ""}`}
+                              onClick={(e) => {
+                                if (clickable) {
+                                  e.stopPropagation();
+                                  abrirMpLink(venta);
+                                }
+                              }}
+                            >
+                              {mpCubre ? `MP ✓` : mpParcial ? `MP ~` : "MP ?"}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </td>
                     <td>
@@ -733,9 +742,15 @@ function Ventas({ usuario }) {
                               </button>
                             </span>
                           ))}
-                          <button className={s.mpLinkBtn} onClick={() => { setOpenModal(false); abrirMpLink(venta); }}>
-                            + Agregar pago
-                          </button>
+                          {(() => {
+                            const montoVenta = toNumber(venta.monto) - toNumber(venta.descuento);
+                            const mpCubre = (venta.mpMontoVinculado || 0) >= montoVenta - 0.01;
+                            return !mpCubre ? (
+                              <button className={s.mpLinkBtn} onClick={() => { setOpenModal(false); abrirMpLink(venta); }}>
+                                + Agregar pago
+                              </button>
+                            ) : null;
+                          })()}
                         </span>
                       ) : (
                         <button className={s.mpLinkBtn} onClick={() => { setOpenModal(false); abrirMpLink(venta); }}>

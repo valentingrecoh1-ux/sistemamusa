@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { IP, socket, fotoSrc } from "../main";
 import { NumericFormat, PatternFormat } from "react-number-format";
+import { dialog } from '../components/shared/dialog';
 
 const LIMITE_EFECTIVO = 10000000;
 const LIMITE_DIGITAL = 10000000;
@@ -174,9 +175,9 @@ const Carrito = () => {
     socket.on("cambios", fetchProductosCarrito);
     socket.on("productos-carrito", setProductos);
     socket.on("error-cuit-invalido", () =>
-      alert("PROBABLEMENTE EL CUIT INGRESADO ESTA MAL ESCRITO")
+      dialog.alert("PROBABLEMENTE EL CUIT INGRESADO ESTA MAL ESCRITO")
     );
-    socket.on("error-no-cuit", () => alert("PROBABLEMENTE NO ES CUIT"));
+    socket.on("error-no-cuit", () => dialog.alert("PROBABLEMENTE NO ES CUIT"));
     socket.on("compra-finalizada", () => {
       setFormaPago(null);
       setFactura(null);

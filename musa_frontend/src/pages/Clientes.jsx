@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { socket } from '../main';
 import Pagination from '../components/shared/Pagination';
 import Modal from '../components/shared/Modal';
+import { dialog } from '../components/shared/dialog';
 import s from './Clientes.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -60,8 +61,8 @@ export default function Clientes({ usuario }) {
     setTagInput('');
   };
 
-  const handleDelete = (id) => {
-    if (!confirm('Eliminar este cliente?')) return;
+  const handleDelete = async (id) => {
+    if (!await dialog.confirm('Eliminar este cliente?')) return;
     socket.emit('borrar-cliente', id);
   };
 

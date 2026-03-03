@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { IP, fotoSrc } from '../../main';
+import { dialog } from '../../components/shared/dialog';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';
 import s from './TiendaSommelier.module.css';
@@ -21,10 +22,10 @@ export default function TiendaSommelier() {
   }, [messages]);
 
   // Web Speech API setup
-  const startRecording = () => {
+  const startRecording = async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+      await dialog.alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
       return;
     }
 

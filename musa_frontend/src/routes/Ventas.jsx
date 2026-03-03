@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { IP, socket } from "../main";
 import { NumericFormat } from "react-number-format";
 import moment from "moment-timezone";
+import { dialog } from '../components/shared/dialog';
 
 function Ventas() {
   const [ventas, setVentas] = useState([]);
@@ -23,10 +24,10 @@ function Ventas() {
     socket.emit("request-ventas", { fecha, page, filtroPago, filtroTipo });
   };
 
-  const notaCredito = (venta) => {
+  const notaCredito = async (venta) => {
     if (!venta.tipoFactura) {
       if (
-        window.confirm(
+        await dialog.confirm(
           "NO HAY FACTURA PARA HACER NOTA DE CREDITO\n\n¿Desea cancelar la compra?"
         )
       ) {
@@ -35,10 +36,10 @@ function Ventas() {
       return;
     }
     if (
-      window.confirm("¿ESTAS SEGURO QUE QUIERES HACER UNA NOTA DE CREDITO?")
+      await dialog.confirm("¿ESTAS SEGURO QUE QUIERES HACER UNA NOTA DE CREDITO?")
     ) {
       if (alreadyClicked) {
-        alert("NOTA DE CREDITO EN PROCESO");
+        await dialog.alert("NOTA DE CREDITO EN PROCESO");
         return;
       }
       setAlreadyClicked(true);
@@ -247,10 +248,10 @@ function Ventas() {
                 </td>
                 <td
                   className="editar nafta"
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
                     if (venta.notaCredito) {
-                      alert("YA SE HIZO UNA NOTA DE CREDITO DE ESA FACTURA");
+                      await dialog.alert("YA SE HIZO UNA NOTA DE CREDITO DE ESA FACTURA");
                       return;
                     }
                     notaCredito(venta);

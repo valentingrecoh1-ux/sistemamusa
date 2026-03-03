@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { socket, IP, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
+import { dialog } from '../components/shared/dialog';
 
 function Info() {
   const [productos, setProductos] = useState([]);
@@ -93,9 +94,9 @@ function Info() {
     }, 3000);
   };
 
-  const productoEncontrado = (prod) => {
+  const productoEncontrado = async (prod) => {
     if (prod === "error") {
-      alert("No se encontró ningún producto con ese código");
+      await dialog.alert("No se encontró ningún producto con ese código");
     } else {
       setProducto(prod);
       setShowModal(true);

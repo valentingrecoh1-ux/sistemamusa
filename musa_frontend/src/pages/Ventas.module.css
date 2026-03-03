@@ -337,6 +337,10 @@
   text-align: right;
 }
 
+.salesTable thead th:last-child {
+  text-align: right;
+}
+
 .saleRow {
   cursor: pointer;
   transition: background-color var(--transition);
@@ -528,6 +532,12 @@
   background: rgba(34, 197, 94, 0.15);
   border-color: rgba(34, 197, 94, 0.45);
   color: #7cf5a3;
+}
+
+.pillMpPartial {
+  background: rgba(251, 146, 60, 0.15);
+  border-color: rgba(251, 146, 60, 0.45);
+  color: #fdba74;
 }
 
 .pillMpUnlinked {

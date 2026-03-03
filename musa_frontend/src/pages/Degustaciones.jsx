@@ -4,6 +4,7 @@ import { es } from "date-fns/locale/es";
 import { NumericFormat } from "react-number-format";
 import { socket } from "../main";
 import Pagination from "../components/shared/Pagination";
+import { dialog } from "../components/shared/dialog";
 import s from "./Degustaciones.module.css";
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -129,9 +130,9 @@ function Degustaciones() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const eliminar = (d, e) => {
+  const eliminar = async (d, e) => {
     e.stopPropagation();
-    if (window.confirm(`Eliminar la degustacion "${d.nombre}"?`)) {
+    if (await dialog.confirm(`Eliminar la degustacion "${d.nombre}"?`)) {
       socket.emit("borrar-degustacion", d._id);
     }
   };

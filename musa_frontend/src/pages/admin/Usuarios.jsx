@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../../main';
+import { dialog } from '../../components/shared/dialog';
 import Pagination from '../../components/shared/Pagination';
 import Badge from '../../components/shared/Badge';
 import Modal from '../../components/shared/Modal';
@@ -92,8 +93,8 @@ export default function Usuarios({ usuario }) {
   };
 
   const handleDelete = (u) => {
-    socket.emit('eliminar-usuario', u._id, (res) => {
-      if (res?.error) alert(res.error);
+    socket.emit('eliminar-usuario', u._id, async (res) => {
+      if (res?.error) await dialog.alert(res.error);
     });
     setDeleteConfirm(null);
   };
@@ -116,9 +117,9 @@ export default function Usuarios({ usuario }) {
 
   const guardarPermisos = () => {
     if (!permisosModal) return;
-    socket.emit('guardar-usuario', { _id: permisosModal._id, permisos: permisosTemp }, (res) => {
+    socket.emit('guardar-usuario', { _id: permisosModal._id, permisos: permisosTemp }, async (res) => {
       if (res?.error) {
-        alert('Error al guardar permisos: ' + res.error);
+        await dialog.alert('Error al guardar permisos: ' + res.error);
         return;
       }
       socket.emit('request-usuarios', { page, search });

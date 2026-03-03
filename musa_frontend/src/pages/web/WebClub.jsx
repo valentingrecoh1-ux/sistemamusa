@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { socket } from '../../main';
+import { dialog } from '../../components/shared/dialog';
 import s from './WebClub.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -53,8 +54,8 @@ export default function WebClub() {
     });
   };
 
-  const handleDeletePlan = (id) => {
-    if (!confirm('Eliminar este plan?')) return;
+  const handleDeletePlan = async (id) => {
+    if (!await dialog.confirm('Eliminar este plan?')) return;
     socket.emit('delete-plan-club', id);
   };
 

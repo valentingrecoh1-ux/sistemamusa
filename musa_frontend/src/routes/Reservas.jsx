@@ -3,6 +3,7 @@ import DatePicker from "react-datepicker";
 import { NumericFormat } from "react-number-format";
 import { socket } from "../main";
 import moment from "moment";
+import { dialog } from '../components/shared/dialog';
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -97,8 +98,8 @@ function Reservas() {
     setPage(1);
   };
 
-  const cambiarCantidadColor = (color) => {
-    const cantidad = window.prompt(`Nueva cantidad para el color ${color}`);
+  const cambiarCantidadColor = async (color) => {
+    const cantidad = await dialog.prompt(`Nueva cantidad para el color ${color}`);
     socket.emit("cambiar-cantidad-color", color, cantidad);
   };
 
@@ -121,9 +122,9 @@ function Reservas() {
     setOpenModal(false);
   };
 
-  const deleteTurno = (t) => {
+  const deleteTurno = async (t) => {
     if (
-      window.confirm(
+      await dialog.confirm(
         `¿Estas seguro que quieres borrar el turno de ${t.nombre}?`
       )
     ) {

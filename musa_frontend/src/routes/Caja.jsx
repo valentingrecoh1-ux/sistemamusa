@@ -5,6 +5,7 @@ import DatalistInput from "react-datalist-input";
 import moment from "moment-timezone";
 
 import { IP } from "../main";
+import { dialog } from '../components/shared/dialog';
 
 function Caja() {
   const [operacion, setOperacion] = useState({
@@ -96,7 +97,7 @@ function Caja() {
 
   const enviar = async () => {
     if (!operacion.monto || operacion.monto === 0) {
-      alert("FALTA MONTO");
+      await dialog.alert("FALTA MONTO");
       return;
     }
     if (
@@ -104,7 +105,7 @@ function Caja() {
         operacion.tipoOperacion === "RETIRO") &&
       operacion.monto > 0
     ) {
-      alert("Para GASTO o RETIRO el monto debe ser negativo");
+      await dialog.alert("Para GASTO o RETIRO el monto debe ser negativo");
       return;
     }
     if (
@@ -112,15 +113,15 @@ function Caja() {
         operacion.tipoOperacion === "APORTE") &&
       operacion.monto < 0
     ) {
-      alert("Para INGRESO o APORTE el monto debe ser positivo");
+      await dialog.alert("Para INGRESO o APORTE el monto debe ser positivo");
       return;
     }
     if (!operacion.formaPago) {
-      alert("FALTA FORMA DE PAGO");
+      await dialog.alert("FALTA FORMA DE PAGO");
       return;
     }
     if (!operacion.tipoOperacion) {
-      alert("FALTA TIPO DE OPERACION");
+      await dialog.alert("FALTA TIPO DE OPERACION");
       return;
     }
 
@@ -144,7 +145,7 @@ function Caja() {
       console.log("Resultado del servidor:", result);
 
       if (result.status === "error") {
-        alert(result.message);
+        await dialog.alert(result.message);
         return;
       }
 

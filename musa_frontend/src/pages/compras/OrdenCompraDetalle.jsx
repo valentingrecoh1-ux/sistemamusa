@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { socket } from '../../main';
 import { IP } from '../../main';
+import { dialog } from '../../components/shared/dialog';
 
 /** Convierte un data-URI base64 a un Object URL que el browser puede renderizar */
 function dataUriToBlobUrl(dataUri) {
@@ -277,14 +278,14 @@ export default function OrdenCompraDetalle({ usuario }) {
     socket.emit('guardar-orden-compra', { proveedor: proveedorId, fecha, items: buildItems(), notas });
   };
 
-  const handleSaveDraft = () => {
-    if (!proveedorId) { alert('Seleccioná un proveedor para guardar el borrador'); return; }
+  const handleSaveDraft = async () => {
+    if (!proveedorId) { await dialog.alert('Seleccioná un proveedor para guardar el borrador'); return; }
     submitNuevaOC();
   };
 
-  const handleCreate = () => {
-    if (!proveedorId) { alert('Seleccioná un proveedor'); return; }
-    if (items.length === 0 || !items[0].descripcion) { alert('Agregá al menos un producto'); return; }
+  const handleCreate = async () => {
+    if (!proveedorId) { await dialog.alert('Seleccioná un proveedor'); return; }
+    if (items.length === 0 || !items[0].descripcion) { await dialog.alert('Agregá al menos un producto'); return; }
     submitNuevaOC();
   };
 
@@ -293,8 +294,8 @@ export default function OrdenCompraDetalle({ usuario }) {
     socket.emit('cambiar-estado-oc', { id, estado: nuevoEstado });
   };
 
-  const cancelarOC = () => {
-    if (window.confirm('Cancelar esta Orden de Compra?')) {
+  const cancelarOC = async () => {
+    if (await dialog.confirm('Cancelar esta Orden de Compra?')) {
       socket.emit('cancelar-orden-compra', id);
     }
   };
@@ -327,14 +328,14 @@ export default function OrdenCompraDetalle({ usuario }) {
     setFleteMonto('');
   };
 
-  const handleEliminarFlete = (index) => {
-    if (!window.confirm('Eliminar este flete?')) return;
+  const handleEliminarFlete = async (index) => {
+    if (!await dialog.confirm('Eliminar este flete?')) return;
     socket.emit('eliminar-flete-oc', { ordenCompraId: id, fleteIndex: index });
   };
 
   // ── Upload factura handlers ──
   const handleUploadFactura = async () => {
-    if (!uploadFiles.length) { alert('Seleccioná al menos un archivo'); return; }
+    if (!uploadFiles.length) { await dialog.alert('Seleccioná al menos un archivo'); return; }
     setUploadLoading(true);
     try {
       for (const file of uploadFiles) {
@@ -348,14 +349,14 @@ export default function OrdenCompraDetalle({ usuario }) {
       }
       setUploadFiles([]);
     } catch (err) {
-      alert(err.message || 'Error al subir el archivo');
+      await dialog.alert(err.message || 'Error al subir el archivo');
     } finally {
       setUploadLoading(false);
     }
   };
 
   const handleDeleteFactura = async (idx) => {
-    if (!window.confirm('Eliminar esta factura?')) return;
+    if (!await dialog.confirm('Eliminar esta factura?')) return;
     await fetch(`${IP()}/api/oc/${id}/factura/${idx}`, { method: 'DELETE' });
   };
 
@@ -448,9 +449,9 @@ export default function OrdenCompraDetalle({ usuario }) {
   const editTotalSinIVA = () => editItems.reduce((sum, it) => sum + editItemSubSinIVA(it), 0);
   const editTotalConIVA = () => editItems.reduce((sum, it) => sum + editItemSubConIVA(it), 0);
 
-  const handleSave = () => {
-    if (!editProveedorId) { alert('Seleccioná un proveedor'); return; }
-    if (editItems.length === 0 || !editItems[0].descripcion) { alert('Agregá al menos un producto'); return; }
+  const handleSave = async () => {
+    if (!editProveedorId) { await dialog.alert('Seleccioná un proveedor'); return; }
+    if (editItems.length === 0 || !editItems[0].descripcion) { await dialog.alert('Agregá al menos un producto'); return; }
     socket.emit('actualizar-orden-compra', {
       id,
       proveedor: editProveedorId,

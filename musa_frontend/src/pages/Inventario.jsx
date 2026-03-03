@@ -5,6 +5,7 @@ import Pagination from "../components/shared/Pagination";
 import { IP, socket, fotoSrc } from "../main";
 import { tienePermiso } from "../lib/permisos";
 import { connectQZ, printRaw, findPrinter } from "../utils/qzPrint";
+import { dialog } from "../components/shared/dialog";
 import s from "./Inventario.module.css";
 
 function Inventario({ usuario }) {
@@ -277,7 +278,7 @@ function Inventario({ usuario }) {
       });
       const result = await response.json();
       if (result.status === "error") {
-        alert(result.message);
+        await dialog.alert(result.message);
         return;
       }
       setFormData({
@@ -385,16 +386,16 @@ E
     }
   };
 
-  const imprimir = (codigo, e) => {
+  const imprimir = async (codigo, e) => {
     e.stopPropagation();
-    const cantidad = window.prompt("Cantidad a imprimir");
+    const cantidad = await dialog.prompt("Cantidad a imprimir");
     if (cantidad) printLabel(codigo, cantidad);
   };
 
-  const deleteProducto = (producto, e) => {
+  const deleteProducto = async (producto, e) => {
     e.stopPropagation();
     if (
-      window.confirm(
+      await dialog.confirm(
         `Estas seguro que quieres eliminar el producto\nCodigo: ${producto.codigo}\nNombre: ${producto.nombre}`
       )
     ) {
@@ -402,9 +403,9 @@ E
     }
   };
 
-  const agregarStock = (producto, e) => {
+  const agregarStock = async (producto, e) => {
     e.stopPropagation();
-    const cantidad = window.prompt(
+    const cantidad = await dialog.prompt(
       `CANTIDAD A SUMAR\nCodigo: ${producto.codigo}\nNombre: ${producto.nombre}`
     );
     if (cantidad && cantidad > 0) {
@@ -418,13 +419,13 @@ E
     setGenerandoFotoIA(producto._id);
     socket.emit("mejorar-foto-ia", producto._id, (res) => {
       setGenerandoFotoIA(null);
-      if (res.error) alert("Error: " + res.error);
+      if (res.error) dialog.alert("Error: " + res.error);
     });
   };
 
   const toggleFotoIA = (id) => {
     socket.emit("toggle-foto-ia", id, (res) => {
-      if (res.error) alert("Error: " + res.error);
+      if (res.error) dialog.alert("Error: " + res.error);
       setFotoIAModal(null);
     });
   };

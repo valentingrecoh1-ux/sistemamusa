@@ -7,6 +7,7 @@ import html2canvas from "html2canvas";
 import { socket } from "../main";
 import { tienePermiso } from "../lib/permisos";
 import Pagination from "../components/shared/Pagination";
+import { dialog } from "../components/shared/dialog";
 import s from "./Eventos.module.css";
 
 import "react-datepicker/dist/react-datepicker.css";
@@ -378,9 +379,9 @@ function Eventos({ usuario }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const eliminar = (ev, e) => {
+  const eliminar = async (ev, e) => {
     e.stopPropagation();
-    if (window.confirm(`Eliminar el evento "${ev.nombre}"?`)) {
+    if (await dialog.confirm(`Eliminar el evento "${ev.nombre}"?`)) {
       socket.emit("borrar-evento", ev._id);
     }
   };
@@ -438,8 +439,8 @@ function Eventos({ usuario }) {
     setNewReserva({ nombre: "", cantidad: "", telefono: "", total: 0, turno: "PRIMER TURNO" });
   };
 
-  const borrarReserva = (turnoId) => {
-    if (window.confirm("¿Eliminar esta reserva?")) {
+  const borrarReserva = async (turnoId) => {
+    if (await dialog.confirm("¿Eliminar esta reserva?")) {
       socket.emit("borrar-turno", turnoId);
     }
   };

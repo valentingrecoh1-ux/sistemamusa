@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { socket } from "../main";
 import { tienePermiso } from "../lib/permisos";
+import { dialog } from '../components/shared/dialog';
 
 const ESTADOS = {
   borrador: "Borrador",
@@ -88,8 +89,8 @@ export default function OrdenCompraDetalle({ usuario }) {
     socket.emit("cambiar-estado-oc", { ordenId: orden._id, nuevoEstado, usuarioId: usuario?._id, usuarioNombre: usuario?.nombre, detalle });
   };
 
-  const handleCancelar = () => {
-    const motivo = prompt("Motivo de cancelación:");
+  const handleCancelar = async () => {
+    const motivo = await dialog.prompt("Motivo de cancelación:");
     if (motivo !== null) {
       socket.emit("cancelar-orden-compra", { ordenId: orden._id, usuarioId: usuario?._id, usuarioNombre: usuario?.nombre, motivo });
     }

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import moment from "moment-timezone";
 import { NumericFormat } from "react-number-format";
 import { IP, socket } from "../main";
+import { dialog } from "../components/shared/dialog";
 import s from "./Flujos.module.css";
 
 function dataUriToBlobUrl(dataUri) {
@@ -70,7 +71,7 @@ function Flujos() {
       console.log("Resultado del servidor:", result);
 
       if (result.status === "error") {
-        alert(result.message);
+        await dialog.alert(result.message);
         return;
       }
       setOperacion({

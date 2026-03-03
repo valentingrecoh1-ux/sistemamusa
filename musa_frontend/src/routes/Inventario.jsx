@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { NumericFormat } from "react-number-format";
 
 import { IP, socket, fotoSrc } from "../main";
+import { dialog } from '../components/shared/dialog';
 
 function Inventario() {
   const [formData, setFormData] = useState({
@@ -165,7 +166,7 @@ function Inventario() {
       const result = await response.json();
       console.log("Resultado del servidor:", result);
       if (result.status === "error") {
-        alert(result.message);
+        await dialog.alert(result.message);
         return;
       }
       setFormData({
@@ -233,14 +234,14 @@ E
     setFormData(producto);
   };
 
-  const imprimir = (codigo) => {
-    const cantidad = window.prompt("Cantidad a imprimir");
+  const imprimir = async (codigo) => {
+    const cantidad = await dialog.prompt("Cantidad a imprimir");
     printLabel(codigo, cantidad);
   };
 
-  const deleteProducto = (producto) => {
+  const deleteProducto = async (producto) => {
     if (
-      window.confirm(
+      await dialog.confirm(
         `Estas seguro que quieres eliminar el producto\nCodigo: ${producto.codigo}\nNombre: ${producto.nombre}`
       )
     ) {
@@ -248,8 +249,8 @@ E
     }
   };
 
-  const agregarStock = (producto) => {
-    const cantidad = window.prompt(
+  const agregarStock = async (producto) => {
+    const cantidad = await dialog.prompt(
       `CANTIDAD A SUMAR\nCodigo: ${producto.codigo}\nNombre: ${producto.nombre}`
     );
     if (cantidad && cantidad > 0) {

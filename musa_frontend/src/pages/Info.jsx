@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { socket, IP, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
 import Pagination from "../components/shared/Pagination";
+import { dialog } from "../components/shared/dialog";
 import s from "./Info.module.css";
 
 function Info() {
@@ -120,9 +121,9 @@ function Info() {
     }, 3000);
   };
 
-  const productoEncontrado = (prod) => {
+  const productoEncontrado = async (prod) => {
     if (prod === "error") {
-      alert("No se encontró ningún producto con ese código");
+      await dialog.alert("No se encontró ningún producto con ese código");
     } else {
       setProducto(prod);
       setShowModal(true);
@@ -167,14 +168,14 @@ function Info() {
     setGenerandoFotoIA(true);
     socket.emit("mejorar-foto-ia", producto._id, (res) => {
       setGenerandoFotoIA(false);
-      if (res.error) alert("Error: " + res.error);
+      if (res.error) dialog.alert("Error: " + res.error);
     });
   };
 
   const toggleFotoIA = () => {
     if (!producto?._id) return;
     socket.emit("toggle-foto-ia", producto._id, (res) => {
-      if (res.error) alert("Error: " + res.error);
+      if (res.error) dialog.alert("Error: " + res.error);
     });
   };
 
@@ -183,14 +184,14 @@ function Info() {
     setGenerandoDescIA(true);
     socket.emit("generar-descripcion-ia", producto._id, (res) => {
       setGenerandoDescIA(false);
-      if (res.error) alert("Error: " + res.error);
+      if (res.error) dialog.alert("Error: " + res.error);
     });
   };
 
   const toggleDescIA = () => {
     if (!producto?._id) return;
     socket.emit("toggle-descripcion-ia", producto._id, (res) => {
-      if (res.error) alert("Error: " + res.error);
+      if (res.error) dialog.alert("Error: " + res.error);
     });
   };
 

@@ -1979,8 +1979,22 @@ Origen: ${producto.origen || ""}`;
             .lean();
           turnosById = new Map(turnos.map((turno) => [String(turno._id), turno]));
         }
+        // Enriquecer con montos de pagos MP vinculados
+        const allMpIds = ventas.flatMap((v) => v.mpPaymentIds || []);
+        let mpMontoMap = new Map();
+        if (allMpIds.length > 0) {
+          const pagos = await PagoMp.find({ mpId: { $in: allMpIds } }).select("mpId monto").lean();
+          pagos.forEach((p) => mpMontoMap.set(p.mpId, p.monto || 0));
+        }
+
         const ventasEnriquecidas = ventas.map((venta) => {
           const ventaObj = venta.toObject();
+
+          // Calcular monto total de pagos MP vinculados
+          if (ventaObj.mpPaymentIds?.length) {
+            ventaObj.mpMontoVinculado = ventaObj.mpPaymentIds.reduce((sum, id) => sum + (mpMontoMap.get(id) || 0), 0);
+          }
+
           if (!ventaObj.idTurno) return ventaObj;
 
           const turno = turnosById.get(String(ventaObj.idTurno));

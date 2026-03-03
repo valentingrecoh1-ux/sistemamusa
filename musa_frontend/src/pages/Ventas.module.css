@@ -398,10 +398,10 @@
 }
 
 .saleBadges {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px 72px 52px;
   align-items: center;
   gap: 5px;
-  flex-wrap: wrap;
 }
 
 .saleActions {

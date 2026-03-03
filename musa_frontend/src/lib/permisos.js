@@ -26,6 +26,7 @@ export const PERMISOS_DISPONIBLES = [
     permisos: [
       { key: 'crear_oc', label: 'Crear ordenes de compra' },
       { key: 'aprobar_oc', label: 'Aprobar ordenes de compra' },
+      { key: 'recibir_oc', label: 'Recibir ordenes de compra' },
       { key: 'pagar_proveedor', label: 'Registrar pagos a proveedores' },
       { key: 'editar_proveedor', label: 'Editar proveedores' },
     ],

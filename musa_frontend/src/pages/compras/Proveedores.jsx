@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { socket } from '../../main';
 import { IP } from '../../main';
 import Pagination from '../../components/shared/Pagination';
+import { tienePermiso } from '../../lib/permisos';
 import s from './Proveedores.module.css';
 
 const EMPTY = { bodega: '', nombre: '', telefono: '', cuit: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '', esDistribuidor: false, distribuidorNombre: '', distribuidorContacto: '', distribuidorTelefono: '' };
 
 export default function Proveedores({ usuario }) {
-  const puedeEditar = usuario?.rol === 'admin';
+  const puedeEditar = tienePermiso(usuario, 'editar_proveedor');
 
   const [proveedores, setProveedores] = useState([]);
   const [form, setForm] = useState({ ...EMPTY });

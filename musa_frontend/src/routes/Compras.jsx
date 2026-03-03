@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { socket } from "../main";
+import { tienePermiso } from "../lib/permisos";
 
 const ESTADOS = {
   borrador: "Borrador",
@@ -66,7 +67,7 @@ export default function Compras({ usuario }) {
     socket.emit("marcar-todas-notificaciones-leidas", { usuarioId: usuario?._id, rol: usuario?.rol });
   };
 
-  const puedeCrear = usuario?.rol === "admin" || usuario?.rol === "comprador";
+  const puedeCrear = tienePermiso(usuario, 'crear_oc');
 
   return (
     <div className="compras-dashboard">
@@ -96,8 +97,8 @@ export default function Compras({ usuario }) {
       <div className="compras-nav">
         {puedeCrear && <a href="/compras/orden/nueva">+ Nueva OC</a>}
         <a href="/compras/proveedores">Proveedores</a>
-        {(usuario?.rol === "admin" || usuario?.rol === "recepcion") && <a href="/compras/recepcion">Recepción</a>}
-        {(usuario?.rol === "admin" || usuario?.rol === "comprador") && <a href="/compras/pagos">Pagos</a>}
+        {tienePermiso(usuario, 'recibir_oc') && <a href="/compras/recepcion">Recepción</a>}
+        {tienePermiso(usuario, 'pagar_proveedor') && <a href="/compras/pagos">Pagos</a>}
       </div>
 
       <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>

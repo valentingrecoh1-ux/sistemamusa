@@ -121,15 +121,18 @@ function mpRawToDoc(p, ownCollectorId) {
   let ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
 
   // Clasificar tipo de movimiento
+  const desc = (p.description || "").toLowerCase();
   let tipo = "cobro";
-  if (p.operation_type === "payout") {
-    // Retiros a cuenta bancaria siempre son gastos
+  if (desc.startsWith("pago:") || desc.startsWith("pago :")) {
+    // Descripcion "Pago: ..." = pagos que hicimos nosotros → gasto
     tipo = "gasto";
+  } else if (p.operation_type === "payout") {
+    // Retiros/transferencias bancarias → cobro (plata que recibimos en banco)
+    tipo = "cobro";
   } else if (ownCollectorId && p.payer?.id && String(p.payer.id) === String(ownCollectorId)) {
-    // Nosotros somos el pagador → dinero que sale → gasto (ej: pago Edenor, compras)
+    // Nosotros somos el pagador → dinero que sale → gasto
     tipo = "gasto";
   } else if (ownCollectorId && p.collector_id) {
-    // Si el collector_id coincide con el nuestro → dinero que recibimos (cobro)
     tipo = (String(p.collector_id) === String(ownCollectorId)) ? "cobro" : "gasto";
   } else if (p.operation_type === "money_transfer") {
     tipo = (bruto > 0 && p.status === "approved") ? "cobro" : "gasto";
@@ -3218,7 +3221,7 @@ Origen: ${producto.origen || ""}`;
   socket.on("toggle-tipo-mp", async ({ mpPagoId }, callback) => {
     try {
       if (!requireAuth(socket)) return;
-      const doc = await PagoMp.findById(mpPagoId);
+      const doc = await PagoMp.findOne({ mpId: mpPagoId });
       if (!doc) {
         if (typeof callback === "function") callback({ error: "Pago no encontrado" });
         return;
@@ -5204,19 +5207,18 @@ const PORT = process.env.PORT || 5000;
     // Borrar pagos sin pagador.id para forzar re-sync con el nuevo campo
     const sinPagadorId = await PagoMp.deleteMany({ $or: [{ "pagador.id": null }, { "pagador.id": { $exists: false } }] });
     if (sinPagadorId.deletedCount) console.log(`Migración PagoMp: borrados ${sinPagadorId.deletedCount} pagos sin pagador.id (se re-sincronizarán)`);
-    // Reclasificar: money_transfer/payout = gasto
-    const [r1, r2] = await Promise.all([
-      PagoMp.updateMany(
-        { operationType: "money_transfer", tipoMovimiento: { $ne: "gasto" } },
-        { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
-      ),
-      PagoMp.updateMany(
-        { operationType: "payout", tipoMovimiento: { $ne: "gasto" } },
-        { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
-      ),
-    ]);
-    if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} money_transfer → gasto`);
-    if (r2.modifiedCount) console.log(`Migración PagoMp: ${r2.modifiedCount} payout → gasto`);
+    // Reclasificar: payout = cobro (transferencias bancarias recibidas)
+    const r1 = await PagoMp.updateMany(
+      { operationType: "payout", tipoMovimiento: "gasto" },
+      { $set: { tipoMovimiento: "cobro" } },
+    );
+    if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} payout → cobro`);
+    // Reclasificar: descripcion "Pago: ..." = gasto
+    const r2 = await PagoMp.updateMany(
+      { descripcion: { $regex: /^Pago:/i }, tipoMovimiento: { $ne: "gasto" } },
+      { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
+    );
+    if (r2.modifiedCount) console.log(`Migración PagoMp: ${r2.modifiedCount} "Pago:..." → gasto`);
     // Reclasificar pagos donde nosotros somos el pagador → gasto
     const ownId = await getOwnMpCollectorId();
     if (ownId) {

@@ -119,10 +119,16 @@ export default function Vidriera({ usuario }) {
         </div>
       ) : (
         <div className={s.grid}>
-          {medios.map((m, i) => (
+          {medios.map((m, i) => {
+            const rot = ((m.rotacion || 0) + 90) % 360;
+            const swapped = rot === 90 || rot === 270;
+            const imgStyle = swapped
+              ? { position: 'absolute', top: '50%', left: '50%', width: '177.78%', height: '56.25%', objectFit: 'contain', transform: `translate(-50%, -50%) rotate(${rot}deg)` }
+              : { width: '100%', height: '100%', objectFit: 'contain', transform: `rotate(${rot}deg)` };
+            return (
             <div key={m._id} className={`${s.card} ${!m.activo ? s.cardInactive : ''}`}>
               <div className={s.cardImg}>
-                <img src={`${IP()}/api/tv/imagen/${m._id}`} alt={m.nombre} />
+                <img src={`${IP()}/api/tv/imagen/${m._id}`} alt={m.nombre} style={imgStyle} />
                 {!m.activo && <div className={s.inactiveBadge}>Inactivo</div>}
               </div>
               <div className={s.cardBody}>
@@ -163,7 +169,8 @@ export default function Vidriera({ usuario }) {
                 </div>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

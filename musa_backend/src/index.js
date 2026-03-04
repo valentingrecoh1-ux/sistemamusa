@@ -1291,10 +1291,12 @@ app.post("/api/tv/upload", uploadMediaTV.single("archivo"), async (req, res) => 
     if (!file) return res.status(400).json({ error: "No se envió archivo" });
     const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
     const count = await MediaTV.countDocuments();
+    const rotacion = parseInt(req.body.rotacion, 10) || 0;
     const doc = await MediaTV.create({
       nombre: req.body.nombre || file.originalname,
       archivo: base64,
       orden: count,
+      rotacion,
       subidoPor: req.body.usuario || "",
     });
     io.emit("cambios-media-tv");
@@ -4795,7 +4797,7 @@ Reglas:
 
   socket.on("request-media-tv-public", async () => {
     try {
-      const medios = await MediaTV.find({ activo: true }).sort({ orden: 1 }).select("nombre orden duracion");
+      const medios = await MediaTV.find({ activo: true }).sort({ orden: 1 }).select("nombre orden duracion rotacion");
       socket.emit("response-media-tv-public", medios);
     } catch (err) {
       socket.emit("response-media-tv-public", []);
@@ -4845,6 +4847,22 @@ Reglas:
       io.emit("cambios-media-tv");
     } catch (err) {
       console.error("Error actualizar-duracion-media-tv:", err);
+    }
+  });
+
+  socket.on("rotar-media-tv", async (mediaId) => {
+    try {
+      if (!requireAuth(socket)) return;
+      const doc = await MediaTV.findById(mediaId);
+      if (doc) {
+        const ciclo = [0, 90, 180, 270];
+        const idx = ciclo.indexOf(doc.rotacion || 0);
+        doc.rotacion = ciclo[(idx + 1) % 4];
+        await doc.save();
+        io.emit("cambios-media-tv");
+      }
+    } catch (err) {
+      console.error("Error rotar-media-tv:", err);
     }
   });
 

@@ -32,15 +32,29 @@ export default function Vidriera({ usuario }) {
     };
   }, []);
 
+  const getImageRotacion = (file) => new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      // Si es landscape (ancho > alto), rotar 90° para el tele vertical
+      resolve(img.naturalWidth > img.naturalHeight ? 90 : 0);
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => { resolve(0); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+
   const handleUpload = async (e) => {
     const files = e.target.files;
     if (!files?.length) return;
     setUploading(true);
     for (const file of files) {
+      const rotacion = await getImageRotacion(file);
       const formData = new FormData();
       formData.append('archivo', file);
       formData.append('nombre', file.name);
       formData.append('usuario', usuario?.nombre || '');
+      formData.append('rotacion', rotacion);
       try {
         await fetch(`${IP()}/api/tv/upload`, { method: 'POST', body: formData });
       } catch (err) {
@@ -53,6 +67,7 @@ export default function Vidriera({ usuario }) {
 
   const handleDelete = (id) => socket.emit('eliminar-media-tv', id);
   const handleToggle = (id) => socket.emit('toggle-media-tv', id);
+  const handleRotar = (id) => socket.emit('rotar-media-tv', id);
 
   const handleDuracion = (id, val) => {
     const dur = parseInt(val, 10);
@@ -121,7 +136,7 @@ export default function Vidriera({ usuario }) {
           {medios.map((m, i) => (
             <div key={m._id} className={`${s.card} ${!m.activo ? s.cardInactive : ''}`}>
               <div className={s.cardImg}>
-                <img src={`${IP()}/api/tv/imagen/${m._id}`} alt={m.nombre} />
+                <img src={`${IP()}/api/tv/imagen/${m._id}`} alt={m.nombre} style={m.rotacion ? { transform: `rotate(${m.rotacion}deg)` } : undefined} />
                 {!m.activo && <div className={s.inactiveBadge}>Inactivo</div>}
               </div>
               <div className={s.cardBody}>
@@ -148,6 +163,9 @@ export default function Vidriera({ usuario }) {
                     </button>
                     <button className={s.iconBtn} onClick={() => handleMoveDown(i)} disabled={i === medios.length - 1} title="Bajar">
                       <i className="bi bi-chevron-down" />
+                    </button>
+                    <button className={s.iconBtn} onClick={() => handleRotar(m._id)} title={`Rotar (${m.rotacion || 0}°)`}>
+                      <i className="bi bi-arrow-clockwise" />
                     </button>
                     <button className={`${s.iconBtn} ${m.activo ? s.activeToggle : s.inactiveToggle}`} onClick={() => handleToggle(m._id)} title={m.activo ? 'Desactivar' : 'Activar'}>
                       <i className={`bi ${m.activo ? 'bi-eye-fill' : 'bi-eye-slash'}`} />

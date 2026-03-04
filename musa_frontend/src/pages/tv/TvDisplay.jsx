@@ -2,12 +2,30 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { IP, socket } from '../../main';
 import s from './TvDisplay.module.css';
 
+function TvImage({ medio, className }) {
+  const rot = ((medio.rotacion || 0) + 90) % 360;
+  const swapped = rot === 90 || rot === 270;
+  return (
+    <img
+      className={className}
+      src={`${IP()}/api/tv/imagen/${medio._id}`}
+      alt=""
+      style={{
+        width: swapped ? '100vh' : '100%',
+        height: swapped ? '100vw' : '100%',
+        transform: `rotate(${rot}deg)`,
+      }}
+    />
+  );
+}
+
 export default function TvDisplay() {
   const [medios, setMedios] = useState([]);
   const [current, setCurrent] = useState(0);
-  const [fade, setFade] = useState(true);
+  const [prev, setPrev] = useState(null);
   const [destello, setDestello] = useState(true);
   const timerRef = useRef(null);
+  const transRef = useRef(null);
 
   const fetchMedias = useCallback(() => {
     socket.emit('request-media-tv-public');
@@ -33,34 +51,31 @@ export default function TvDisplay() {
     };
   }, [fetchMedias]);
 
-  // Reset index when medios change
   useEffect(() => {
     setCurrent(0);
-    setFade(true);
+    setPrev(null);
   }, [medios.length]);
 
-  // Slideshow timer
+  // Slideshow timer - crossfade
   useEffect(() => {
     if (medios.length <= 1) return;
 
     const duracion = (medios[current]?.duracion || 8) * 1000;
 
     timerRef.current = setTimeout(() => {
-      // Fade out
-      setFade(false);
-      // After fade out, switch and fade in
-      setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % medios.length);
-        setFade(true);
-      }, 600);
+      const nextIdx = (current + 1) % medios.length;
+      setPrev(current);
+      setCurrent(nextIdx);
+      // Limpiar prev despues de la transicion (800ms)
+      transRef.current = setTimeout(() => setPrev(null), 800);
     }, duracion);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (transRef.current) clearTimeout(transRef.current);
     };
   }, [current, medios]);
 
-  // Request fullscreen on first click/tap
   const goFullscreen = useCallback(() => {
     const el = document.documentElement;
     const rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
@@ -69,7 +84,6 @@ export default function TvDisplay() {
     }
   }, []);
 
-  // Hide cursor after inactivity
   useEffect(() => {
     let cursorTimer;
     const show = () => {
@@ -95,24 +109,17 @@ export default function TvDisplay() {
   }
 
   const medio = medios[current];
+  const medioPrev = prev != null ? medios[prev] : null;
   if (!medio) return <div className={s.screen} />;
-
-  const rot = ((medio.rotacion || 0) + 90) % 360;
-  const swapped = rot === 90 || rot === 270;
 
   return (
     <div className={s.screen} onClick={goFullscreen}>
-      <img
-        key={medio._id}
-        className={`${s.image} ${fade ? s.fadeIn : s.fadeOut}`}
-        src={`${IP()}/api/tv/imagen/${medio._id}`}
-        alt=""
-        style={{
-          width: swapped ? '100vh' : '100%',
-          height: swapped ? '100vw' : '100%',
-          transform: `rotate(${rot}deg)`,
-        }}
-      />
+      {/* Imagen anterior (se desvanece) */}
+      {medioPrev && (
+        <TvImage key={`prev-${medioPrev._id}`} medio={medioPrev} className={`${s.image} ${s.imgBack} ${s.fadeOut}`} />
+      )}
+      {/* Imagen actual (aparece) */}
+      <TvImage key={`cur-${medio._id}`} medio={medio} className={`${s.image} ${s.imgFront} ${prev != null ? s.fadeIn : ''}`} />
       {destello && <div className={s.borderGlow} />}
       {destello && <div className={s.borderGlow2} />}
     </div>

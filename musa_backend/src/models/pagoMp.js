@@ -27,6 +27,7 @@ const pagoMpSchema = new mongoose.Schema(
     operationType: { type: String },
     collectorId: { type: Number },
     tipoMovimiento: { type: String, enum: ["cobro", "gasto"], default: "cobro" },
+    tipoManual: { type: Boolean, default: false },
     cierreComisionesAt: { type: Date, default: null },
   },
   { timestamps: true }

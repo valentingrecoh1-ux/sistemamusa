@@ -209,13 +209,20 @@ async function syncMpPagos(fecha) {
       }
     }
 
-    const ops = payments.map((p) => ({
-      updateOne: {
-        filter: { mpId: p.id },
-        update: { $set: mpRawToDoc(p, ownId) },
-        upsert: true,
-      },
-    }));
+    // Detectar pagos con tipo manual para no sobreescribirlos
+    const manualMpIds = new Set(
+      (await PagoMp.find({ tipoManual: true }).select('mpId').lean()).map(d => d.mpId)
+    );
+
+    const ops = payments.map((p) => {
+      const doc = mpRawToDoc(p, ownId);
+      if (manualMpIds.has(p.id)) {
+        // No sobreescribir tipo/comisiones de pagos clasificados manualmente
+        const { tipoMovimiento, comisionMp, retenciones, ...rest } = doc;
+        return { updateOne: { filter: { mpId: p.id }, update: { $set: rest }, upsert: true } };
+      }
+      return { updateOne: { filter: { mpId: p.id }, update: { $set: doc }, upsert: true } };
+    });
     await PagoMp.bulkWrite(ops, { ordered: false });
   } catch (err) {
     console.error("Error syncMpPagos:", err.message);
@@ -3228,6 +3235,7 @@ Origen: ${producto.origen || ""}`;
       }
       const nuevoTipo = doc.tipoMovimiento === "cobro" ? "gasto" : "cobro";
       doc.tipoMovimiento = nuevoTipo;
+      doc.tipoManual = true;
       if (nuevoTipo === "gasto") {
         doc.comisionMp = 0;
         doc.retenciones = 0;

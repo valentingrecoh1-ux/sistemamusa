@@ -117,17 +117,26 @@ function mpRawToDoc(p, ownCollectorId) {
   }
   const bruto = p.transaction_amount || 0;
   const neto = p.transaction_details?.net_received_amount ?? null;
-  const comis = (p.fee_details || []).reduce((s, f) => s + (f.amount || 0), 0);
-  const ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
+  let comis = (p.fee_details || []).reduce((s, f) => s + (f.amount || 0), 0);
+  let ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
 
-  // Clasificar: si tenemos collector_id propio, comparar; sino heurística por operation_type
+  // Clasificar tipo de movimiento
   let tipo = "cobro";
-  if (ownCollectorId && p.collector_id) {
+  if (p.operation_type === "payout") {
+    // Retiros a cuenta bancaria (ej: "Pago: saldo_total") siempre son gastos
+    tipo = "gasto";
+  } else if (ownCollectorId && p.collector_id) {
     // Si el collector_id coincide con el nuestro → dinero que recibimos (cobro)
     tipo = (String(p.collector_id) === String(ownCollectorId)) ? "cobro" : "gasto";
   } else if (p.operation_type === "money_transfer") {
     // Sin collector_id: transferencias con monto positivo y status approved = cobro
     tipo = (bruto > 0 && p.status === "approved") ? "cobro" : "gasto";
+  }
+
+  // Gastos no tienen comisiones ni retenciones
+  if (tipo === "gasto") {
+    comis = 0;
+    ret = 0;
   }
 
   return {
@@ -3193,7 +3202,8 @@ Origen: ${producto.origen || ""}`;
     try {
       const baseQuery = {
         $or: [{ mpPagoId: null }, { mpPagoId: { $exists: false } }],
-        tipoOperacion: "GASTO",
+        tipoOperacion: { $in: ["GASTO", "RETIRO"] },
+        formaPago: "DIGITAL",
       };
       const fields = "_id nombre descripcion monto fecha beneficiario createdAt";
       let gastos = [], gastosCercanos = [], gastosResto = [];
@@ -5127,19 +5137,24 @@ const PORT = process.env.PORT || 5000;
   try {
     const sinCollector = await PagoMp.deleteMany({ $or: [{ collectorId: null }, { collectorId: { $exists: false } }] });
     if (sinCollector.deletedCount) console.log(`Migración PagoMp: borrados ${sinCollector.deletedCount} pagos sin collectorId (se re-sincronizarán)`);
-    // Reclasificar: money_transfer = gasto, resto = cobro
-    const [r1, r2] = await Promise.all([
+    // Reclasificar: money_transfer/payout = gasto, resto = cobro
+    const [r1, r2, r3] = await Promise.all([
       PagoMp.updateMany(
         { operationType: "money_transfer", tipoMovimiento: { $ne: "gasto" } },
-        { $set: { tipoMovimiento: "gasto" } },
+        { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
       ),
       PagoMp.updateMany(
-        { operationType: { $ne: "money_transfer" }, tipoMovimiento: { $ne: "cobro" } },
+        { operationType: "payout", tipoMovimiento: { $ne: "gasto" } },
+        { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
+      ),
+      PagoMp.updateMany(
+        { operationType: { $nin: ["money_transfer", "payout"] }, tipoMovimiento: { $ne: "cobro" } },
         { $set: { tipoMovimiento: "cobro" } },
       ),
     ]);
-    if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} → gasto`);
-    if (r2.modifiedCount) console.log(`Migración PagoMp: ${r2.modifiedCount} → cobro`);
+    if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} money_transfer → gasto`);
+    if (r2.modifiedCount) console.log(`Migración PagoMp: ${r2.modifiedCount} payout → gasto`);
+    if (r3.modifiedCount) console.log(`Migración PagoMp: ${r3.modifiedCount} → cobro`);
   } catch (err) { console.error("Error migración PagoMp:", err); }
 })();
 

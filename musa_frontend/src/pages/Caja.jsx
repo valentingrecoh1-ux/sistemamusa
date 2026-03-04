@@ -399,6 +399,10 @@ function Caja({ usuario }) {
     if (id) {
       socket.emit("borrar-file-operacion", id);
     }
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const eliminarOperacion = async (id) => {

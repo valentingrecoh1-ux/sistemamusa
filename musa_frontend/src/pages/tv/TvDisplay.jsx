@@ -97,6 +97,9 @@ export default function TvDisplay() {
   const medio = medios[current];
   if (!medio) return <div className={s.screen} />;
 
+  const rot = ((medio.rotacion || 0) + 90) % 360;
+  const swapped = rot === 90 || rot === 270;
+
   return (
     <div className={s.screen} onClick={goFullscreen}>
       <img
@@ -104,7 +107,11 @@ export default function TvDisplay() {
         className={`${s.image} ${fade ? s.fadeIn : s.fadeOut}`}
         src={`${IP()}/api/tv/imagen/${medio._id}`}
         alt=""
-        style={{ transform: `rotate(${(medio.rotacion || 0) + 90}deg)` }}
+        style={{
+          width: swapped ? '100vh' : '100%',
+          height: swapped ? '100vw' : '100%',
+          transform: `rotate(${rot}deg)`,
+        }}
       />
       {destello && <div className={s.borderGlow} />}
       {destello && <div className={s.borderGlow2} />}

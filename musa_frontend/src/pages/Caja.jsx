@@ -87,6 +87,9 @@ function Caja({ usuario }) {
   const [totalPages, setTotalPages] = useState(1);
   const [fecha, setFecha] = useState(hoyArgentina());
   const [search, setSearch] = useState("");
+  const [fechaDesde, setFechaDesde] = useState("");
+  const [fechaHasta, setFechaHasta] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("");
   const fileInputRef = useRef(null);
 
   // ── MercadoPago state ──
@@ -136,8 +139,15 @@ function Caja({ usuario }) {
   // ── Operaciones fetchers ──
   const fetchTotales = () => socket.emit("request-totales", null);
   const fetchNombres = () => socket.emit("request-nombres");
-  const fetchOperaciones = (_fecha, search, page) =>
-    socket.emit("request-operaciones", { fecha: null, search, page });
+  const fetchOperaciones = (_fecha, search, page, _fechaDesde, _fechaHasta, _filtroTipo) =>
+    socket.emit("request-operaciones", {
+      fecha: null,
+      search,
+      page,
+      fechaDesde: _fechaDesde || undefined,
+      fechaHasta: _fechaHasta || undefined,
+      tipoOperacion: _filtroTipo || undefined,
+    });
 
   // ── MercadoPago fetchers ──
   const fetchMpPagos = (fecha, page, search, silent) => {
@@ -209,7 +219,7 @@ function Caja({ usuario }) {
     socket.on("cambios", () => {
       fetchNombres();
       fetchTotales();
-      fetchOperaciones(fecha, search, page);
+      fetchOperaciones(fecha, search, page, fechaDesde, fechaHasta, filtroTipo);
     });
     socket.on("response-totales", (data) => {
       if (data.status === "error") {
@@ -271,7 +281,7 @@ function Caja({ usuario }) {
 
     fetchNombres();
     fetchTotales();
-    fetchOperaciones(fecha, search, page);
+    fetchOperaciones(fecha, search, page, fechaDesde, fechaHasta, filtroTipo);
     socket.emit("request-eventos-simple");
 
     return () => {
@@ -285,7 +295,7 @@ function Caja({ usuario }) {
       socket.off("response-ventas-sin-mp");
       socket.off("response-gastos-sin-mp");
     };
-  }, [fecha, search, page]);
+  }, [fecha, search, page, fechaDesde, fechaHasta, filtroTipo]);
 
   // ── MercadoPago data fetch ──
   useEffect(() => {
@@ -737,12 +747,59 @@ function Caja({ usuario }) {
                 </tbody>
               </table>
             </div>
-            <div className={s.toolbar}>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className={s.filterBar}>
+              <div className={s.filterGroup}>
+                <label>Desde</label>
+                <input
+                  type="date"
+                  value={fechaDesde}
+                  onChange={(e) => { setFechaDesde(e.target.value); setPage(1); }}
+                  className={s.filterDate}
+                />
+              </div>
+              <div className={s.filterGroup}>
+                <label>Hasta</label>
+                <input
+                  type="date"
+                  value={fechaHasta}
+                  onChange={(e) => { setFechaHasta(e.target.value); setPage(1); }}
+                  className={s.filterDate}
+                />
+              </div>
+              <div className={s.filterGroup}>
+                <label>Tipo</label>
+                <select
+                  value={filtroTipo}
+                  onChange={(e) => { setFiltroTipo(e.target.value); setPage(1); }}
+                  className={s.filterSelect}
+                >
+                  <option value="">Todos</option>
+                  <option value="APORTE">Aporte</option>
+                  <option value="RETIRO">Retiro</option>
+                  <option value="GASTO">Gasto</option>
+                  <option value="INGRESO">Ingreso</option>
+                  <option value="CIERRE DE CAJA">Cierre de Caja</option>
+                </select>
+              </div>
+              <div className={s.filterGroup}>
+                <label>Buscar</label>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  placeholder="Nombre, descripcion..."
+                  className={s.filterSearch}
+                />
+              </div>
+              {(fechaDesde || fechaHasta || filtroTipo || search) && (
+                <button
+                  className={s.filterClear}
+                  onClick={() => { setFechaDesde(""); setFechaHasta(""); setFiltroTipo(""); setSearch(""); setPage(1); }}
+                  title="Limpiar filtros"
+                >
+                  <i className="bi bi-x-lg" />
+                </button>
+              )}
               <Pagination
                 className={s.paginationDock}
                 page={page}

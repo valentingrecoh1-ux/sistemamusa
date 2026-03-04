@@ -398,6 +398,84 @@
   box-shadow: var(--input-focus-shadow);
 }
 
+/* ── Filter bar ── */
+.filterBar {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.filterGroup label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filterDate,
+.filterSelect,
+.filterSearch {
+  padding: 7px 10px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  transition: border-color var(--transition);
+}
+
+.filterDate:focus,
+.filterSelect:focus,
+.filterSearch:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.filterDate {
+  width: 140px;
+}
+
+.filterSelect {
+  min-width: 120px;
+}
+
+.filterSearch {
+  flex: 1;
+  min-width: 140px;
+}
+
+.filterClear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.filterClear:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
 .dateInput {
   width: var(--date-box-width);
   max-width: 100%;
@@ -1233,6 +1311,20 @@
     flex-basis: 100%;
     padding: 10px 12px;
     min-height: 44px;
+  }
+
+  .filterBar {
+    gap: 6px;
+  }
+
+  .filterDate {
+    width: 110px;
+  }
+
+  .filterSearch {
+    min-width: 0;
+    flex-basis: 100%;
+    order: -1;
   }
 
   .dateNav {

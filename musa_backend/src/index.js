@@ -123,13 +123,15 @@ function mpRawToDoc(p, ownCollectorId) {
   // Clasificar tipo de movimiento
   let tipo = "cobro";
   if (p.operation_type === "payout") {
-    // Retiros a cuenta bancaria (ej: "Pago: saldo_total") siempre son gastos
+    // Retiros a cuenta bancaria siempre son gastos
+    tipo = "gasto";
+  } else if (ownCollectorId && p.payer?.id && String(p.payer.id) === String(ownCollectorId)) {
+    // Nosotros somos el pagador → dinero que sale → gasto (ej: pago Edenor, compras)
     tipo = "gasto";
   } else if (ownCollectorId && p.collector_id) {
     // Si el collector_id coincide con el nuestro → dinero que recibimos (cobro)
     tipo = (String(p.collector_id) === String(ownCollectorId)) ? "cobro" : "gasto";
   } else if (p.operation_type === "money_transfer") {
-    // Sin collector_id: transferencias con monto positivo y status approved = cobro
     tipo = (bruto > 0 && p.status === "approved") ? "cobro" : "gasto";
   }
 
@@ -161,6 +163,7 @@ function mpRawToDoc(p, ownCollectorId) {
     feeDetails: (p.fee_details || []).map((f) => ({ tipo: f.type, pagador: f.fee_payer, monto: f.amount })),
     chargesDetalle: (p.charges_details || []).filter((c) => c.type !== "fee").map((c) => ({ nombre: c.name, tipo: c.type, monto: c.amounts?.original || 0 })),
     pagador: p.payer ? {
+      id: p.payer.id || null,
       nombre: [p.payer.first_name, p.payer.last_name].filter(Boolean).join(" ") || null,
       email: p.payer.email || null,
       tipoDoc: p.payer.identification?.type || null,
@@ -244,6 +247,7 @@ function docToPagoResponse(d) {
     referenciaExterna: d.referenciaExterna,
     fechaAprobacion: d.fechaAprobacion,
     tipoMovimiento: d.tipoMovimiento || "cobro",
+    operationType: d.operationType || null,
     fechaStr: d.fecha,
   };
 }
@@ -2208,19 +2212,30 @@ Origen: ${producto.origen || ""}`;
       console.error("Error al borrar operacion:", err);
     }
   });
-  socket.on("request-operaciones", async ({ fecha, search, page }) => {
+  socket.on("request-operaciones", async ({ fecha, fechaDesde, fechaHasta, tipoOperacion, search, page }) => {
     const pageSize = 50;
     const pageNumber = page || 1;
     let filter = {};
-    if (fecha) {
+    if (fechaDesde && fechaHasta) {
+      filter.fecha = { $gte: fechaDesde, $lte: fechaHasta };
+    } else if (fechaDesde) {
+      filter.fecha = { $gte: fechaDesde };
+    } else if (fechaHasta) {
+      filter.fecha = { $lte: fechaHasta };
+    } else if (fecha) {
       filter.fecha = fecha;
     }
-    const searchRegex = { $regex: search, $options: "i" };
-    filter.$or = [
-      { descripcion: searchRegex },
-      { tipoOperacion: searchRegex },
-      { nombre: searchRegex },
-    ];
+    if (tipoOperacion) {
+      filter.tipoOperacion = tipoOperacion;
+    }
+    if (search) {
+      const searchRegex = { $regex: search, $options: "i" };
+      filter.$or = [
+        { descripcion: searchRegex },
+        { tipoOperacion: searchRegex },
+        { nombre: searchRegex },
+      ];
+    }
     try {
       const operaciones = await Operacion.find(filter)
         .sort({ createdAt: -1 })
@@ -5137,8 +5152,11 @@ const PORT = process.env.PORT || 5000;
   try {
     const sinCollector = await PagoMp.deleteMany({ $or: [{ collectorId: null }, { collectorId: { $exists: false } }] });
     if (sinCollector.deletedCount) console.log(`Migración PagoMp: borrados ${sinCollector.deletedCount} pagos sin collectorId (se re-sincronizarán)`);
-    // Reclasificar: money_transfer/payout = gasto, resto = cobro
-    const [r1, r2, r3] = await Promise.all([
+    // Borrar pagos sin pagador.id para forzar re-sync con el nuevo campo
+    const sinPagadorId = await PagoMp.deleteMany({ $or: [{ "pagador.id": null }, { "pagador.id": { $exists: false } }] });
+    if (sinPagadorId.deletedCount) console.log(`Migración PagoMp: borrados ${sinPagadorId.deletedCount} pagos sin pagador.id (se re-sincronizarán)`);
+    // Reclasificar: money_transfer/payout = gasto
+    const [r1, r2] = await Promise.all([
       PagoMp.updateMany(
         { operationType: "money_transfer", tipoMovimiento: { $ne: "gasto" } },
         { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
@@ -5147,14 +5165,18 @@ const PORT = process.env.PORT || 5000;
         { operationType: "payout", tipoMovimiento: { $ne: "gasto" } },
         { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
       ),
-      PagoMp.updateMany(
-        { operationType: { $nin: ["money_transfer", "payout"] }, tipoMovimiento: { $ne: "cobro" } },
-        { $set: { tipoMovimiento: "cobro" } },
-      ),
     ]);
     if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} money_transfer → gasto`);
     if (r2.modifiedCount) console.log(`Migración PagoMp: ${r2.modifiedCount} payout → gasto`);
-    if (r3.modifiedCount) console.log(`Migración PagoMp: ${r3.modifiedCount} → cobro`);
+    // Reclasificar pagos donde nosotros somos el pagador → gasto
+    const ownId = await getOwnMpCollectorId();
+    if (ownId) {
+      const r3 = await PagoMp.updateMany(
+        { "pagador.id": ownId, tipoMovimiento: { $ne: "gasto" } },
+        { $set: { tipoMovimiento: "gasto", comisionMp: 0, retenciones: 0 } },
+      );
+      if (r3.modifiedCount) console.log(`Migración PagoMp: ${r3.modifiedCount} pagos propios → gasto`);
+    }
   } catch (err) { console.error("Error migración PagoMp:", err); }
 })();
 

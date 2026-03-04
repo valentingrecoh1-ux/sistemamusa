@@ -104,7 +104,7 @@ export default function TvDisplay() {
         className={`${s.image} ${fade ? s.fadeIn : s.fadeOut}`}
         src={`${IP()}/api/tv/imagen/${medio._id}`}
         alt=""
-        style={medio.rotacion ? { transform: `rotate(${medio.rotacion}deg)` } : undefined}
+        style={{ transform: `rotate(${(medio.rotacion || 0) + 90}deg)` }}
       />
       {destello && <div className={s.borderGlow} />}
       {destello && <div className={s.borderGlow2} />}

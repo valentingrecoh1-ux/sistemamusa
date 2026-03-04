@@ -1152,8 +1152,23 @@ function Caja({ usuario }) {
                           />
                         ) : "-"}
                       </td>
-                      <td>
-                        <span className={`${s.mpTipoPill} ${pago.tipoMovimiento === "gasto" ? s.mpTipoPillGasto : s.mpTipoPillCobro}`}>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <span
+                          className={`${s.mpTipoPill} ${pago.tipoMovimiento === "gasto" ? s.mpTipoPillGasto : s.mpTipoPillCobro} ${s.mpTipoPillClick}`}
+                          title="Click para cambiar cobro/gasto"
+                          onClick={() => {
+                            socket.emit("toggle-tipo-mp", { mpPagoId: pago.id }, (res) => {
+                              if (res?.ok) {
+                                setMpPagos(prev => prev.map(p => p.id === pago.id ? {
+                                  ...p,
+                                  tipoMovimiento: res.tipoMovimiento,
+                                  comisionMp: res.tipoMovimiento === "gasto" ? 0 : p.comisionMp,
+                                  retenciones: res.tipoMovimiento === "gasto" ? 0 : p.retenciones,
+                                } : p));
+                              }
+                            });
+                          }}
+                        >
                           {pago.tipoMovimiento === "gasto" ? "Gasto" : "Cobro"}
                         </span>
                       </td>

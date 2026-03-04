@@ -3214,6 +3214,37 @@ Origen: ${producto.origen || ""}`;
     }
   });
 
+  // ── Toggle cobro/gasto de un pago MP ──
+  socket.on("toggle-tipo-mp", async ({ mpPagoId }, callback) => {
+    try {
+      if (!requireAuth(socket)) return;
+      const doc = await PagoMp.findById(mpPagoId);
+      if (!doc) {
+        if (typeof callback === "function") callback({ error: "Pago no encontrado" });
+        return;
+      }
+      const nuevoTipo = doc.tipoMovimiento === "cobro" ? "gasto" : "cobro";
+      doc.tipoMovimiento = nuevoTipo;
+      if (nuevoTipo === "gasto") {
+        doc.comisionMp = 0;
+        doc.retenciones = 0;
+      } else {
+        // Recalcular comisiones desde feeDetails guardados
+        const comis = (doc.feeDetails || []).reduce((s, f) => s + (f.monto || 0), 0);
+        doc.comisionMp = comis;
+        const neto = doc.netoRecibido;
+        const bruto = doc.monto;
+        doc.retenciones = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
+      }
+      await doc.save();
+      if (typeof callback === "function") callback({ ok: true, tipoMovimiento: nuevoTipo });
+      io.emit("cambios-mp");
+    } catch (err) {
+      console.error("Error toggle-tipo-mp:", err);
+      if (typeof callback === "function") callback({ error: err.message });
+    }
+  });
+
   // ── Buscar operaciones (gastos) sin vincular a MP ──
   socket.on("request-gastos-sin-mp", async ({ fecha }) => {
     try {

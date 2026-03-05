@@ -128,7 +128,7 @@ export default function Compras({ usuario }) {
             <tr>
               <th>#</th>
               <th>Fecha</th>
-              <th>Proveedor</th>
+              <th>Bodega</th>
               <th>Total</th>
               <th>Estado</th>
               <th>Pago</th>
@@ -141,7 +141,7 @@ export default function Compras({ usuario }) {
               <tr key={oc._id} className={s.clickableRow} onClick={() => navigate(`/compras/orden/${oc._id}`)} style={{ cursor: 'pointer' }}>
                 <td>{oc.numero || '-'}</td>
                 <td>{oc.createdAt ? new Date(oc.createdAt).toLocaleDateString('es-AR') : '-'}</td>
-                <td>{oc.proveedorNombre || '-'}</td>
+                <td>{oc.proveedorBodega || oc.proveedorNombre || '-'}</td>
                 <td>{money(round2((oc.montoTotal || 0) * 1.21))}</td>
                 <td><Badge variant={oc.estado}>{ESTADOS[oc.estado] || oc.estado}</Badge></td>
                 <td><Badge variant={oc.estadoPago}>{ESTADOS_PAGO[oc.estadoPago] || oc.estadoPago}</Badge></td>

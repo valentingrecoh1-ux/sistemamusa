@@ -35,6 +35,7 @@ function Eventos({ usuario }) {
     precioPorPersona: "",
     estado: "proximo",
     vinosUsados: [],
+    costoMarketing: "",
     observaciones: "",
   };
 
@@ -96,6 +97,7 @@ function Eventos({ usuario }) {
     costoComidaXPersona: "",
     costoEmpleado: "",
     costoSommelier: "",
+    costoMarketing: "",
     otrosGastos: "",
     ganancia: "30",
   };
@@ -273,13 +275,14 @@ function Eventos({ usuario }) {
     const empleados = parseFloat(presForm.costoEmpleado) || 0;
     const vinos = presVinos.reduce((sum, v) => sum + v.precioVenta * (v.cantidad || 1), 0);
     const sommelier = parseFloat(presForm.costoSommelier) || 0;
+    const marketing = parseFloat(presForm.costoMarketing) || 0;
     const otros = parseFloat(presForm.otrosGastos) || 0;
-    const base = comida + empleados + vinos + sommelier + otros;
+    const base = comida + empleados + vinos + sommelier + marketing + otros;
     const gananciaAmt = base * ((parseFloat(presForm.ganancia) || 0) / 100);
     const neto = base + gananciaAmt;
     const conFactura = neto * 1.25;
     const efectivo = neto;
-    return { comida, empleados, vinos, sommelier, otros, base, gananciaAmt, neto, conFactura, efectivo };
+    return { comida, empleados, vinos, sommelier, marketing, otros, base, gananciaAmt, neto, conFactura, efectivo };
   };
 
   const descargarPresupuesto = async () => {
@@ -371,7 +374,16 @@ function Eventos({ usuario }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    socket.emit("guardar-evento", form);
+    const payload = { ...form };
+    const mktg = parseFloat(payload.costoMarketing) || 0;
+    if (mktg > 0) {
+      payload.gastosEstimados = [
+        ...(payload.gastosEstimados || []),
+        { descripcion: "Marketing", monto: mktg },
+      ];
+    }
+    delete payload.costoMarketing;
+    socket.emit("guardar-evento", payload);
     setForm(emptyForm);
     setEditingId(null);
   };
@@ -393,6 +405,7 @@ function Eventos({ usuario }) {
       precioPorPersona: ev.precioPorPersona || "",
       estado: ev.estado || "proximo",
       vinosUsados: ev.vinosUsados || [],
+      costoMarketing: (ev.gastosEstimados || []).find((g) => g.descripcion === "Marketing" && !g.realizado)?.monto || "",
       observaciones: ev.observaciones || "",
     });
     setEditingId(ev._id);
@@ -632,6 +645,18 @@ function Eventos({ usuario }) {
             <div className={s.formGroup}>
               <label>Observaciones</label>
               <input type="text" name="observaciones" value={form.observaciones} onChange={handleChange} autoComplete="off" />
+            </div>
+            <div className={s.formGroup}>
+              <label>Marketing</label>
+              <NumericFormat
+                prefix="$"
+                thousandSeparator="."
+                decimalSeparator=","
+                value={form.costoMarketing || ""}
+                onValueChange={(v) => setForm((p) => ({ ...p, costoMarketing: v.floatValue || "" }))}
+                placeholder="$0"
+                autoComplete="off"
+              />
             </div>
             <div className={s.formGroupBtn}>
               <button className={s.saveBtn} type="submit">
@@ -1529,6 +1554,18 @@ function Eventos({ usuario }) {
                         />
                       </div>
                       <div className={s.presField}>
+                        <label>Marketing (redes, diseño, etc.)</label>
+                        <NumericFormat
+                          className={s.presInput}
+                          prefix="$"
+                          thousandSeparator="."
+                          decimalSeparator=","
+                          value={presForm.costoMarketing || ""}
+                          onValueChange={(v) => setPresForm((p) => ({ ...p, costoMarketing: v.floatValue || "" }))}
+                          placeholder="$0"
+                        />
+                      </div>
+                      <div className={s.presField}>
                         <label>Otros (alquiler, decoración, etc.)</label>
                         <NumericFormat
                           className={s.presInput}
@@ -1620,6 +1657,12 @@ function Eventos({ usuario }) {
                           <div className={s.presResumenRow}>
                             <span>Sommelier</span>
                             <NumericFormat prefix="$" displayType="text" value={c.sommelier} thousandSeparator="." decimalSeparator="," />
+                          </div>
+                        )}
+                        {c.marketing > 0 && (
+                          <div className={s.presResumenRow}>
+                            <span>Marketing</span>
+                            <NumericFormat prefix="$" displayType="text" value={c.marketing} thousandSeparator="." decimalSeparator="," />
                           </div>
                         )}
                         {c.otros > 0 && (

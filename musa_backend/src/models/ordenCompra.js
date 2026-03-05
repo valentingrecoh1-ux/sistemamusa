@@ -37,6 +37,7 @@ const ordenCompraSchema = new mongoose.Schema(
     numero: { type: String, unique: true },
     proveedorId: { type: mongoose.Schema.Types.ObjectId, ref: "Proveedor", required: true },
     proveedorNombre: { type: String },
+    proveedorBodega: { type: String },
     estado: {
       type: String,
       enum: ["borrador", "pendiente_aprobacion", "aprobada", "enviada", "en_camino", "recibida_parcial", "recibida", "cerrada", "cancelada"],

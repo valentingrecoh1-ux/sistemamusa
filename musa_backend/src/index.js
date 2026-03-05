@@ -3600,6 +3600,7 @@ Origen: ${producto.origen || ""}`;
         query.$or = [
           { numero: { $regex: search, $options: "i" } },
           { proveedorNombre: { $regex: search, $options: "i" } },
+          { proveedorBodega: { $regex: search, $options: "i" } },
         ];
       }
       const total = await OrdenCompra.countDocuments(query);
@@ -3608,6 +3609,19 @@ Origen: ${producto.origen || ""}`;
         .skip((page - 1) * limit)
         .limit(limit)
         .lean();
+      // Enriquecer OCs antiguas sin proveedorBodega
+      const sinBodega = ordenes.filter((o) => !o.proveedorBodega && o.proveedorId);
+      if (sinBodega.length > 0) {
+        const provIds = [...new Set(sinBodega.map((o) => o.proveedorId.toString()))];
+        const provs = await Proveedor.find({ _id: { $in: provIds } }, "bodega").lean();
+        const map = {};
+        provs.forEach((p) => { map[p._id.toString()] = p.bodega; });
+        ordenes.forEach((o) => {
+          if (!o.proveedorBodega && o.proveedorId) {
+            o.proveedorBodega = map[o.proveedorId.toString()] || o.proveedorNombre;
+          }
+        });
+      }
       socket.emit("response-ordenes-compra", {
         ordenes,
         totalPages: Math.ceil(total / limit) || 1,
@@ -3663,6 +3677,7 @@ Origen: ${producto.origen || ""}`;
         numero,
         proveedorId: proveedor._id,
         proveedorNombre: proveedor.nombre,
+        proveedorBodega: proveedor.bodega || proveedor.nombre,
         items,
         montoTotal,
         notas: data.notas || "",

@@ -65,8 +65,7 @@ export default function OrdenCompraDetalle({ usuario }) {
   const [orden, setOrden] = useState(null);
   const [showPayForm, setShowPayForm] = useState(false);
   const [pagoMonto, setPagoMonto] = useState('');
-  const [pagoMetodo, setPagoMetodo] = useState('transferencia');
-  const [pagoRef, setPagoRef] = useState('');
+  const [pagoMetodo, setPagoMetodo] = useState('efectivo');
   const [pagoNotas, setPagoNotas] = useState('');
   const [pagoConcepto, setPagoConcepto] = useState('factura');
 
@@ -301,21 +300,41 @@ export default function OrdenCompraDetalle({ usuario }) {
     }
   };
 
-  const handlePago = () => {
+  const handlePago = (irACaja) => {
     if (!pagoMonto || Number(pagoMonto) <= 0) return;
+    const monto = Number(pagoMonto);
     socket.emit('guardar-pago-proveedor', {
       ordenCompra: id,
-      monto: Number(pagoMonto),
+      monto,
       metodo: pagoMetodo,
-      referencia: pagoRef,
       notas: pagoNotas,
       concepto: pagoConcepto,
     });
+    const conceptoLabel = pagoConcepto === 'flete' ? 'Flete' : 'Factura';
+    const desc = `Pago ${conceptoLabel} - ${orden.proveedorNombre || ''} (${orden.numero || ''})`;
     setShowPayForm(false);
     setPagoMonto('');
-    setPagoRef('');
     setPagoNotas('');
     setPagoConcepto('factura');
+    setPagoMetodo('efectivo');
+    if (irACaja) {
+      if (pagoMetodo === 'efectivo') {
+        navigate('/caja', {
+          state: {
+            prefill: {
+              descripcion: desc,
+              monto: -(Math.abs(monto)),
+              nombre: orden.proveedorNombre || '',
+              tipoOperacion: 'GASTO',
+            },
+          },
+        });
+      } else {
+        navigate('/caja', {
+          state: { tab: 'mercadopago' },
+        });
+      }
+    }
   };
 
   // ── Flete handlers ──
@@ -1061,31 +1080,28 @@ export default function OrdenCompraDetalle({ usuario }) {
               </select>
             </div>
             <div className={s.inputGroup}>
-              <span>Monto *</span>
+              <span>Monto * <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 12 }}>de {money(pagoConcepto === 'flete' ? saldoFlete : saldoFactura)} restante</span></span>
               <input type="number" min="0" value={pagoMonto} onChange={(e) => setPagoMonto(e.target.value)} placeholder="0" />
             </div>
             <div className={s.inputGroup}>
               <span>Metodo</span>
               <select value={pagoMetodo} onChange={(e) => setPagoMetodo(e.target.value)}>
-                <option value="transferencia">Transferencia</option>
                 <option value="efectivo">Efectivo</option>
-                <option value="cheque">Cheque</option>
-                <option value="otro">Otro</option>
+                <option value="digital">Digital</option>
               </select>
             </div>
           </div>
           <div className={s.formRow}>
-            <div className={s.inputGroup}>
-              <span>Referencia</span>
-              <input type="text" value={pagoRef} onChange={(e) => setPagoRef(e.target.value)} placeholder="Nro transferencia, cheque..." />
-            </div>
             <div className={s.inputGroup}>
               <span>Notas</span>
               <input type="text" value={pagoNotas} onChange={(e) => setPagoNotas(e.target.value)} />
             </div>
           </div>
           <div className={s.btnRow}>
-            <button className={s.btnSuccess} onClick={handlePago}>Confirmar Pago</button>
+            <button className={s.btnSuccess} onClick={() => handlePago(false)}>Confirmar Pago</button>
+            <button className={s.btnInfo} onClick={() => handlePago(true)}>
+              <i className="bi bi-box-arrow-up-right" /> Confirmar e ir a Caja
+            </button>
             <button className={s.btnOutline} onClick={() => setShowPayForm(false)}>Cancelar</button>
           </div>
         </div>
@@ -1103,7 +1119,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                 <th>Cant.</th>
                 <th>Precio s/IVA</th>
                 {(orden.totalFletes > 0) && <th>Flete/u</th>}
-                {(orden.totalFletes > 0) && <th>Costo c/IVA + Flete</th>}
+                {(orden.totalFletes > 0) && <th>Costo Total/u</th>}
                 <th>Subtotal c/IVA</th>
               </tr>
             </thead>

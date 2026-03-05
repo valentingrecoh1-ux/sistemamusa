@@ -7,7 +7,7 @@ const pagoProveedorSchema = new mongoose.Schema(
     monto: { type: Number, required: true },
     metodoPago: {
       type: String,
-      enum: ["transferencia", "cheque", "efectivo"],
+      enum: ["transferencia", "cheque", "efectivo", "digital"],
       required: true,
     },
     referencia: { type: String },

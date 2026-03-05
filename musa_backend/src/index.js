@@ -3633,6 +3633,7 @@ Origen: ${producto.origen || ""}`;
         pagos,
         total: orden.montoTotal,
         totalPagado: orden.montoPagado,
+        totalPagadoFlete: orden.montoPagadoFlete || 0,
         totalFletes,
         fletePorUnidad,
       });
@@ -3804,23 +3805,34 @@ Origen: ${producto.origen || ""}`;
     try {
       const orden = await OrdenCompra.findById(data.ordenCompra);
       if (!orden) return;
+      const concepto = data.concepto === "flete" ? "flete" : "factura";
       await PagoProveedor.create({
         ordenCompraId: orden._id,
         proveedorId: orden.proveedorId,
         monto: data.monto,
         metodoPago: data.metodo || "transferencia",
         referencia: data.referencia || "",
+        concepto,
         notas: data.notas || "",
         fecha: new Date().toISOString().slice(0, 10),
         registradoPor: "Sistema",
       });
-      orden.montoPagado = (orden.montoPagado || 0) + data.monto;
-      if (orden.montoPagado >= orden.montoTotal) {
+      if (concepto === "flete") {
+        orden.montoPagadoFlete = (orden.montoPagadoFlete || 0) + data.monto;
+      } else {
+        orden.montoPagado = (orden.montoPagado || 0) + data.monto;
+      }
+      const totalFletes = (orden.fletes || []).reduce((s, f) => s + (f.monto || 0), 0);
+      const totalConIVA = Math.round(orden.montoTotal * 1.21 * 100) / 100;
+      const factPagado = totalConIVA > 0 && (orden.montoPagado || 0) >= totalConIVA;
+      const fletePagado = totalFletes <= 0 || (orden.montoPagadoFlete || 0) >= totalFletes;
+      if (factPagado && fletePagado) {
         orden.estadoPago = "pagado";
-      } else if (orden.montoPagado > 0) {
+      } else if ((orden.montoPagado || 0) > 0 || (orden.montoPagadoFlete || 0) > 0) {
         orden.estadoPago = "parcial";
       }
-      orden.timeline.push({ accion: `Pago registrado: $${data.monto}`, usuario: "Sistema", fecha: new Date() });
+      const etiqueta = concepto === "flete" ? "Pago flete" : "Pago factura";
+      orden.timeline.push({ accion: `${etiqueta}: $${data.monto}`, usuario: "Sistema", fecha: new Date() });
       await orden.save();
       io.emit("cambios");
       crearNotificacion({

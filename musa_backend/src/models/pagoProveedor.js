@@ -15,6 +15,11 @@ const pagoProveedorSchema = new mongoose.Schema(
     fecha: { type: String },
     registradoPor: { type: String },
     registradoPorId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
+    concepto: {
+      type: String,
+      enum: ["factura", "flete"],
+      default: "factura",
+    },
     notas: { type: String },
   },
   { timestamps: true }

@@ -8,6 +8,7 @@ import Pagination from '../../components/shared/Pagination';
 import s from './Compras.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
+const round2 = (n) => Math.round(n * 100) / 100;
 
 const ESTADOS = { borrador: 'Borrador', pendiente_aprobacion: 'Pend. Aprobacion', aprobada: 'Aprobada', enviada: 'Enviada', en_camino: 'En Camino', recibida_parcial: 'Recibida Parcial', recibida: 'Recibida', cerrada: 'Cerrada', cancelada: 'Cancelada' };
 const ESTADOS_PAGO = { pendiente: 'Pendiente', parcial: 'Parcial', pagado: 'Pagado' };
@@ -140,8 +141,8 @@ export default function Compras({ usuario }) {
               <tr key={oc._id} className={s.clickableRow} onClick={() => navigate(`/compras/orden/${oc._id}`)} style={{ cursor: 'pointer' }}>
                 <td>{oc.numero || '-'}</td>
                 <td>{oc.createdAt ? new Date(oc.createdAt).toLocaleDateString('es-AR') : '-'}</td>
-                <td>{oc.proveedor?.nombre || '-'}</td>
-                <td>{money(oc.total)}</td>
+                <td>{oc.proveedorNombre || '-'}</td>
+                <td>{money(round2((oc.montoTotal || 0) * 1.21))}</td>
                 <td><Badge variant={oc.estado}>{ESTADOS[oc.estado] || oc.estado}</Badge></td>
                 <td><Badge variant={oc.estadoPago}>{ESTADOS_PAGO[oc.estadoPago] || oc.estadoPago}</Badge></td>
               </tr>

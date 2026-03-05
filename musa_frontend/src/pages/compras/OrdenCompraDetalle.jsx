@@ -68,6 +68,7 @@ export default function OrdenCompraDetalle({ usuario }) {
   const [pagoMetodo, setPagoMetodo] = useState('transferencia');
   const [pagoRef, setPagoRef] = useState('');
   const [pagoNotas, setPagoNotas] = useState('');
+  const [pagoConcepto, setPagoConcepto] = useState('factura');
 
   // Preview archivo modal
   const [previewArchivo, setPreviewArchivo] = useState(null);
@@ -308,11 +309,13 @@ export default function OrdenCompraDetalle({ usuario }) {
       metodo: pagoMetodo,
       referencia: pagoRef,
       notas: pagoNotas,
+      concepto: pagoConcepto,
     });
     setShowPayForm(false);
     setPagoMonto('');
     setPagoRef('');
     setPagoNotas('');
+    setPagoConcepto('factura');
   };
 
   // ── Flete handlers ──
@@ -743,7 +746,9 @@ export default function OrdenCompraDetalle({ usuario }) {
   }
 
   const totalConIVAOrden = round2((orden.total || 0) * 1.21);
-  const saldo = totalConIVAOrden - (orden.totalPagado || 0);
+  const saldoFactura = totalConIVAOrden - (orden.totalPagado || 0);
+  const saldoFlete = (orden.totalFletes || 0) - (orden.totalPagadoFlete || 0);
+  const saldo = saldoFactura + saldoFlete;
 
   // ── EDIT VIEW ──
   if (editMode) {
@@ -1049,6 +1054,13 @@ export default function OrdenCompraDetalle({ usuario }) {
           <h4 className={s.payFormTitle}>Registrar Pago</h4>
           <div className={s.formRow}>
             <div className={s.inputGroup}>
+              <span>Concepto *</span>
+              <select value={pagoConcepto} onChange={(e) => setPagoConcepto(e.target.value)}>
+                <option value="factura">Factura (Vinos)</option>
+                <option value="flete">Flete</option>
+              </select>
+            </div>
+            <div className={s.inputGroup}>
               <span>Monto *</span>
               <input type="number" min="0" value={pagoMonto} onChange={(e) => setPagoMonto(e.target.value)} placeholder="0" />
             </div>
@@ -1091,7 +1103,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                 <th>Cant.</th>
                 <th>Precio s/IVA</th>
                 {(orden.totalFletes > 0) && <th>Flete/u</th>}
-                {(orden.totalFletes > 0) && <th>Costo Total/u</th>}
+                {(orden.totalFletes > 0) && <th>Costo c/IVA + Flete</th>}
                 <th>Subtotal c/IVA</th>
               </tr>
             </thead>
@@ -1110,7 +1122,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                     <td>{cant}</td>
                     <td>{money(pSin)}</td>
                     {(orden.totalFletes > 0) && <td style={{ color: 'var(--info)' }}>{money(fpu)}</td>}
-                    {(orden.totalFletes > 0) && <td style={{ fontWeight: 600 }}>{money(pSin + fpu)}</td>}
+                    {(orden.totalFletes > 0) && <td style={{ fontWeight: 600 }}>{money(pCon + fpu)}</td>}
                     <td>{money(cant * pCon * bonif)}</td>
                   </tr>
                 );
@@ -1129,15 +1141,41 @@ export default function OrdenCompraDetalle({ usuario }) {
             <h3 className={s.cardTitle}>Finanzas</h3>
             <div className={s.finanzasGrid}>
               <div className={s.finanzasItem}>
-                <span className={s.finanzasLabel}>Total c/IVA</span>
+                <span className={s.finanzasLabel}>Factura c/IVA</span>
                 <span className={s.finanzasValue}>{money(totalConIVAOrden)}</span>
               </div>
               <div className={s.finanzasItem}>
-                <span className={s.finanzasLabel}>Pagado</span>
+                <span className={s.finanzasLabel}>Pagado factura</span>
                 <span className={`${s.finanzasValue} ${s.finanzasValueSuccess}`}>{money(orden.totalPagado)}</span>
               </div>
               <div className={s.finanzasItem}>
-                <span className={s.finanzasLabel}>Saldo</span>
+                <span className={s.finanzasLabel}>Saldo factura</span>
+                <span className={`${s.finanzasValue} ${saldoFactura > 0 ? s.finanzasValueDanger : s.finanzasValueSuccess}`}>
+                  {money(saldoFactura)}
+                </span>
+              </div>
+            </div>
+            {(orden.totalFletes || 0) > 0 && (
+              <div className={s.finanzasGrid} style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                <div className={s.finanzasItem}>
+                  <span className={s.finanzasLabel}>Total fletes</span>
+                  <span className={s.finanzasValue}>{money(orden.totalFletes)}</span>
+                </div>
+                <div className={s.finanzasItem}>
+                  <span className={s.finanzasLabel}>Pagado flete</span>
+                  <span className={`${s.finanzasValue} ${s.finanzasValueSuccess}`}>{money(orden.totalPagadoFlete)}</span>
+                </div>
+                <div className={s.finanzasItem}>
+                  <span className={s.finanzasLabel}>Saldo flete</span>
+                  <span className={`${s.finanzasValue} ${saldoFlete > 0 ? s.finanzasValueDanger : s.finanzasValueSuccess}`}>
+                    {money(saldoFlete)}
+                  </span>
+                </div>
+              </div>
+            )}
+            <div className={s.finanzasGrid} style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+              <div className={s.finanzasItem}>
+                <span className={s.finanzasLabel}>Saldo total</span>
                 <span className={`${s.finanzasValue} ${saldo > 0 ? s.finanzasValueDanger : s.finanzasValueSuccess}`}>
                   {money(saldo)}
                 </span>

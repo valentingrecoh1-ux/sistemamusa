@@ -57,6 +57,7 @@ const ordenCompraSchema = new mongoose.Schema(
       monto: { type: Number, default: 0 },
     },
     montoPagado: { type: Number, default: 0 },
+    montoPagadoFlete: { type: Number, default: 0 },
     fechaEntrega: { type: String },
     notas: { type: String },
     creadoPor: { type: String },

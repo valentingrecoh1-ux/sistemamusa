@@ -120,7 +120,7 @@ export default function Vidriera({ usuario }) {
       ) : (
         <div className={s.grid}>
           {medios.map((m, i) => {
-            const frontRot = (360 - (m.rotacion || 0)) % 360;
+            const frontRot = (540 - (m.rotacion || 0)) % 360;
             const swapped = frontRot === 90 || frontRot === 270;
             const imgStyle = swapped
               ? { position: 'absolute', top: '50%', left: '50%', width: '177.78%', height: '56.25%', objectFit: 'contain', transform: `translate(-50%, -50%) rotate(${frontRot}deg)` }

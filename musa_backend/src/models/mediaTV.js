@@ -8,7 +8,7 @@ const mediaTVSchema = new mongoose.Schema(
     orden: { type: Number, default: 0 },
     activo: { type: Boolean, default: true },
     duracion: { type: Number, default: 8 },
-    rotacion: { type: Number, default: 0 },
+    rotacion: { type: Number, default: 180 },
     subidoPor: { type: String },
   },
   { timestamps: true }

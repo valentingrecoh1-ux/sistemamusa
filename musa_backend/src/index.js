@@ -1301,12 +1301,10 @@ app.post("/api/tv/upload", uploadMediaTV.single("archivo"), async (req, res) => 
     if (!file) return res.status(400).json({ error: "No se envió archivo" });
     const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
     const count = await MediaTV.countDocuments();
-    const rotacion = parseInt(req.body.rotacion, 10) || 0;
     const doc = await MediaTV.create({
       nombre: req.body.nombre || file.originalname,
       archivo: base64,
       orden: count,
-      rotacion,
       subidoPor: req.body.usuario || "",
     });
     io.emit("cambios-media-tv");

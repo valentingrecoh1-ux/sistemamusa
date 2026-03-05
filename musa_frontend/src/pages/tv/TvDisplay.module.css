@@ -1,20 +1,30 @@
 .screen {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
   background: #000;
   overflow: hidden;
+  display: -webkit-flex;
   display: flex;
+  -webkit-align-items: center;
   align-items: center;
+  -webkit-justify-content: center;
   justify-content: center;
   z-index: 99999;
 }
 
 .image {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   margin: auto;
+  -o-object-fit: contain;
   object-fit: contain;
 }
 
@@ -27,18 +37,28 @@
 }
 
 .fadeIn {
+  -webkit-animation: crossIn 0.8s ease-in-out forwards;
   animation: crossIn 0.8s ease-in-out forwards;
 }
 
 .fadeOut {
+  -webkit-animation: crossOut 0.8s ease-in-out forwards;
   animation: crossOut 0.8s ease-in-out forwards;
 }
 
+@-webkit-keyframes crossIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @keyframes crossIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+@-webkit-keyframes crossOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 @keyframes crossOut {
   from { opacity: 1; }
   to { opacity: 0; }
@@ -78,6 +98,7 @@
     rgba(255, 200, 100, 0.1) 98%,
     transparent 100%
   );
+  -webkit-animation: rotateBorder 3s linear infinite;
   animation: rotateBorder 3s linear infinite;
 }
 
@@ -112,15 +133,24 @@
     transparent 97%,
     transparent 100%
   );
+  -webkit-animation: rotateBorderReverse 5s linear infinite;
   animation: rotateBorderReverse 5s linear infinite;
 }
 
+@-webkit-keyframes rotateBorder {
+  from { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+}
 @keyframes rotateBorder {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
 }
 
+@-webkit-keyframes rotateBorderReverse {
+  from { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+  to { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+}
 @keyframes rotateBorderReverse {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
+  from { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+  to { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
 }

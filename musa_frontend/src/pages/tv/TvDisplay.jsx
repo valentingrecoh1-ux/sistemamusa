@@ -5,6 +5,7 @@ import s from './TvDisplay.module.css';
 function TvImage({ medio, className }) {
   const rot = ((medio.rotacion || 0) + 90) % 360;
   const swapped = rot === 90 || rot === 270;
+  const transform = `rotate(${rot}deg)`;
   return (
     <img
       className={className}
@@ -13,7 +14,9 @@ function TvImage({ medio, className }) {
       style={{
         width: swapped ? '100vh' : '100%',
         height: swapped ? '100vw' : '100%',
-        transform: `rotate(${rot}deg)`,
+        transform,
+        WebkitTransform: transform,
+        msTransform: transform,
       }}
     />
   );

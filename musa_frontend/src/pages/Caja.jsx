@@ -900,10 +900,10 @@ function Caja({ usuario }) {
 
       {tab === "mercadopago" && (
         <div className={s.mpContainer}>
-          {/* KPIs */}
-          <div className={s.mpKpiRow}>
+          {/* KPIs - principales */}
+          <div className={s.mpKpiMainRow}>
             <div className={s.mpKpiCard}>
-              <span className={s.mpKpiLabel}>Total cobrado</span>
+              <span className={s.mpKpiLabel}>Cobrado</span>
               <span className={`${s.mpKpiValue} ${s.mpKpiAprobado}`}>
                 <NumericFormat
                   prefix="$"
@@ -914,6 +914,80 @@ function Caja({ usuario }) {
                 />
               </span>
             </div>
+            <div className={s.mpKpiCard}>
+              <span className={s.mpKpiLabel}>Neto recibido</span>
+              <span className={`${s.mpKpiValue} ${s.mpKpiNeto}`}>
+                <NumericFormat
+                  prefix="$"
+                  displayType="text"
+                  value={mpKpis.neto.toFixed(2)}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                />
+              </span>
+            </div>
+            <div className={s.mpKpiCard}>
+              <span className={s.mpKpiLabel}>Comisiones y Retenciones</span>
+              <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
+                <NumericFormat
+                  prefix="-$"
+                  displayType="text"
+                  value={(mpKpis.comisiones + mpKpis.impuestos).toFixed(2)}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                />
+              </span>
+            </div>
+          </div>
+
+          {/* KPIs - detalle */}
+          <div className={s.mpKpiMainRow}>
+            <div className={s.mpKpiCard}>
+              <span className={s.mpKpiLabel}>Pagos procesados</span>
+              <span className={s.mpKpiValue}>{mpKpis.cantidad}</span>
+            </div>
+            <div className={s.mpKpiCard}>
+              <span className={s.mpKpiLabel}>Gastos MP</span>
+              <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
+                <NumericFormat
+                  prefix="-$"
+                  displayType="text"
+                  value={(mpKpis.gastos || 0).toFixed(2)}
+                  thousandSeparator="."
+                  decimalSeparator=","
+                />
+              </span>
+            </div>
+            <div className={s.mpKpiSplitCell}>
+              <div className={s.mpKpiCardHalf}>
+                <span className={s.mpKpiLabel}>Comisiones</span>
+                <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
+                  <NumericFormat
+                    prefix="-$"
+                    displayType="text"
+                    value={mpKpis.comisiones.toFixed(2)}
+                    thousandSeparator="."
+                    decimalSeparator=","
+                  />
+                </span>
+              </div>
+              <div className={s.mpKpiCardHalf}>
+                <span className={s.mpKpiLabel}>Retenciones</span>
+                <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
+                  <NumericFormat
+                    prefix="-$"
+                    displayType="text"
+                    value={mpKpis.impuestos.toFixed(2)}
+                    thousandSeparator="."
+                    decimalSeparator=","
+                  />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* KPIs - extra */}
+          <div className={s.mpKpiMainRow}>
             <div className={s.mpKpiCard}>
               <span className={s.mpKpiLabel}>Pendiente</span>
               <span className={`${s.mpKpiValue} ${s.mpKpiPendiente}`}>
@@ -927,68 +1001,12 @@ function Caja({ usuario }) {
               </span>
             </div>
             <div className={s.mpKpiCard}>
-              <span className={s.mpKpiLabel}>Pagos</span>
-              <span className={s.mpKpiValue}>{mpKpis.cantidad}</span>
-            </div>
-            <div className={s.mpKpiCard}>
-              <span className={s.mpKpiLabel}>Total gastos</span>
-              <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
-                <NumericFormat
-                  prefix="-$"
-                  displayType="text"
-                  value={(mpKpis.gastos || 0).toFixed(2)}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                />
-              </span>
-            </div>
-            <div className={s.mpKpiCard}>
               <span className={s.mpKpiLabel}>Ticket promedio</span>
               <span className={s.mpKpiValue}>
                 <NumericFormat
                   prefix="$"
                   displayType="text"
                   value={mpKpis.ticketPromedio.toFixed(2)}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                />
-              </span>
-            </div>
-          </div>
-
-          {/* KPIs de cargos */}
-          <div className={s.mpKpiRow}>
-            <div className={s.mpKpiCard}>
-              <span className={s.mpKpiLabel}>Comisiones MP</span>
-              <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
-                <NumericFormat
-                  prefix="-$"
-                  displayType="text"
-                  value={mpKpis.comisiones.toFixed(2)}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                />
-              </span>
-            </div>
-            <div className={s.mpKpiCard}>
-              <span className={s.mpKpiLabel}>Impuestos</span>
-              <span className={`${s.mpKpiValue} ${s.mpKpiComision}`}>
-                <NumericFormat
-                  prefix="-$"
-                  displayType="text"
-                  value={mpKpis.impuestos.toFixed(2)}
-                  thousandSeparator="."
-                  decimalSeparator=","
-                />
-              </span>
-            </div>
-            <div className={s.mpKpiCard}>
-              <span className={s.mpKpiLabel}>Neto recibido</span>
-              <span className={`${s.mpKpiValue} ${s.mpKpiNeto}`}>
-                <NumericFormat
-                  prefix="$"
-                  displayType="text"
-                  value={mpKpis.neto.toFixed(2)}
                   thousandSeparator="."
                   decimalSeparator=","
                 />

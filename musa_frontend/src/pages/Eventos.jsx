@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { es } from "date-fns/locale/es";
 import { NumericFormat } from "react-number-format";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import { socket } from "../main";
 import { tienePermiso } from "../lib/permisos";
 import Pagination from "../components/shared/Pagination";
@@ -283,16 +283,36 @@ function Eventos({ usuario }) {
   };
 
   const descargarPresupuesto = async () => {
-    if (!presModalRef.current) return;
+    const el = presModalRef.current;
+    if (!el) return;
     try {
-      const canvas = await html2canvas(presModalRef.current, {
-        backgroundColor: '#1a1a2e',
-        scale: 2,
-        useCORS: true,
+      // Quitar overflow para captura completa
+      const saved = [];
+      [el, ...el.querySelectorAll('*')].forEach((node) => {
+        const cs = getComputedStyle(node);
+        if (cs.overflow !== 'visible' || cs.maxHeight !== 'none') {
+          saved.push({ node, mh: node.style.maxHeight, ov: node.style.overflow, ovy: node.style.overflowY });
+          node.style.maxHeight = 'none';
+          node.style.overflow = 'visible';
+          node.style.overflowY = 'visible';
+        }
       });
+
+      const dataUrl = await toPng(el, {
+        pixelRatio: 2,
+        filter: (node) => !(node instanceof HTMLElement && node.hasAttribute('data-html2canvas-ignore')),
+      });
+
+      // Restaurar
+      saved.forEach(({ node, mh, ov, ovy }) => {
+        node.style.maxHeight = mh;
+        node.style.overflow = ov;
+        node.style.overflowY = ovy;
+      });
+
       const link = document.createElement('a');
       link.download = `presupuesto${presForm.nombre ? '-' + presForm.nombre.replace(/\s+/g, '-') : ''}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('Error al descargar presupuesto:', err);

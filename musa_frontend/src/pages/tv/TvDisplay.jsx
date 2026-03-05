@@ -5,18 +5,20 @@ import s from './TvDisplay.module.css';
 function TvImage({ medio, className }) {
   const rot = ((medio.rotacion || 0) + 90) % 360;
   const swapped = rot === 90 || rot === 270;
-  const transform = `rotate(${rot}deg)`;
+  const t = 'rotate(' + rot + 'deg)';
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
   return (
     <img
       className={className}
-      src={`${IP()}/api/tv/imagen/${medio._id}`}
+      src={IP() + '/api/tv/imagen/' + medio._id}
       alt=""
       style={{
-        width: swapped ? '100vh' : '100%',
-        height: swapped ? '100vw' : '100%',
-        transform,
-        WebkitTransform: transform,
-        msTransform: transform,
+        width: (swapped ? vh : vw) + 'px',
+        height: (swapped ? vw : vh) + 'px',
+        transform: t,
+        WebkitTransform: t,
+        msTransform: t,
       }}
     />
   );

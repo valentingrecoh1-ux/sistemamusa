@@ -35,7 +35,6 @@ function Eventos({ usuario }) {
     precioPorPersona: "",
     estado: "proximo",
     vinosUsados: [],
-    costoMarketing: "",
     observaciones: "",
   };
 
@@ -374,16 +373,7 @@ function Eventos({ usuario }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const payload = { ...form };
-    const mktg = parseFloat(payload.costoMarketing) || 0;
-    if (mktg > 0) {
-      payload.gastosEstimados = [
-        ...(payload.gastosEstimados || []),
-        { descripcion: "Marketing", monto: mktg },
-      ];
-    }
-    delete payload.costoMarketing;
-    socket.emit("guardar-evento", payload);
+    socket.emit("guardar-evento", form);
     setForm(emptyForm);
     setEditingId(null);
   };
@@ -405,7 +395,6 @@ function Eventos({ usuario }) {
       precioPorPersona: ev.precioPorPersona || "",
       estado: ev.estado || "proximo",
       vinosUsados: ev.vinosUsados || [],
-      costoMarketing: (ev.gastosEstimados || []).find((g) => g.descripcion === "Marketing" && !g.realizado)?.monto || "",
       observaciones: ev.observaciones || "",
     });
     setEditingId(ev._id);
@@ -645,18 +634,6 @@ function Eventos({ usuario }) {
             <div className={s.formGroup}>
               <label>Observaciones</label>
               <input type="text" name="observaciones" value={form.observaciones} onChange={handleChange} autoComplete="off" />
-            </div>
-            <div className={s.formGroup}>
-              <label>Marketing</label>
-              <NumericFormat
-                prefix="$"
-                thousandSeparator="."
-                decimalSeparator=","
-                value={form.costoMarketing || ""}
-                onValueChange={(v) => setForm((p) => ({ ...p, costoMarketing: v.floatValue || "" }))}
-                placeholder="$0"
-                autoComplete="off"
-              />
             </div>
             <div className={s.formGroupBtn}>
               <button className={s.saveBtn} type="submit">

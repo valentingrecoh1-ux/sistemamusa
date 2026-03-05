@@ -536,6 +536,80 @@
   margin: 0;
 }
 
+.toggleGroup {
+  display: flex;
+  gap: 0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--input-border);
+}
+
+.toggleBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: none;
+  background: var(--input-bg);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.toggleBtn:not(:last-child) {
+  border-right: 1px solid var(--input-border);
+}
+
+.toggleBtn:hover {
+  background: var(--hover-bg);
+}
+
+.toggleBtnActive {
+  background: var(--accent);
+  color: #fff;
+}
+
+.toggleBtnActive:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.payMontoInput {
+  padding: 8px 12px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -moz-appearance: textfield;
+}
+
+.payMontoInput::-webkit-inner-spin-button,
+.payMontoInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.payMontoInput:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.payMontoHelper {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: var(--text-muted) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
 /* ── Two-column detail ── */
 .detailGrid {
   display: grid;

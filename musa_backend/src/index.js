@@ -129,13 +129,16 @@ function mpRawToDoc(p, ownCollectorId) {
   } else if (p.operation_type === "payout") {
     // Retiros/transferencias bancarias → cobro (plata que recibimos en banco)
     tipo = "cobro";
+  } else if (p.operation_type === "money_transfer" && bruto > 0 && p.status === "approved") {
+    // Transferencias recibidas con monto positivo → cobro
+    tipo = "cobro";
   } else if (ownCollectorId && p.payer?.id && String(p.payer.id) === String(ownCollectorId)) {
     // Nosotros somos el pagador → dinero que sale → gasto
     tipo = "gasto";
   } else if (ownCollectorId && p.collector_id) {
     tipo = (String(p.collector_id) === String(ownCollectorId)) ? "cobro" : "gasto";
   } else if (p.operation_type === "money_transfer") {
-    tipo = (bruto > 0 && p.status === "approved") ? "cobro" : "gasto";
+    tipo = "gasto";
   }
 
   // Gastos no tienen comisiones ni retenciones

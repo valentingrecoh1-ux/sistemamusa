@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { socket } from '../../main';
 import { IP } from '../../main';
+import { NumericFormat } from 'react-number-format';
 import { dialog } from '../../components/shared/dialog';
 
 /** Convierte un data-URI base64 a un Object URL que el browser puede renderizar */
@@ -1073,26 +1074,51 @@ export default function OrdenCompraDetalle({ usuario }) {
           <h4 className={s.payFormTitle}>Registrar Pago</h4>
           <div className={s.formRow}>
             <div className={s.inputGroup}>
-              <span>Concepto *</span>
-              <select value={pagoConcepto} onChange={(e) => setPagoConcepto(e.target.value)}>
-                <option value="factura">Factura (Vinos)</option>
-                <option value="flete">Flete</option>
-              </select>
-            </div>
-            <div className={s.inputGroup}>
-              <span>Monto * <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 12 }}>de {money(pagoConcepto === 'flete' ? saldoFlete : saldoFactura)} restante</span></span>
-              <input type="number" min="0" value={pagoMonto} onChange={(e) => setPagoMonto(e.target.value)} placeholder="0" />
+              <span>Concepto</span>
+              <div className={s.toggleGroup}>
+                <button className={`${s.toggleBtn} ${pagoConcepto === 'factura' ? s.toggleBtnActive : ''}`} onClick={() => setPagoConcepto('factura')} type="button">
+                  <i className="bi bi-receipt" /> Factura
+                </button>
+                <button className={`${s.toggleBtn} ${pagoConcepto === 'flete' ? s.toggleBtnActive : ''}`} onClick={() => setPagoConcepto('flete')} type="button">
+                  <i className="bi bi-truck" /> Flete
+                </button>
+              </div>
             </div>
             <div className={s.inputGroup}>
               <span>Metodo</span>
-              <select value={pagoMetodo} onChange={(e) => setPagoMetodo(e.target.value)}>
-                <option value="efectivo">Efectivo</option>
-                <option value="digital">Digital</option>
-              </select>
+              <div className={s.toggleGroup}>
+                <button className={`${s.toggleBtn} ${pagoMetodo === 'efectivo' ? s.toggleBtnActive : ''}`} onClick={() => setPagoMetodo('efectivo')} type="button">
+                  <i className="bi bi-cash" /> Efectivo
+                </button>
+                <button className={`${s.toggleBtn} ${pagoMetodo === 'digital' ? s.toggleBtnActive : ''}`} onClick={() => setPagoMetodo('digital')} type="button">
+                  <i className="bi bi-phone" /> Digital
+                </button>
+              </div>
             </div>
           </div>
           <div className={s.formRow}>
-            <div className={s.inputGroup}>
+            <div className={s.inputGroup} style={{ flex: 1 }}>
+              <span>Monto</span>
+              <NumericFormat
+                className={s.payMontoInput}
+                prefix="$ "
+                thousandSeparator="."
+                decimalSeparator=","
+                value={pagoMonto}
+                onValueChange={(v) => {
+                  const max = pagoConcepto === 'flete' ? saldoFlete : saldoFactura;
+                  const val = v.floatValue || 0;
+                  setPagoMonto(val > max ? max : val);
+                }}
+                placeholder="$ 0"
+                isAllowed={(v) => {
+                  const max = pagoConcepto === 'flete' ? saldoFlete : saldoFactura;
+                  return (v.floatValue || 0) <= max;
+                }}
+              />
+              <span className={s.payMontoHelper}>de {money(pagoConcepto === 'flete' ? saldoFlete : saldoFactura)}</span>
+            </div>
+            <div className={s.inputGroup} style={{ flex: 1 }}>
               <span>Notas</span>
               <input type="text" value={pagoNotas} onChange={(e) => setPagoNotas(e.target.value)} />
             </div>

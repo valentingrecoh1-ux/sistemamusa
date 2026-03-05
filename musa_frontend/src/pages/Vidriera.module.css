@@ -274,6 +274,13 @@
   font-size: 13px;
   font-weight: 600;
   text-align: center;
+  -moz-appearance: textfield;
+}
+
+.duracionInput::-webkit-outer-spin-button,
+.duracionInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .duracionInput:focus {

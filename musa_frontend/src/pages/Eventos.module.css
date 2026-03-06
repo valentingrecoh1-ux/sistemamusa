@@ -897,6 +897,7 @@
 .gastoRow {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid var(--card-border);
@@ -907,7 +908,49 @@
 .gastoDesc { font-size: 13px; color: var(--text-primary); }
 .gastoMonto { font-size: 13px; font-weight: 600; font-family: var(--font-heading); color: var(--text-primary); white-space: nowrap; }
 
-.gastoActions { display: flex; align-items: center; gap: 4px; }
+.gastoActions { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
+.gastoIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.gastoIconBtn:hover { border-color: var(--accent); color: var(--accent); background-color: rgba(99, 102, 241, 0.1); }
+.gastoIconBtnActive { border-color: var(--accent); color: var(--accent); }
+
+.infoPagoPanel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+}
+.infoPagoInput {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+.infoPagoInput:focus { outline: none; border-color: var(--accent); }
+.infoPagoBtns { display: flex; align-items: center; gap: 6px; }
 
 .gastoConcretarBtn {
   padding: 3px 10px;

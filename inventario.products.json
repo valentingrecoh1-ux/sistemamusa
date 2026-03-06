@@ -268,7 +268,7 @@
   "year": "2021",
   "origen": "Cervantes - Rio Negro",
   "venta": "27000",
-  "cantidad": 2,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1767653457162-2950372-HOLLEJOS.jpeg",
   "carritoCantidad": 1,
@@ -276,7 +276,7 @@
     "$date": "2024-09-17T21:35:41.126Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T22:50:57.165Z"
+    "$date": "2026-02-25T17:24:33.238Z"
   },
   "__v": 0,
   "posicion": "G5",
@@ -346,7 +346,7 @@
   "year": "2021",
   "origen": "Alto Valle - Rio Negro",
   "venta": "32000",
-  "cantidad": 2,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1767653555862-219019746-LECHUZA M.jpeg",
   "carritoCantidad": 1,
@@ -354,7 +354,7 @@
     "$date": "2024-09-17T21:47:46.539Z"
   },
   "updatedAt": {
-    "$date": "2026-01-07T21:31:58.885Z"
+    "$date": "2026-02-14T03:28:08.863Z"
   },
   "__v": 0,
   "posicion": "E4",
@@ -475,7 +475,7 @@
   "year": "2021",
   "origen": "Mendoza",
   "venta": "48000",
-  "cantidad": 7,
+  "cantidad": 8,
   "descripcion": "",
   "foto": "uploads\\foto-1750275768450-711785177-WhatsApp Image 2025-06-18 at 16.41.48.jpeg",
   "carritoCantidad": 1,
@@ -483,7 +483,7 @@
     "$date": "2024-09-17T22:15:20.997Z"
   },
   "updatedAt": {
-    "$date": "2025-12-29T19:02:03.066Z"
+    "$date": "2026-02-26T23:21:33.443Z"
   },
   "__v": 0,
   "posicion": "F6",
@@ -501,7 +501,7 @@
   "year": "2021",
   "origen": "Mendoza",
   "venta": "28000",
-  "cantidad": 2,
+  "cantidad": 3,
   "descripcion": "",
   "foto": "uploads\\foto-1750275839298-992647469-Imagen de WhatsApp 2025-06-18 a las 16.41.49_c02f1603.jpg",
   "carritoCantidad": 2,
@@ -509,7 +509,7 @@
     "$date": "2024-09-17T22:18:38.719Z"
   },
   "updatedAt": {
-    "$date": "2025-12-29T19:02:03.066Z"
+    "$date": "2026-02-26T23:20:15.387Z"
   },
   "__v": 0,
   "carrito": false,
@@ -527,7 +527,7 @@
   "year": "2020",
   "origen": "Los Chacayes, Mendoza",
   "venta": "18000",
-  "cantidad": 0,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1730760955232-547605133-IMG_0354-compressed.jpeg",
   "carritoCantidad": 1,
@@ -535,7 +535,7 @@
     "$date": "2024-09-17T22:31:46.925Z"
   },
   "updatedAt": {
-    "$date": "2025-11-30T02:08:04.459Z"
+    "$date": "2026-02-26T21:29:50.627Z"
   },
   "__v": 0,
   "carrito": false,
@@ -629,7 +629,7 @@
   "year": "2021",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "19000",
-  "cantidad": 5,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1730762783472-281678924-IMG_0382-compressed.jpeg",
   "carritoCantidad": 1,
@@ -637,7 +637,7 @@
     "$date": "2024-09-18T17:14:56.658Z"
   },
   "updatedAt": {
-    "$date": "2026-01-16T19:04:23.684Z"
+    "$date": "2026-02-16T23:28:16.853Z"
   },
   "__v": 0,
   "carrito": false,
@@ -681,7 +681,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "14000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1736786928882-749265532-IMG_3090-compressed.jpeg",
   "carritoCantidad": 1,
@@ -689,7 +689,7 @@
     "$date": "2024-09-18T17:23:15.483Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:07:24.731Z"
+    "$date": "2026-02-13T18:58:24.547Z"
   },
   "__v": 0,
   "carrito": false,
@@ -1356,7 +1356,7 @@
   "year": "2022",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "21000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1767653587005-110700922-RABOSO.jpeg",
   "carritoCantidad": 1,
@@ -1364,7 +1364,7 @@
     "$date": "2024-09-18T19:49:32.611Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T22:53:07.011Z"
+    "$date": "2026-02-18T21:15:45.225Z"
   },
   "__v": 0,
   "posicion": "G5",
@@ -1694,7 +1694,7 @@
   "year": "2023",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "14000",
-  "cantidad": 7,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1767723721859-914638369-WhatsApp Image 2026-01-06 at 15.21.02.jpeg",
   "carritoCantidad": 1,
@@ -1702,7 +1702,7 @@
     "$date": "2024-09-18T20:50:46.138Z"
   },
   "updatedAt": {
-    "$date": "2026-01-06T18:22:01.865Z"
+    "$date": "2026-02-19T18:09:26.896Z"
   },
   "__v": 0,
   "posicion": "B4",
@@ -2290,7 +2290,7 @@
   "year": "2020",
   "origen": "Mendoza",
   "venta": "20500",
-  "cantidad": 4,
+  "cantidad": 2,
   "descripcion": "",
   "foto": "uploads\\foto-1768515773241-94599757-MARSELAN.jpeg",
   "carritoCantidad": 1,
@@ -2298,7 +2298,7 @@
     "$date": "2024-09-27T02:01:02.071Z"
   },
   "updatedAt": {
-    "$date": "2026-01-16T19:59:46.402Z"
+    "$date": "2026-02-26T21:19:21.214Z"
   },
   "__v": 0,
   "carrito": false,
@@ -2338,7 +2338,7 @@
   "codigo": "7798370260096",
   "bodega": "Salvador Patti",
   "cepa": "Cabernet Sauvignon",
-  "nombre": "Raices Argentinas",
+  "nombre": "Raíces Argentinas",
   "year": "",
   "origen": "Mendoza",
   "venta": "10000",
@@ -2350,7 +2350,7 @@
     "$date": "2024-09-27T14:43:29.110Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T22:55:10.575Z"
+    "$date": "2026-02-26T21:27:47.681Z"
   },
   "__v": 0,
   "posicion": "C6",
@@ -2550,7 +2550,7 @@
   "year": "2023",
   "origen": "Valle De Cafayate - Salta",
   "venta": "16000",
-  "cantidad": 9,
+  "cantidad": 8,
   "descripcion": "",
   "foto": "uploads\\foto-1753381602819-610523030-Helios - Malbec.jpg",
   "carritoCantidad": 1,
@@ -2558,7 +2558,7 @@
     "$date": "2024-09-27T18:37:52.686Z"
   },
   "updatedAt": {
-    "$date": "2026-01-23T19:07:15.896Z"
+    "$date": "2026-02-18T21:15:45.225Z"
   },
   "__v": 0,
   "carrito": false,
@@ -2885,7 +2885,7 @@
   "year": "2023",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "12500",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1768515764988-458333544-JOVEN CF.jpeg",
   "carritoCantidad": 1,
@@ -2893,7 +2893,7 @@
     "$date": "2024-09-27T19:22:13.612Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:36:16.932Z"
+    "$date": "2026-02-25T22:39:27.383Z"
   },
   "__v": 0,
   "carrito": false,
@@ -3137,7 +3137,7 @@
   "year": "2021",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "17000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1768515752051-71403675-SEL CF.jpeg",
   "carritoCantidad": 1,
@@ -3145,7 +3145,7 @@
     "$date": "2024-09-27T19:49:57.795Z"
   },
   "updatedAt": {
-    "$date": "2026-02-03T23:58:22.807Z"
+    "$date": "2026-02-13T23:53:59.532Z"
   },
   "__v": 0,
   "carrito": false,
@@ -3241,7 +3241,7 @@
   "year": "2020",
   "origen": "Tupungato",
   "venta": "60000",
-  "cantidad": 0,
+  "cantidad": 1,
   "descripcion": "Caja x 3",
   "foto": "",
   "carritoCantidad": 1,
@@ -3249,7 +3249,7 @@
     "$date": "2024-09-27T20:02:07.519Z"
   },
   "updatedAt": {
-    "$date": "2025-11-25T19:49:47.923Z"
+    "$date": "2026-02-25T19:10:50.122Z"
   },
   "__v": 0,
   "posicion": "F2"
@@ -3291,7 +3291,7 @@
   "year": "2021",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "17000",
-  "cantidad": 3,
+  "cantidad": 2,
   "descripcion": "",
   "foto": "uploads\\foto-1730765817706-34067560-IMG_0427-compressed.jpeg",
   "carritoCantidad": 1,
@@ -3299,7 +3299,7 @@
     "$date": "2024-09-27T20:16:52.743Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T19:20:26.029Z"
+    "$date": "2026-02-09T23:34:29.825Z"
   },
   "__v": 0,
   "posicion": "B3",
@@ -3421,7 +3421,7 @@
   "year": "2024",
   "origen": "Cachi - Salta",
   "venta": "19000",
-  "cantidad": 4,
+  "cantidad": 2,
   "descripcion": "",
   "foto": "uploads\\foto-1768515857522-229913704-PUNA M.jpeg",
   "carritoCantidad": 1,
@@ -3429,7 +3429,7 @@
     "$date": "2024-09-28T14:38:52.689Z"
   },
   "updatedAt": {
-    "$date": "2026-01-31T20:45:58.488Z"
+    "$date": "2026-02-12T18:04:42.530Z"
   },
   "__v": 0,
   "carrito": false,
@@ -3887,7 +3887,7 @@
   "year": "2024",
   "origen": "Rio Negro",
   "venta": "20000",
-  "cantidad": 4,
+  "cantidad": 3,
   "descripcion": "",
   "foto": "uploads\\foto-1768516345737-539014948-TRA.jpeg",
   "carritoCantidad": 1,
@@ -3895,7 +3895,7 @@
     "$date": "2024-09-28T16:17:17.872Z"
   },
   "updatedAt": {
-    "$date": "2026-01-15T22:32:25.740Z"
+    "$date": "2026-02-13T23:26:22.244Z"
   },
   "__v": 0,
   "favorito": false,
@@ -3913,7 +3913,7 @@
   "year": "2022",
   "origen": "San Rafael - Mendoza",
   "venta": "18000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "queda 1 17/11",
   "foto": "uploads\\foto-1738167728738-91526494-IMG_3708-compressed.jpeg",
   "carritoCantidad": 1,
@@ -3921,7 +3921,7 @@
     "$date": "2024-09-28T16:19:28.606Z"
   },
   "updatedAt": {
-    "$date": "2026-01-16T20:21:36.677Z"
+    "$date": "2026-02-20T23:00:17.593Z"
   },
   "__v": 0,
   "posicion": "F4",
@@ -4025,7 +4025,7 @@
     "$date": "2024-09-28T16:38:29.273Z"
   },
   "updatedAt": {
-    "$date": "2026-01-30T20:14:18.958Z"
+    "$date": "2026-02-20T22:34:05.793Z"
   },
   "__v": 0,
   "carrito": false,
@@ -4095,7 +4095,7 @@
   "year": "",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "14000",
-  "cantidad": 5,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1767653445733-431921345-ENHORA.jpeg",
   "carritoCantidad": 1,
@@ -4103,7 +4103,7 @@
     "$date": "2024-09-28T16:46:30.571Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T22:50:45.739Z"
+    "$date": "2026-02-23T23:19:53.641Z"
   },
   "__v": 0,
   "posicion": "G6",
@@ -4329,7 +4329,7 @@
   "year": "2021",
   "origen": "Valle De Uco",
   "venta": "14000",
-  "cantidad": 3,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1767653408700-92033900-MALB.jpeg",
   "carritoCantidad": 1,
@@ -4337,10 +4337,12 @@
     "$date": "2024-09-28T17:57:35.106Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T22:50:08.705Z"
+    "$date": "2026-02-19T20:56:32.385Z"
   },
   "__v": 0,
-  "posicion": "B4"
+  "posicion": "B4",
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -4353,7 +4355,7 @@
   "year": "2023",
   "origen": "Valle De Uco - Mendoza",
   "venta": "16000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1767653414945-435495097-CHARD.jpeg",
   "carritoCantidad": 1,
@@ -4361,7 +4363,7 @@
     "$date": "2024-09-28T18:01:07.069Z"
   },
   "updatedAt": {
-    "$date": "2026-01-22T20:19:12.773Z"
+    "$date": "2026-02-25T22:39:27.383Z"
   },
   "__v": 0,
   "carrito": false,
@@ -4898,7 +4900,7 @@
   "year": "",
   "origen": "",
   "venta": "14000",
-  "cantidad": 5,
+  "cantidad": 3,
   "descripcion": "",
   "foto": "uploads\\foto-1767475251041-349793564-WhatsApp Image 2026-01-03 at 18.18.50 (1).jpeg",
   "carritoCantidad": 1,
@@ -4906,7 +4908,7 @@
     "$date": "2024-09-28T21:37:16.588Z"
   },
   "updatedAt": {
-    "$date": "2026-01-31T20:45:58.488Z"
+    "$date": "2026-02-25T23:08:47.793Z"
   },
   "__v": 0,
   "carrito": false,
@@ -4924,7 +4926,7 @@
   "year": "2023",
   "origen": "Chubut",
   "venta": "45000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1767653578016-290012554-RINCON DE LOS LEONES SF.jpeg",
   "carritoCantidad": 1,
@@ -4932,7 +4934,7 @@
     "$date": "2024-09-28T22:22:30.555Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T22:52:58.018Z"
+    "$date": "2026-02-18T21:30:25.113Z"
   },
   "__v": 0,
   "carrito": false,
@@ -5626,7 +5628,7 @@
   "year": "2022",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "15000",
-  "cantidad": 12,
+  "cantidad": 9,
   "descripcion": "",
   "foto": "uploads\\foto-1759794838087-539290842-Furlotti - G.jpg",
   "carritoCantidad": 1,
@@ -5634,7 +5636,7 @@
     "$date": "2024-10-03T19:53:41.083Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:50:26.145Z"
+    "$date": "2026-02-28T22:54:10.663Z"
   },
   "__v": 0,
   "posicion": "G5",
@@ -5756,7 +5758,7 @@
   "year": "2022",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 11,
+  "cantidad": 8,
   "descripcion": "",
   "foto": "uploads\\foto-1768606501702-554548942-MALMOK2.jpeg",
   "carritoCantidad": 1,
@@ -5764,7 +5766,7 @@
     "$date": "2024-10-03T21:43:52.391Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T00:45:33.748Z"
+    "$date": "2026-02-28T00:12:20.288Z"
   },
   "__v": 0,
   "carrito": false,
@@ -5808,7 +5810,7 @@
   "year": "2018",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 9,
+  "cantidad": 6,
   "descripcion": "",
   "foto": "uploads\\foto-1767475553765-747479201-WhatsApp Image 2026-01-03 at 18.18.52.jpeg",
   "carritoCantidad": 1,
@@ -5816,7 +5818,7 @@
     "$date": "2024-10-03T21:57:33.447Z"
   },
   "updatedAt": {
-    "$date": "2026-01-08T19:58:40.047Z"
+    "$date": "2026-02-18T23:29:38.160Z"
   },
   "__v": 0,
   "posicion": "C5",
@@ -5964,7 +5966,7 @@
   "year": "2022",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 3,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1748457018547-457869050-malmok ancelotta.jpg",
   "carritoCantidad": 1,
@@ -5972,7 +5974,7 @@
     "$date": "2024-10-03T23:52:18.640Z"
   },
   "updatedAt": {
-    "$date": "2026-02-08T01:03:48.403Z"
+    "$date": "2026-02-18T21:15:45.225Z"
   },
   "__v": 0,
   "posicion": "D3",
@@ -6302,7 +6304,7 @@
   "year": "2022",
   "origen": "Tres PorteñAs - Mendoza",
   "venta": "16000",
-  "cantidad": 8,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1730763587049-971812251-IMG_0398-compressed.jpeg",
   "carritoCantidad": 1,
@@ -6310,7 +6312,7 @@
     "$date": "2024-10-04T21:26:45.886Z"
   },
   "updatedAt": {
-    "$date": "2026-01-02T23:40:47.541Z"
+    "$date": "2026-02-25T22:39:27.383Z"
   },
   "__v": 0,
   "carrito": false,
@@ -6328,7 +6330,7 @@
   "year": "2020",
   "origen": "Mendoza",
   "venta": "13000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1767475492810-111280198-Malmok_Malbec reserva.jpeg",
   "carritoCantidad": 1,
@@ -6336,7 +6338,7 @@
     "$date": "2024-10-05T13:39:15.686Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:59:57.607Z"
+    "$date": "2026-02-10T19:52:01.116Z"
   },
   "__v": 0,
   "carrito": false,
@@ -6380,7 +6382,7 @@
   "year": "2022",
   "origen": "Vista Flores - Mendoza ",
   "venta": "14500",
-  "cantidad": 4,
+  "cantidad": 3,
   "descripcion": "",
   "foto": "uploads\\foto-1767653528355-55508293-CAMINOS CDT.jpeg",
   "carritoCantidad": 1,
@@ -6388,7 +6390,7 @@
     "$date": "2024-10-05T14:36:44.321Z"
   },
   "updatedAt": {
-    "$date": "2026-02-03T22:43:50.041Z"
+    "$date": "2026-02-23T22:21:06.901Z"
   },
   "__v": 0,
   "posicion": "F6",
@@ -6406,7 +6408,7 @@
   "year": "2023",
   "origen": "Vista Flores - Mendoza ",
   "venta": "16000",
-  "cantidad": 15,
+  "cantidad": 14,
   "descripcion": "",
   "foto": "uploads\\foto-1750271935205-44264552-WhatsApp Image 2025-06-18 at 15.38.16.jpeg",
   "carritoCantidad": 1,
@@ -6414,7 +6416,7 @@
     "$date": "2024-10-05T14:39:25.814Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T21:12:21.923Z"
+    "$date": "2026-02-26T00:28:49.993Z"
   },
   "__v": 0,
   "carrito": false,
@@ -6536,7 +6538,7 @@
   "year": "2023",
   "origen": "Vista Flores - Mendoza ",
   "venta": "16000",
-  "cantidad": 6,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1767475671400-974195265-WhatsApp Image 2026-01-03 at 18.18.53.jpeg",
   "carritoCantidad": 1,
@@ -6544,7 +6546,7 @@
     "$date": "2024-10-05T19:41:05.096Z"
   },
   "updatedAt": {
-    "$date": "2026-01-10T23:28:03.530Z"
+    "$date": "2026-02-28T20:19:35.408Z"
   },
   "__v": 0,
   "carrito": false,
@@ -6897,7 +6899,7 @@
   "year": "2022",
   "origen": "Patagonia, Argentina",
   "venta": "14000",
-  "cantidad": 7,
+  "cantidad": 8,
   "descripcion": "",
   "foto": "uploads\\foto-1730765716017-190671216-IMG_0425-compressed.jpeg",
   "carritoCantidad": 1,
@@ -6905,7 +6907,7 @@
     "$date": "2024-10-09T17:48:09.509Z"
   },
   "updatedAt": {
-    "$date": "2025-11-25T18:43:50.335Z"
+    "$date": "2026-02-26T21:27:11.944Z"
   },
   "__v": 0,
   "posicion": "B4",
@@ -7130,15 +7132,15 @@
   "year": "",
   "origen": "Patagonia, Argentina",
   "venta": "17000",
-  "cantidad": 3,
+  "cantidad": 6,
   "descripcion": "",
   "foto": "uploads\\foto-1730848875455-506340194-IMG_0481-compressed.jpeg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2024-10-09T18:47:49.194Z"
   },
   "updatedAt": {
-    "$date": "2025-11-25T18:41:40.848Z"
+    "$date": "2026-02-26T21:26:47.427Z"
   },
   "__v": 0,
   "carrito": false,
@@ -7164,7 +7166,7 @@
     "$date": "2024-10-09T18:51:59.647Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T18:28:18.614Z"
+    "$date": "2026-02-13T23:50:17.908Z"
   },
   "__v": 0,
   "carrito": false,
@@ -7182,7 +7184,7 @@
   "year": "2024",
   "origen": "Tres PorteñAs - Mendoza",
   "venta": "11000",
-  "cantidad": 6,
+  "cantidad": 5,
   "descripcion": "",
   "foto": "uploads\\foto-1748537857600-271848183-mnpd malbec.jpg",
   "carritoCantidad": 1,
@@ -7190,7 +7192,7 @@
     "$date": "2024-10-09T19:10:14.314Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:10:34.809Z"
+    "$date": "2026-02-21T23:45:08.610Z"
   },
   "__v": 0,
   "carrito": false,
@@ -7208,7 +7210,7 @@
   "year": "2021",
   "origen": "Tres PorteñAs - Mendoza",
   "venta": "18000",
-  "cantidad": 3,
+  "cantidad": 2,
   "descripcion": "",
   "foto": "uploads\\foto-1730760270253-206842595-IMG_0341-compressed.jpeg",
   "carritoCantidad": 1,
@@ -7216,7 +7218,7 @@
     "$date": "2024-10-09T19:18:42.104Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T20:48:23.029Z"
+    "$date": "2026-02-13T23:50:37.357Z"
   },
   "__v": 0,
   "carrito": false,
@@ -7520,7 +7522,7 @@
   "year": "2022",
   "origen": "Mendoza",
   "venta": "28000",
-  "cantidad": 6,
+  "cantidad": 5,
   "descripcion": "El vino se elabora con cosecha manual, fermenta con pieles durante 10 días y luego pasa 9 meses en contenedores de concreto. Esta añada, acaso la mas compleja de los últimos 10 años, tiene menos amplitud en boca y en cuerpo, aromas de membrillo, pera y algo cítrico, y acidez media.",
   "foto": "uploads\\foto-1730848768771-815132577-IMG_0479-compressed.jpeg",
   "carritoCantidad": 1,
@@ -7528,10 +7530,12 @@
     "$date": "2024-10-09T20:31:19.860Z"
   },
   "updatedAt": {
-    "$date": "2025-06-27T21:31:13.475Z"
+    "$date": "2026-02-24T22:32:50.433Z"
   },
   "__v": 0,
-  "posicion": "I3"
+  "posicion": "I3",
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -7544,7 +7548,7 @@
   "year": "2023",
   "origen": "Valle De Uco - Mendoza",
   "venta": "36000",
-  "cantidad": 2,
+  "cantidad": 1,
   "descripcion": "Desde 2020 elaboramos este Tempranillo 100% racimo entero dentro de una ánfora de 500lt. Se busca una expresión de Tempranillo de granos pequeños que muestre agarre y textura dentro de un perfil de fruta fresca crujiente. El ánfora permite una transmisión de pureza en la expresión de la fruta.",
   "foto": "uploads\\foto-1767650399268-675107648-TEMPRA.jpeg",
   "carritoCantidad": 1,
@@ -7552,7 +7556,7 @@
     "$date": "2024-10-09T20:36:58.321Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T21:59:59.271Z"
+    "$date": "2026-02-26T21:33:59.070Z"
   },
   "__v": 0,
   "carrito": false,
@@ -7830,7 +7834,7 @@
   "year": "2023",
   "origen": "Cipolleti - Rio Negro",
   "venta": "13000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1767648232865-402053297-RIESLING.jpeg",
   "carritoCantidad": 1,
@@ -7838,7 +7842,7 @@
     "$date": "2024-10-12T14:26:04.025Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T21:23:52.917Z"
+    "$date": "2026-02-16T22:55:43.022Z"
   },
   "__v": 0,
   "carrito": false,
@@ -8415,7 +8419,7 @@
   "year": "2019",
   "origen": "Valle De Uco - Mendoza",
   "venta": "70000",
-  "cantidad": 3,
+  "cantidad": 2,
   "descripcion": "caja por 3 $180000",
   "foto": "uploads\\foto-1731006638770-571833304-IMG_0524-compressed.jpeg",
   "carritoCantidad": 1,
@@ -8423,10 +8427,12 @@
     "$date": "2024-10-15T19:11:47.373Z"
   },
   "updatedAt": {
-    "$date": "2025-11-22T14:12:21.997Z"
+    "$date": "2026-02-25T18:13:55.884Z"
   },
   "__v": 0,
-  "posicion": "E1"
+  "posicion": "E1",
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -8590,7 +8596,7 @@
   "year": "2020",
   "origen": "Vista Flores - Mendoza ",
   "venta": "45000",
-  "cantidad": 2,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1734477276501-456381095-IMG_2282-compressed.jpeg",
   "carritoCantidad": 1,
@@ -8598,7 +8604,7 @@
     "$date": "2024-10-15T20:01:12.174Z"
   },
   "updatedAt": {
-    "$date": "2026-01-21T02:37:22.562Z"
+    "$date": "2026-02-23T20:09:10.950Z"
   },
   "__v": 0,
   "posicion": "E2",
@@ -8720,7 +8726,7 @@
   "year": "",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 21,
+  "cantidad": 20,
   "descripcion": "",
   "foto": "uploads\\foto-1734392327191-913232635-IMG_2257-compressed.jpeg",
   "carritoCantidad": 1,
@@ -8728,7 +8734,7 @@
     "$date": "2024-10-15T23:23:24.523Z"
   },
   "updatedAt": {
-    "$date": "2026-01-24T21:12:27.935Z"
+    "$date": "2026-02-28T19:28:13.463Z"
   },
   "__v": 0,
   "carrito": false,
@@ -8772,7 +8778,7 @@
   "year": "2022",
   "origen": "Valle De Tulum",
   "venta": "15000",
-  "cantidad": 0,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1730843471717-299875129-IMG_0448-compressed.jpeg",
   "carritoCantidad": 1,
@@ -8780,7 +8786,7 @@
     "$date": "2024-10-16T22:32:42.423Z"
   },
   "updatedAt": {
-    "$date": "2025-12-24T14:40:26.378Z"
+    "$date": "2026-02-26T20:27:49.758Z"
   },
   "__v": 0,
   "carrito": false,
@@ -8850,7 +8856,7 @@
   "year": "",
   "origen": "Argentina",
   "venta": "38500",
-  "cantidad": 2,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1767648463096-212563398-CASIMIRO.jpeg",
   "carritoCantidad": 1,
@@ -8858,7 +8864,7 @@
     "$date": "2024-10-16T23:20:21.328Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T21:27:43.103Z"
+    "$date": "2026-02-21T23:45:08.610Z"
   },
   "__v": 0,
   "carrito": false,
@@ -9005,7 +9011,7 @@
   "year": "2023",
   "origen": "La Rioja",
   "venta": "12000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1730843638349-544344749-IMG_0452-compressed.jpeg",
   "carritoCantidad": 1,
@@ -9013,7 +9019,7 @@
     "$date": "2024-10-18T19:48:49.300Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T21:10:42.372Z"
+    "$date": "2026-03-01T00:58:34.747Z"
   },
   "__v": 0,
   "carrito": false,
@@ -9472,15 +9478,15 @@
   "year": "2024",
   "origen": "Tupungato - Mendoza",
   "venta": "10000",
-  "cantidad": 2,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1734389041262-157282565-IMG_2231-compressed.jpeg",
-  "carritoCantidad": 1,
+  "carritoCantidad": 2,
   "createdAt": {
     "$date": "2024-10-23T18:33:26.985Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:07:24.731Z"
+    "$date": "2026-02-10T23:37:14.835Z"
   },
   "__v": 0,
   "carrito": false,
@@ -9498,7 +9504,7 @@
   "year": "2024",
   "origen": "Tupungato - Mendoza",
   "venta": "13000",
-  "cantidad": 4,
+  "cantidad": 6,
   "descripcion": "",
   "foto": "uploads\\foto-1767475715238-496884974-WhatsApp Image 2026-01-03 at 18.18.54.jpeg",
   "carritoCantidad": 1,
@@ -9506,7 +9512,7 @@
     "$date": "2024-10-23T18:35:26.051Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:28:35.244Z"
+    "$date": "2026-02-26T23:18:15.464Z"
   },
   "__v": 0,
   "posicion": "C6",
@@ -9654,7 +9660,7 @@
   "year": "2025",
   "origen": "Tupungato - Mendoza",
   "venta": "12000",
-  "cantidad": 6,
+  "cantidad": 5,
   "descripcion": "",
   "foto": "uploads\\foto-1767475880608-967947817-WhatsApp Image 2026-01-03 at 18.18.56 (1).jpeg",
   "carritoCantidad": 1,
@@ -9662,7 +9668,7 @@
     "$date": "2024-10-23T19:06:05.526Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:31:20.615Z"
+    "$date": "2026-02-26T23:18:10.895Z"
   },
   "__v": 0,
   "carrito": false,
@@ -9963,7 +9969,7 @@
   "year": "2023",
   "origen": "Pedernal - San Juan ",
   "venta": "29000",
-  "cantidad": 2,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1730574182715-225913810-IMG_0017-compressed.jpeg",
   "carritoCantidad": 1,
@@ -9971,7 +9977,7 @@
     "$date": "2024-10-24T21:11:39.730Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T18:30:00.724Z"
+    "$date": "2026-02-26T21:06:58.737Z"
   },
   "__v": 0,
   "posicion": "",
@@ -9989,7 +9995,7 @@
   "year": "2025",
   "origen": "Valle De Pedernal - San Juan ",
   "venta": "14000",
-  "cantidad": 1,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1730843289748-500522855-IMG_0444-compressed.jpeg",
   "carritoCantidad": 1,
@@ -9997,7 +10003,7 @@
     "$date": "2024-10-24T21:25:05.072Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T20:51:12.709Z"
+    "$date": "2026-02-26T21:06:48.636Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10015,7 +10021,7 @@
   "year": "2023",
   "origen": "Pedernal - San Juan ",
   "venta": "14000",
-  "cantidad": 4,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "",
   "carritoCantidad": 1,
@@ -10023,7 +10029,7 @@
     "$date": "2024-10-24T21:31:07.918Z"
   },
   "updatedAt": {
-    "$date": "2026-01-25T01:42:36.692Z"
+    "$date": "2026-02-28T23:26:52.756Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10041,7 +10047,7 @@
   "year": "2023",
   "origen": "Pedernal - San Juan ",
   "venta": "35000",
-  "cantidad": 3,
+  "cantidad": 1,
   "descripcion": "",
   "foto": "uploads\\foto-1730761138350-938228590-IMG_0358-compressed.jpeg",
   "carritoCantidad": 1,
@@ -10049,7 +10055,7 @@
     "$date": "2024-10-25T20:52:38.935Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T18:30:00.724Z"
+    "$date": "2026-02-20T22:50:38.593Z"
   },
   "__v": 0,
   "posicion": "",
@@ -10067,7 +10073,7 @@
   "year": "2024",
   "origen": "Valle De Pedernal ",
   "venta": "21000",
-  "cantidad": 10,
+  "cantidad": 5,
   "descripcion": "",
   "foto": "uploads\\foto-1730574376810-699908043-IMG_0021-compressed.jpeg",
   "carritoCantidad": 1,
@@ -10075,7 +10081,7 @@
     "$date": "2024-10-25T20:56:10.512Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:36:16.932Z"
+    "$date": "2026-02-26T00:26:40.377Z"
   },
   "__v": 0,
   "posicion": "F4",
@@ -10119,7 +10125,7 @@
   "year": "",
   "origen": "Alto Valle De Rio Negro",
   "venta": "20000",
-  "cantidad": 6,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1734392405738-948247525-IMG_2259-compressed.jpeg",
   "carritoCantidad": 1,
@@ -10127,7 +10133,7 @@
     "$date": "2024-10-25T23:21:53.028Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T21:03:58.236Z"
+    "$date": "2026-02-20T22:38:06.178Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10197,7 +10203,7 @@
   "year": "2021",
   "origen": "Gualtallary - Mendoza",
   "venta": "66200",
-  "cantidad": 4,
+  "cantidad": 3,
   "descripcion": "",
   "foto": "uploads\\foto-1767475782489-965242895-WhatsApp Image 2026-01-03 at 18.18.57.jpeg",
   "carritoCantidad": 1,
@@ -10205,7 +10211,7 @@
     "$date": "2024-10-29T23:09:01.525Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:29:42.494Z"
+    "$date": "2026-02-25T19:12:25.364Z"
   },
   "__v": 0,
   "favorito": false,
@@ -10374,7 +10380,7 @@
   "year": "2024",
   "origen": "Punta Alta - Buenos Aires",
   "venta": "25000",
-  "cantidad": 8,
+  "cantidad": 6,
   "descripcion": "",
   "foto": "uploads\\foto-1762294518462-450612679-Imagen de WhatsApp 2025-11-04 a las 18.55.47_acc37b6f.jpg",
   "carritoCantidad": 1,
@@ -10382,7 +10388,7 @@
     "$date": "2024-11-02T23:38:29.247Z"
   },
   "updatedAt": {
-    "$date": "2026-01-14T17:45:51.060Z"
+    "$date": "2026-02-28T19:57:14.085Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10478,7 +10484,7 @@
   "year": "2024",
   "origen": "Punta Alta - Buenos Aires",
   "venta": "28000",
-  "cantidad": 8,
+  "cantidad": 7,
   "descripcion": "",
   "foto": "uploads\\foto-1762294392376-566407621-Imagen de WhatsApp 2025-11-04 a las 18.55.47_e8e72c5a.jpg",
   "carritoCantidad": 1,
@@ -10486,7 +10492,7 @@
     "$date": "2024-11-03T00:00:22.922Z"
   },
   "updatedAt": {
-    "$date": "2026-01-09T21:50:11.845Z"
+    "$date": "2026-02-27T00:45:00.520Z"
   },
   "__v": 0,
   "posicion": "H4 Y J3",
@@ -10660,15 +10666,15 @@
   "year": "2020",
   "origen": "Valle De Uco - Mendoza",
   "venta": "37000",
-  "cantidad": 1,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1730749328087-381779997-IMG_0282-compressed.jpeg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2024-11-04T19:39:49.115Z"
   },
   "updatedAt": {
-    "$date": "2025-11-25T15:04:43.965Z"
+    "$date": "2026-02-24T23:16:15.117Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10686,15 +10692,15 @@
   "year": "2019",
   "origen": "Valle De Uco - Mendoza",
   "venta": "34000",
-  "cantidad": 5,
+  "cantidad": 4,
   "descripcion": "",
   "foto": "uploads\\foto-1747683478418-14901457-gran opalo.jpg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2024-11-04T19:43:59.355Z"
   },
   "updatedAt": {
-    "$date": "2025-11-28T20:22:38.707Z"
+    "$date": "2026-02-10T20:44:41.347Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10840,7 +10846,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "15000",
-  "cantidad": 2,
+  "cantidad": 0,
   "descripcion": "",
   "foto": "uploads\\foto-1738684115908-664168904-IMG_3859-compressed.jpeg",
   "carritoCantidad": 1,
@@ -10848,7 +10854,7 @@
     "$date": "2024-11-07T23:07:05.672Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T23:14:01.344Z"
+    "$date": "2026-02-14T22:33:55.794Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10866,7 +10872,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 8,
+  "cantidad": 9,
   "descripcion": "",
   "foto": "uploads\\foto-1746489170522-961374036-dharma CF.jpg",
   "carritoCantidad": 1,
@@ -10874,7 +10880,7 @@
     "$date": "2024-11-08T20:28:33.086Z"
   },
   "updatedAt": {
-    "$date": "2026-02-03T00:03:49.615Z"
+    "$date": "2026-02-28T20:53:16.576Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10892,7 +10898,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "12000",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "C3",
   "descripcion": "",
   "foto": "uploads\\foto-1746489154566-282322473-dharma CF.jpg",
@@ -10901,7 +10907,7 @@
     "$date": "2024-11-12T18:48:53.600Z"
   },
   "updatedAt": {
-    "$date": "2026-01-26T17:25:13.522Z"
+    "$date": "2026-02-26T21:21:24.486Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10918,7 +10924,7 @@
   "year": "2023",
   "origen": "Gualtallary - Mendoza",
   "venta": "15000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "H1 Y K6",
   "descripcion": "",
   "foto": "uploads\\foto-1736015118864-289476531-IMG_2850-compressed.jpeg",
@@ -10927,7 +10933,7 @@
     "$date": "2024-11-12T18:53:08.115Z"
   },
   "updatedAt": {
-    "$date": "2026-01-08T21:05:52.317Z"
+    "$date": "2026-02-11T20:14:30.443Z"
   },
   "__v": 0,
   "carrito": false,
@@ -10970,7 +10976,7 @@
   "year": "2024",
   "origen": "La Rioja",
   "venta": "9000",
-  "cantidad": 10,
+  "cantidad": 9,
   "posicion": "BARRICA",
   "descripcion": "",
   "foto": "uploads\\foto-1767648264791-179040653-LA PUERTA S.jpeg",
@@ -10979,7 +10985,7 @@
     "$date": "2024-11-13T20:43:22.392Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T21:24:24.796Z"
+    "$date": "2026-02-20T18:36:31.579Z"
   },
   "__v": 0,
   "carrito": false,
@@ -11256,7 +11262,7 @@
   "year": "2022",
   "origen": "La Rioja",
   "venta": "10000",
-  "cantidad": 4,
+  "cantidad": 2,
   "posicion": "A1",
   "descripcion": "",
   "foto": "uploads\\foto-1767648280993-711822020-LA PUERTA B.jpeg",
@@ -11265,7 +11271,7 @@
     "$date": "2024-11-13T21:43:01.431Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T20:42:01.951Z"
+    "$date": "2026-02-20T18:37:15.666Z"
   },
   "__v": 0,
   "carrito": false,
@@ -11308,7 +11314,7 @@
   "year": "2023",
   "origen": "La Rioja",
   "venta": "9000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "Barrica",
   "descripcion": "",
   "foto": "uploads\\foto-1767648256988-239777446-LA PUERTA CS.jpeg",
@@ -11317,7 +11323,7 @@
     "$date": "2024-11-13T21:51:57.224Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T21:24:16.994Z"
+    "$date": "2026-02-26T00:28:25.509Z"
   },
   "__v": 0,
   "carrito": false,
@@ -11542,7 +11548,7 @@
   "year": "2022",
   "origen": "Patagonia, Argentina",
   "venta": "56200",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "G2",
   "descripcion": "Biodinamico",
   "foto": "uploads\\foto-1736013832633-388637288-IMG_2821-compressed.jpeg",
@@ -11551,7 +11557,7 @@
     "$date": "2024-11-14T00:22:05.754Z"
   },
   "updatedAt": {
-    "$date": "2025-11-24T14:11:06.187Z"
+    "$date": "2026-02-25T19:13:22.011Z"
   },
   "__v": 0,
   "carrito": false,
@@ -11854,7 +11860,7 @@
   "year": "",
   "origen": "La Rioja",
   "venta": "15000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "Vidriera y cajas",
   "descripcion": "",
   "foto": "uploads\\foto-1734479262021-356221796-IMG_2304-compressed.jpeg",
@@ -11863,7 +11869,7 @@
     "$date": "2024-11-20T22:40:11.653Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T02:46:05.449Z"
+    "$date": "2026-02-13T19:01:04.644Z"
   },
   "__v": 0,
   "carrito": false,
@@ -11905,17 +11911,17 @@
   "nombre": "Copa de vino",
   "year": "",
   "origen": "",
-  "venta": "6500",
-  "cantidad": 91,
+  "venta": "4000",
+  "cantidad": 89,
   "posicion": "",
   "descripcion": "",
   "foto": "",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2024-11-26T22:55:45.396Z"
   },
   "updatedAt": {
-    "$date": "2026-01-16T19:18:14.552Z"
+    "$date": "2026-02-22T00:08:02.630Z"
   },
   "__v": 0,
   "carrito": false,
@@ -11958,7 +11964,7 @@
   "year": "2023",
   "origen": "San Rafael - Mendoza",
   "venta": "14000",
-  "cantidad": 2,
+  "cantidad": 0,
   "posicion": "G3",
   "descripcion": "",
   "foto": "uploads\\foto-1734391500650-342646475-IMG_2249-compressed.jpeg",
@@ -11967,7 +11973,7 @@
     "$date": "2024-12-02T18:37:10.041Z"
   },
   "updatedAt": {
-    "$date": "2026-01-30T20:10:55.994Z"
+    "$date": "2026-02-27T23:45:00.962Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12010,7 +12016,7 @@
   "year": "2023",
   "origen": "San Rafael - Mendoza",
   "venta": "18000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "F4",
   "descripcion": "",
   "foto": "uploads\\foto-1734391995780-51861195-IMG_2251-compressed.jpeg",
@@ -12019,7 +12025,7 @@
     "$date": "2024-12-02T18:44:54.137Z"
   },
   "updatedAt": {
-    "$date": "2026-02-03T22:55:12.660Z"
+    "$date": "2026-02-28T22:12:13.954Z"
   },
   "__v": 0,
   "favorito": false,
@@ -12062,7 +12068,7 @@
   "year": "",
   "origen": "Patagonia, Argentina",
   "venta": "12000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "Barrica",
   "descripcion": "",
   "foto": "uploads\\foto-1767475994196-727379292-WhatsApp Image 2026-01-03 at 18.18.58.jpeg",
@@ -12071,7 +12077,7 @@
     "$date": "2024-12-03T18:35:46.398Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:33:14.199Z"
+    "$date": "2026-02-21T23:45:08.610Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12296,7 +12302,7 @@
   "year": "2024",
   "origen": "Cachi - Salta",
   "venta": "15000",
-  "cantidad": 3,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1736012899263-868822560-IMG_2810-compressed.jpeg",
@@ -12305,7 +12311,7 @@
     "$date": "2024-12-19T20:10:56.592Z"
   },
   "updatedAt": {
-    "$date": "2026-01-22T20:35:20.326Z"
+    "$date": "2026-02-25T18:13:55.884Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12426,7 +12432,7 @@
   "year": "2022",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "22000",
-  "cantidad": 2,
+  "cantidad": 0,
   "posicion": "D3",
   "descripcion": "",
   "foto": "uploads\\foto-1736261626183-761268148-IMG_2941-compressed.jpeg",
@@ -12435,7 +12441,7 @@
     "$date": "2025-01-07T14:32:36.169Z"
   },
   "updatedAt": {
-    "$date": "2026-01-30T01:35:23.723Z"
+    "$date": "2026-02-20T18:15:43.417Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12478,7 +12484,7 @@
   "year": "2024",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "20000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "D4 Y J4",
   "descripcion": "",
   "foto": "uploads\\foto-1736261591483-280411552-IMG_2939-compressed.jpeg",
@@ -12487,7 +12493,7 @@
     "$date": "2025-01-07T14:39:23.272Z"
   },
   "updatedAt": {
-    "$date": "2026-02-04T20:20:53.130Z"
+    "$date": "2026-02-26T20:11:54.181Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12660,7 +12666,7 @@
   "year": "2023",
   "origen": "Valle De Uco - Mendoza",
   "venta": "13000",
-  "cantidad": 4,
+  "cantidad": 0,
   "posicion": "F3",
   "descripcion": "",
   "foto": "uploads\\foto-1736786899796-129512091-IMG_3092-compressed.jpeg",
@@ -12669,7 +12675,7 @@
     "$date": "2025-01-13T16:35:42.471Z"
   },
   "updatedAt": {
-    "$date": "2025-12-23T17:42:40.110Z"
+    "$date": "2026-02-28T20:19:35.408Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12695,7 +12701,7 @@
     "$date": "2025-01-13T16:36:20.799Z"
   },
   "updatedAt": {
-    "$date": "2026-01-24T23:17:42.365Z"
+    "$date": "2026-02-20T18:37:16.343Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12841,17 +12847,17 @@
   "nombre": "Xumek",
   "year": "2022",
   "origen": "Valle de Zonda, San juan",
-  "venta": "17000",
-  "cantidad": 1,
+  "venta": "14000",
+  "cantidad": 0,
   "posicion": "G3",
   "descripcion": "",
   "foto": "uploads\\foto-1737212345349-342480659-IMG_3222-compressed.jpeg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-01-18T13:52:44.386Z"
   },
   "updatedAt": {
-    "$date": "2026-01-02T22:37:58.893Z"
+    "$date": "2026-02-11T21:49:38.858Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12868,7 +12874,7 @@
   "year": "",
   "origen": "Valle de Tulum, San juan",
   "venta": "15000",
-  "cantidad": 2,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1737212327208-43968273-IMG_3223-compressed.jpeg",
@@ -12877,7 +12883,7 @@
     "$date": "2025-01-18T14:05:14.715Z"
   },
   "updatedAt": {
-    "$date": "2026-01-02T23:09:18.739Z"
+    "$date": "2026-02-26T20:27:30.534Z"
   },
   "__v": 0,
   "carrito": false,
@@ -12894,7 +12900,7 @@
   "year": "2022",
   "origen": "Mendoza",
   "venta": "13000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1737212307262-121282568-IMG_3224-compressed.jpeg",
@@ -12903,7 +12909,7 @@
     "$date": "2025-01-18T14:11:36.948Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:42:54.357Z"
+    "$date": "2026-02-28T23:49:05.262Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13024,7 +13030,7 @@
   "year": "2023",
   "origen": "Valle de Tulum, San juan",
   "venta": "15000",
-  "cantidad": 2,
+  "cantidad": 4,
   "posicion": "G3",
   "descripcion": "",
   "foto": "uploads\\foto-1737212215893-281195212-IMG_3218-compressed.jpeg",
@@ -13033,7 +13039,7 @@
     "$date": "2025-01-18T14:43:38.491Z"
   },
   "updatedAt": {
-    "$date": "2025-12-31T18:28:28.265Z"
+    "$date": "2026-02-26T20:27:41.754Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13102,16 +13108,16 @@
   "year": "2024",
   "origen": "Maipú, Mendoza",
   "venta": "22000",
-  "cantidad": 9,
+  "cantidad": 8,
   "posicion": "G1",
   "descripcion": "",
   "foto": "uploads\\foto-1737380426788-119865019-IMG_3275-compressed.jpeg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-01-20T13:38:55.202Z"
   },
   "updatedAt": {
-    "$date": "2025-12-29T19:02:03.066Z"
+    "$date": "2026-02-20T19:50:49.278Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13258,16 +13264,16 @@
   "year": "2020",
   "origen": "San Rafael - Mendoza",
   "venta": "9000",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "G4",
   "descripcion": "",
   "foto": "uploads\\foto-1738012750972-935525268-IMG_3629-compressed.jpeg",
-  "carritoCantidad": 1,
+  "carritoCantidad": 2,
   "createdAt": {
     "$date": "2025-01-27T21:10:31.246Z"
   },
   "updatedAt": {
-    "$date": "2025-11-29T01:30:35.124Z"
+    "$date": "2026-02-14T20:03:10.401Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13284,16 +13290,16 @@
   "year": "2024",
   "origen": "Monte Hermoso",
   "venta": "5500",
-  "cantidad": 3,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1738019314660-798784373-IMG_3645-compressed.jpeg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-01-27T21:26:10.419Z"
   },
   "updatedAt": {
-    "$date": "2025-12-15T19:05:47.749Z"
+    "$date": "2026-02-21T22:25:48.370Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13362,7 +13368,7 @@
   "year": "2024",
   "origen": "Mendoza",
   "venta": "18000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1738018814977-26726166-IMG_3636-compressed.jpeg",
@@ -13371,7 +13377,7 @@
     "$date": "2025-01-27T22:15:02.276Z"
   },
   "updatedAt": {
-    "$date": "2025-03-06T20:51:07.743Z"
+    "$date": "2026-02-26T22:54:33.278Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13423,7 +13429,7 @@
     "$date": "2025-01-28T21:50:21.475Z"
   },
   "updatedAt": {
-    "$date": "2025-11-29T21:55:26.514Z"
+    "$date": "2026-02-20T21:44:39.602Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13465,17 +13471,17 @@
   "nombre": "Finca Iral",
   "year": "2023",
   "origen": "Mendoza",
-  "venta": "10000",
-  "cantidad": 0,
+  "venta": "17000",
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
-  "foto": "uploads\\foto-1738102427036-523948790-IMG_3673-compressed.jpeg",
-  "carritoCantidad": 2,
+  "foto": "uploads\\foto-1772223299621-497712663-4.jpeg",
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-01-28T21:59:25.349Z"
   },
   "updatedAt": {
-    "$date": "2025-07-26T01:37:19.958Z"
+    "$date": "2026-02-28T00:54:51.125Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13804,7 +13810,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "12000",
-  "cantidad": 4,
+  "cantidad": 6,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1738593349402-154903095-IMG_3819-compressed.jpeg",
@@ -13813,7 +13819,7 @@
     "$date": "2025-01-31T16:36:27.199Z"
   },
   "updatedAt": {
-    "$date": "2026-01-24T20:59:29.708Z"
+    "$date": "2026-02-26T20:25:56.998Z"
   },
   "__v": 0,
   "carrito": false,
@@ -13882,7 +13888,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "13000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "H5",
   "descripcion": "",
   "foto": "uploads\\foto-1738592602581-95436005-IMG_3814-compressed.jpeg",
@@ -13891,7 +13897,7 @@
     "$date": "2025-02-01T13:42:46.547Z"
   },
   "updatedAt": {
-    "$date": "2026-02-04T20:47:13.118Z"
+    "$date": "2026-02-10T00:18:28.560Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14167,7 +14173,7 @@
   "year": "2024",
   "origen": "Mendoza",
   "venta": "19000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "H3",
   "descripcion": "",
   "foto": "uploads\\foto-1738684097594-493952241-IMG_3858-compressed.jpeg",
@@ -14176,7 +14182,7 @@
     "$date": "2025-02-04T15:37:01.940Z"
   },
   "updatedAt": {
-    "$date": "2026-01-25T01:41:06.608Z"
+    "$date": "2026-02-25T22:39:27.383Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14193,7 +14199,7 @@
   "year": "2024",
   "origen": "Mendoza",
   "venta": "15000",
-  "cantidad": 8,
+  "cantidad": 0,
   "posicion": "F4",
   "descripcion": "",
   "foto": "uploads\\foto-1738684086829-391549339-IMG_3860-compressed.jpeg",
@@ -14202,7 +14208,7 @@
     "$date": "2025-02-04T15:39:59.308Z"
   },
   "updatedAt": {
-    "$date": "2026-01-31T20:11:40.061Z"
+    "$date": "2026-02-28T20:42:17.569Z"
   },
   "__v": 0,
   "favorito": false,
@@ -14271,7 +14277,7 @@
   "year": "2024",
   "origen": "Maipú, Mendoza",
   "venta": "15000",
-  "cantidad": 3,
+  "cantidad": 2,
   "posicion": "G3",
   "descripcion": "",
   "foto": "uploads\\foto-1738966386301-348048535-IMG_3926-compressed.jpeg",
@@ -14280,7 +14286,7 @@
     "$date": "2025-02-07T22:07:00.360Z"
   },
   "updatedAt": {
-    "$date": "2025-12-11T20:43:29.460Z"
+    "$date": "2026-02-17T23:14:54.515Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14453,7 +14459,7 @@
   "year": "",
   "origen": "San Juan",
   "venta": "18000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "A6",
   "descripcion": "",
   "foto": "uploads\\foto-1746027851355-581493315-xumek malbec tardio.jpg",
@@ -14462,7 +14468,7 @@
     "$date": "2025-03-14T20:48:57.129Z"
   },
   "updatedAt": {
-    "$date": "2025-11-13T22:49:20.416Z"
+    "$date": "2026-02-18T21:30:25.113Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14479,7 +14485,7 @@
   "year": "2022",
   "origen": "San Juan",
   "venta": "16000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "I5",
   "descripcion": "",
   "foto": "uploads\\foto-1746027271385-784712359-fincas camunas pinot griogio.jpg",
@@ -14488,7 +14494,7 @@
     "$date": "2025-03-14T20:51:50.497Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T18:01:29.300Z"
+    "$date": "2026-02-26T20:57:17.961Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14661,7 +14667,7 @@
   "year": "2024",
   "origen": "San Juan",
   "venta": "21000",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1746026743396-649052187-un elefante en un bazar naranjo.jpg",
@@ -14670,7 +14676,7 @@
     "$date": "2025-03-28T21:54:34.110Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T23:02:25.359Z"
+    "$date": "2026-02-17T21:18:31.183Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14687,7 +14693,7 @@
   "year": "2024",
   "origen": "San Juan",
   "venta": "14000",
-  "cantidad": 2,
+  "cantidad": 0,
   "posicion": "k2",
   "descripcion": "",
   "foto": "uploads\\foto-1745883802969-378969484-elefante wine malbec de garage.jpg",
@@ -14696,7 +14702,7 @@
     "$date": "2025-03-28T22:11:40.300Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:59:57.607Z"
+    "$date": "2026-02-18T23:29:38.160Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14765,7 +14771,7 @@
   "year": "2023",
   "origen": "Valle del pedernal - San juan ",
   "venta": "17000",
-  "cantidad": 1,
+  "cantidad": 2,
   "posicion": "k2",
   "descripcion": "",
   "foto": "uploads\\foto-1745963263310-832018233-elefante malbec de grg.jpg",
@@ -14774,7 +14780,7 @@
     "$date": "2025-04-02T20:47:37.198Z"
   },
   "updatedAt": {
-    "$date": "2026-02-04T20:52:12.153Z"
+    "$date": "2026-02-26T21:09:04.028Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14843,7 +14849,7 @@
   "year": "2022",
   "origen": "Luján De Cuyo - Mendoza",
   "venta": "17500",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "H3",
   "descripcion": "",
   "foto": "uploads\\foto-1745883389060-90732834-la mala naranjo.jpg",
@@ -14852,7 +14858,7 @@
     "$date": "2025-04-04T20:52:11.901Z"
   },
   "updatedAt": {
-    "$date": "2025-12-15T17:30:08.676Z"
+    "$date": "2026-02-26T21:19:04.727Z"
   },
   "__v": 0,
   "carrito": false,
@@ -14895,7 +14901,7 @@
   "year": "2023",
   "origen": "Cafayate - Salta",
   "venta": "16000",
-  "cantidad": 7,
+  "cantidad": 6,
   "posicion": "A2",
   "descripcion": "",
   "foto": "uploads\\foto-1745883277600-574289733-hellio c.jpg",
@@ -14904,7 +14910,7 @@
     "$date": "2025-04-04T21:06:13.881Z"
   },
   "updatedAt": {
-    "$date": "2026-01-23T19:07:15.896Z"
+    "$date": "2026-02-18T23:29:38.160Z"
   },
   "__v": 0,
   "carrito": false,
@@ -15077,7 +15083,7 @@
   "year": "",
   "origen": "Mendoza",
   "venta": "13000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "F4",
   "descripcion": "",
   "foto": "uploads\\foto-1745879090658-753689207-biondi criolla especial.jpg",
@@ -15086,7 +15092,7 @@
     "$date": "2025-04-15T17:26:05.655Z"
   },
   "updatedAt": {
-    "$date": "2026-01-02T23:09:18.739Z"
+    "$date": "2026-02-22T00:10:03.538Z"
   },
   "__v": 0,
   "carrito": false,
@@ -15207,7 +15213,7 @@
   "year": "2025",
   "origen": "San Juan",
   "venta": "17000",
-  "cantidad": 6,
+  "cantidad": 1,
   "posicion": "F3",
   "descripcion": "",
   "foto": "uploads\\foto-1745880152970-981942750-acto divino chenin blanc.jpg",
@@ -15216,7 +15222,7 @@
     "$date": "2025-04-15T20:37:56.331Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T20:10:07.600Z"
+    "$date": "2026-02-20T19:47:56.365Z"
   },
   "__v": 0,
   "carrito": false,
@@ -15387,7 +15393,7 @@
   "year": "",
   "origen": "Valle De Uco - Mendoza",
   "venta": "16000",
-  "cantidad": 4,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1745879433013-688438303-flia zaina cf merlot.jpg",
@@ -15396,7 +15402,7 @@
     "$date": "2025-04-16T20:22:43.642Z"
   },
   "updatedAt": {
-    "$date": "2025-11-28T20:26:23.043Z"
+    "$date": "2026-02-21T21:49:23.773Z"
   },
   "__v": 0,
   "carrito": false,
@@ -15673,7 +15679,7 @@
   "year": "2024",
   "origen": "Del Chañar, Neuquen",
   "venta": "24000",
-  "cantidad": 3,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1745877017791-183875048-kriptos pn natural.jpg",
@@ -15682,7 +15688,7 @@
     "$date": "2025-04-23T20:22:53.957Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T20:10:07.600Z"
+    "$date": "2026-02-27T22:27:22.883Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16089,7 +16095,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "22000",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1745875174011-183392013-Hermanas Galvez 2023.jpg",
@@ -16098,7 +16104,7 @@
     "$date": "2025-04-25T18:54:25.551Z"
   },
   "updatedAt": {
-    "$date": "2025-11-28T22:20:20.481Z"
+    "$date": "2026-02-25T18:13:55.884Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16141,7 +16147,7 @@
   "year": "2024",
   "origen": "Mendoza",
   "venta": "12000",
-  "cantidad": 2,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1745874996975-665580998-kamala rose.jpg",
@@ -16150,7 +16156,7 @@
     "$date": "2025-04-25T20:28:17.695Z"
   },
   "updatedAt": {
-    "$date": "2026-01-30T00:35:22.675Z"
+    "$date": "2026-02-26T21:20:17.062Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16167,7 +16173,7 @@
   "year": "2023",
   "origen": "San Juan",
   "venta": "15000",
-  "cantidad": 3,
+  "cantidad": 2,
   "posicion": "i5",
   "descripcion": "",
   "foto": "uploads\\foto-1745962543939-767486420-Imagen de WhatsApp 2025-04-29 a las 18.25.20_c9b163b7.jpg",
@@ -16176,7 +16182,7 @@
     "$date": "2025-04-29T16:39:35.213Z"
   },
   "updatedAt": {
-    "$date": "2026-02-03T19:47:21.912Z"
+    "$date": "2026-02-21T20:37:20.483Z"
   },
   "__v": 0,
   "favorito": false,
@@ -16297,7 +16303,7 @@
   "year": "2021",
   "origen": "San Juan",
   "venta": "14000",
-  "cantidad": 0,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767476170068-684486620-WhatsApp Image 2026-01-03 at 18.19.00.jpeg",
@@ -16306,7 +16312,7 @@
     "$date": "2025-05-09T20:39:06.665Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:36:10.076Z"
+    "$date": "2026-02-26T20:26:30.941Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16323,7 +16329,7 @@
   "year": "",
   "origen": "Bs As",
   "venta": "5500",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1747248398620-14235751-ceveza APA.jpg",
@@ -16332,7 +16338,7 @@
     "$date": "2025-05-14T18:46:38.628Z"
   },
   "updatedAt": {
-    "$date": "2025-12-12T00:01:36.255Z"
+    "$date": "2026-02-18T22:20:19.660Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16349,7 +16355,7 @@
   "year": "",
   "origen": "Bs As",
   "venta": "5500",
-  "cantidad": 5,
+  "cantidad": 4,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1747248793221-973082944-cerveza session neipa.jpg",
@@ -16358,7 +16364,7 @@
     "$date": "2025-05-14T18:53:13.224Z"
   },
   "updatedAt": {
-    "$date": "2026-02-05T22:04:35.026Z"
+    "$date": "2026-02-19T19:54:52.148Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16375,16 +16381,16 @@
   "year": "",
   "origen": "Bs As",
   "venta": "5500",
-  "cantidad": 6,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1747248935810-90450744-cerveza capricho.jpg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 3,
   "createdAt": {
     "$date": "2025-05-14T18:55:35.820Z"
   },
   "updatedAt": {
-    "$date": "2025-12-10T20:57:04.408Z"
+    "$date": "2026-02-28T00:38:57.571Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16401,7 +16407,7 @@
   "year": "",
   "origen": "Bs As",
   "venta": "5500",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1747249089121-482340964-cerveza frenesi.jpg",
@@ -16410,7 +16416,7 @@
     "$date": "2025-05-14T18:58:09.125Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T22:11:58.024Z"
+    "$date": "2026-02-20T22:09:38.360Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16427,7 +16433,7 @@
   "year": "",
   "origen": "Bs As",
   "venta": "5500",
-  "cantidad": 2,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1747249214292-505637995-cerveza imbatible.jpg",
@@ -16436,7 +16442,7 @@
     "$date": "2025-05-14T19:00:14.294Z"
   },
   "updatedAt": {
-    "$date": "2026-02-05T22:04:35.026Z"
+    "$date": "2026-02-26T20:11:54.181Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16453,16 +16459,16 @@
   "year": "",
   "origen": "Bs As",
   "venta": "5500",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1747249347981-249468339-cerveza galante.jpg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-05-14T19:02:27.984Z"
   },
   "updatedAt": {
-    "$date": "2025-12-10T20:56:51.164Z"
+    "$date": "2026-02-26T20:11:54.181Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16531,7 +16537,7 @@
   "year": "",
   "origen": "Buenos Aires",
   "venta": "18000",
-  "cantidad": 5,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767476024792-687000651-WhatsApp Image 2026-01-03 at 18.19.00 (1).jpeg",
@@ -16540,7 +16546,7 @@
     "$date": "2025-05-15T17:20:55.813Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:36:16.932Z"
+    "$date": "2026-02-24T23:03:36.675Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16557,7 +16563,7 @@
   "year": "",
   "origen": "Buenos Aires",
   "venta": "18000",
-  "cantidad": 8,
+  "cantidad": 7,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767476030797-624167867-WhatsApp Image 2026-01-03 at 18.19.00 (2).jpeg",
@@ -16566,7 +16572,7 @@
     "$date": "2025-05-15T17:21:18.244Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T21:33:50.802Z"
+    "$date": "2026-02-12T20:20:03.583Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16841,7 +16847,7 @@
   "year": "2022",
   "origen": "Mendoza",
   "venta": "18000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "F6",
   "descripcion": "",
   "foto": "uploads\\foto-1747865070778-43294529-martino marselan.jpg",
@@ -16850,7 +16856,7 @@
     "$date": "2025-05-21T22:04:30.780Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T23:05:53.326Z"
+    "$date": "2026-02-11T21:49:38.858Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16867,7 +16873,7 @@
   "year": "2020",
   "origen": "Mendoza",
   "venta": "30000",
-  "cantidad": 3,
+  "cantidad": 2,
   "posicion": "G3",
   "descripcion": "",
   "foto": "uploads\\foto-1747872219591-625861041-banno 18 meses.jpg",
@@ -16876,7 +16882,7 @@
     "$date": "2025-05-22T00:03:39.595Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T20:55:31.840Z"
+    "$date": "2026-02-20T22:50:38.593Z"
   },
   "__v": 0,
   "carrito": false,
@@ -16893,7 +16899,7 @@
   "year": "2022",
   "origen": "Mendoza",
   "venta": "24000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "G3",
   "descripcion": "",
   "foto": "uploads\\foto-1747944972974-536624727-banno 12 meses.jpg",
@@ -16902,7 +16908,7 @@
     "$date": "2025-05-22T16:44:55.089Z"
   },
   "updatedAt": {
-    "$date": "2026-01-29T20:26:39.821Z"
+    "$date": "2026-02-20T22:50:38.593Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17335,7 +17341,7 @@
   "year": "",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 0,
+  "cantidad": -1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1748461078452-167703684-ay pascuala rose.jpg",
@@ -17344,7 +17350,7 @@
     "$date": "2025-05-28T19:37:58.462Z"
   },
   "updatedAt": {
-    "$date": "2025-11-24T13:10:47.391Z"
+    "$date": "2026-02-28T21:33:48.328Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17543,7 +17549,7 @@
   "year": "2024",
   "origen": "Valle De Uco - Mendoza",
   "venta": "14000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1748539715535-379943659-palo santo sb.jpg",
@@ -17552,7 +17558,7 @@
     "$date": "2025-05-29T17:28:35.543Z"
   },
   "updatedAt": {
-    "$date": "2025-12-12T22:46:48.370Z"
+    "$date": "2026-02-24T18:25:57.839Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17699,7 +17705,7 @@
   "year": "2021",
   "origen": "Mendoza",
   "venta": "20000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "B2",
   "descripcion": "",
   "foto": "uploads\\foto-1754590804228-558787109-Ojo de Tigre - Malbec R.jpg",
@@ -17708,7 +17714,7 @@
     "$date": "2025-06-05T18:43:44.834Z"
   },
   "updatedAt": {
-    "$date": "2026-02-03T23:52:05.318Z"
+    "$date": "2026-02-12T20:27:01.082Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17751,7 +17757,7 @@
   "year": "2019",
   "origen": "San Juan",
   "venta": "44000",
-  "cantidad": 5,
+  "cantidad": 4,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1749483114649-139458764-aida.jpg",
@@ -17760,7 +17766,7 @@
     "$date": "2025-06-09T15:31:54.652Z"
   },
   "updatedAt": {
-    "$date": "2025-12-29T19:02:03.066Z"
+    "$date": "2026-02-25T17:24:33.238Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17838,7 +17844,7 @@
     "$date": "2025-06-10T17:26:07.330Z"
   },
   "updatedAt": {
-    "$date": "2026-02-08T01:03:48.403Z"
+    "$date": "2026-02-20T18:36:34.763Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17916,7 +17922,7 @@
     "$date": "2025-06-10T19:38:09.610Z"
   },
   "updatedAt": {
-    "$date": "2025-12-18T20:07:15.283Z"
+    "$date": "2026-02-20T22:08:05.129Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17959,7 +17965,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "12000",
-  "cantidad": 8,
+  "cantidad": 7,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1749656467769-68549181-maldita santa malbec.jpg",
@@ -17968,7 +17974,7 @@
     "$date": "2025-06-11T15:41:07.773Z"
   },
   "updatedAt": {
-    "$date": "2026-01-08T23:02:55.518Z"
+    "$date": "2026-02-19T19:00:38.394Z"
   },
   "__v": 0,
   "carrito": false,
@@ -17985,7 +17991,7 @@
   "year": "2024",
   "origen": "Mendoza",
   "venta": "10000",
-  "cantidad": 7,
+  "cantidad": 4,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1749656665992-415635399-maldita santa torrontes dulce.jpg",
@@ -17994,7 +18000,7 @@
     "$date": "2025-06-11T15:44:25.995Z"
   },
   "updatedAt": {
-    "$date": "2026-01-31T21:27:06.026Z"
+    "$date": "2026-02-15T00:29:27.037Z"
   },
   "__v": 0,
   "carrito": false,
@@ -18089,7 +18095,7 @@
   "year": "",
   "origen": "",
   "venta": "24000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "",
@@ -18098,7 +18104,7 @@
     "$date": "2025-06-19T00:59:50.269Z"
   },
   "updatedAt": {
-    "$date": "2025-11-24T12:49:21.969Z"
+    "$date": "2026-02-28T00:04:04.631Z"
   },
   "__v": 0,
   "carrito": false,
@@ -18193,7 +18199,7 @@
   "year": "2024",
   "origen": "Valle De Pedernal - San Juan ",
   "venta": "35000",
-  "cantidad": 6,
+  "cantidad": 0,
   "posicion": "D1",
   "descripcion": "",
   "foto": "uploads\\foto-1758132371821-591943199-Memoria de E - ÃPN.jpg",
@@ -18202,7 +18208,7 @@
     "$date": "2025-06-28T22:56:55.671Z"
   },
   "updatedAt": {
-    "$date": "2026-01-22T19:31:46.204Z"
+    "$date": "2026-02-26T21:07:49.250Z"
   },
   "__v": 0,
   "carrito": false,
@@ -18787,7 +18793,7 @@
   "year": "2023",
   "origen": "Maipú",
   "venta": "9500",
-  "cantidad": 2,
+  "cantidad": 4,
   "posicion": "B5",
   "descripcion": "",
   "foto": "uploads\\foto-1754425193626-811225192-Avatar - Malbec.jpg",
@@ -18796,7 +18802,7 @@
     "$date": "2025-07-14T19:25:05.712Z"
   },
   "updatedAt": {
-    "$date": "2025-12-13T19:40:35.035Z"
+    "$date": "2026-02-26T20:24:59.536Z"
   },
   "__v": 0,
   "carrito": false,
@@ -18865,7 +18871,7 @@
   "year": "2024",
   "origen": "Junín - Mendoza",
   "venta": "16000",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "F4",
   "descripcion": "",
   "foto": "uploads\\foto-1753381914557-342504294-Mujer Criolla.jpg",
@@ -18874,7 +18880,7 @@
     "$date": "2025-07-24T18:31:54.561Z"
   },
   "updatedAt": {
-    "$date": "2025-12-31T17:56:01.110Z"
+    "$date": "2026-02-28T22:09:40.175Z"
   },
   "__v": 0,
   "carrito": false,
@@ -18926,7 +18932,7 @@
     "$date": "2025-07-24T22:36:26.489Z"
   },
   "updatedAt": {
-    "$date": "2025-12-03T17:56:22.532Z"
+    "$date": "2026-02-20T22:34:06.456Z"
   },
   "__v": 0,
   "carrito": false,
@@ -18943,7 +18949,7 @@
   "year": "2024",
   "origen": "Cafayate - Salta",
   "venta": "22000",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "B2",
   "descripcion": "",
   "foto": "uploads\\foto-1754418982983-74202703-1700 - Malbec.jpg",
@@ -18952,9 +18958,11 @@
     "$date": "2025-07-24T22:38:17.700Z"
   },
   "updatedAt": {
-    "$date": "2025-11-27T21:13:44.011Z"
+    "$date": "2026-02-25T17:24:33.238Z"
   },
-  "__v": 0
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -19019,16 +19027,16 @@
   "year": "2023",
   "origen": "Salta, Catamarca",
   "venta": "14000",
-  "cantidad": 4,
+  "cantidad": 2,
   "posicion": "I6",
   "descripcion": "",
   "foto": "uploads\\foto-1754418684562-370999276-Piloto de Prueba - Ugni Blanc - T.jpg",
-  "carritoCantidad": 1,
+  "carritoCantidad": 2,
   "createdAt": {
     "$date": "2025-07-24T22:43:25.427Z"
   },
   "updatedAt": {
-    "$date": "2026-01-16T21:44:38.507Z"
+    "$date": "2026-02-14T20:03:10.401Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19045,7 +19053,7 @@
   "year": "2023",
   "origen": "Angastaco - Salta",
   "venta": "15000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "F3",
   "descripcion": "",
   "foto": "uploads\\foto-1754418205670-810404211-El Afinador - TorrontÃ©s.jpg",
@@ -19054,7 +19062,7 @@
     "$date": "2025-07-24T22:45:31.119Z"
   },
   "updatedAt": {
-    "$date": "2026-01-31T20:14:41.028Z"
+    "$date": "2026-02-16T22:55:43.022Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19305,7 +19313,7 @@
   "year": "2021",
   "origen": "Los Chacayes - Mendoza",
   "venta": "25000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "F3",
   "descripcion": "",
   "foto": "uploads\\foto-1754417883195-938757577-Les Astronautes - Criolla.jpg",
@@ -19314,7 +19322,7 @@
     "$date": "2025-07-25T00:12:28.945Z"
   },
   "updatedAt": {
-    "$date": "2025-12-05T21:34:45.727Z"
+    "$date": "2026-02-26T20:49:31.052Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19383,7 +19391,7 @@
   "year": "2021",
   "origen": "Médanos - Buenos Aires",
   "venta": "12000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "A5",
   "descripcion": "",
   "foto": "uploads\\foto-1754418309635-381508110-Terrasabbia - Malbec.jpg",
@@ -19392,7 +19400,7 @@
     "$date": "2025-07-28T20:31:23.619Z"
   },
   "updatedAt": {
-    "$date": "2026-01-30T02:35:00.408Z"
+    "$date": "2026-02-22T00:10:03.538Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19409,7 +19417,7 @@
   "year": "2020",
   "origen": "Luján de Cuyo - Mendoza",
   "venta": "12000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "B6",
   "descripcion": "",
   "foto": "uploads\\foto-1754418373103-474975120-Familia Adrover - Malbec.jpg",
@@ -19418,7 +19426,7 @@
     "$date": "2025-07-28T20:39:32.963Z"
   },
   "updatedAt": {
-    "$date": "2025-11-19T22:53:49.822Z"
+    "$date": "2026-02-12T18:17:41.333Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19461,7 +19469,7 @@
   "year": "2024",
   "origen": "Luján de Cuyo - Mendoza",
   "venta": "12000",
-  "cantidad": 0,
+  "cantidad": 1,
   "posicion": "I3",
   "descripcion": "",
   "foto": "uploads\\foto-1754418454107-557789352-Calogne - Chardonnay.jpg",
@@ -19470,7 +19478,7 @@
     "$date": "2025-07-28T20:40:36.419Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T00:11:00.212Z"
+    "$date": "2026-02-26T20:21:06.230Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19487,7 +19495,7 @@
   "year": "2023",
   "origen": "Luján de Cuyo - Mendoza",
   "venta": "16000",
-  "cantidad": 11,
+  "cantidad": 9,
   "posicion": "D4",
   "descripcion": "",
   "foto": "uploads\\foto-1754418471339-460328217-Familia Adrover - Bonarda.jpg",
@@ -19496,7 +19504,7 @@
     "$date": "2025-07-28T20:41:07.442Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T19:43:52.704Z"
+    "$date": "2026-02-26T20:24:11.994Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19539,7 +19547,7 @@
   "year": "2025",
   "origen": "Valle De Pedernal - San Juan ",
   "venta": "14000",
-  "cantidad": 5,
+  "cantidad": 0,
   "posicion": "I3",
   "descripcion": "",
   "foto": "uploads\\foto-1754425049841-111855913-Elefante Blanco - SB.jpg",
@@ -19548,7 +19556,7 @@
     "$date": "2025-07-29T17:44:02.579Z"
   },
   "updatedAt": {
-    "$date": "2026-01-28T00:09:37.127Z"
+    "$date": "2026-02-26T21:06:33.098Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19565,7 +19573,7 @@
   "year": "",
   "origen": "",
   "venta": "6500",
-  "cantidad": 3,
+  "cantidad": 70,
   "posicion": "",
   "descripcion": "",
   "foto": "",
@@ -19574,7 +19582,7 @@
     "$date": "2025-07-30T22:51:15.053Z"
   },
   "updatedAt": {
-    "$date": "2026-02-04T23:49:35.801Z"
+    "$date": "2026-02-25T23:53:22.593Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19797,7 +19805,7 @@
   "year": "2023",
   "origen": "Luján de Cuyo - Mendoza",
   "venta": "12500",
-  "cantidad": 6,
+  "cantidad": 4,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767476080707-500131499-WhatsApp Image 2026-01-03 at 18.19.00 (3).jpeg",
@@ -19806,7 +19814,7 @@
     "$date": "2025-08-14T18:08:11.512Z"
   },
   "updatedAt": {
-    "$date": "2026-01-14T18:48:19.238Z"
+    "$date": "2026-02-27T22:27:22.883Z"
   },
   "__v": 0,
   "carrito": false,
@@ -19875,7 +19883,7 @@
   "year": "2022",
   "origen": "Maipú - Mendoza",
   "venta": "9500",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1758132061097-709570477-Avatar - B.jpg",
@@ -19884,7 +19892,7 @@
     "$date": "2025-08-14T19:35:40.647Z"
   },
   "updatedAt": {
-    "$date": "2025-12-02T22:18:08.953Z"
+    "$date": "2026-02-16T22:05:08.250Z"
   },
   "__v": 0,
   "carrito": false,
@@ -20014,7 +20022,7 @@
     "$date": "2025-08-18T18:01:57.788Z"
   },
   "updatedAt": {
-    "$date": "2026-01-30T20:14:18.958Z"
+    "$date": "2026-02-20T22:34:06.766Z"
   },
   "__v": 0,
   "carrito": false,
@@ -20057,7 +20065,7 @@
   "year": "2022",
   "origen": "Entre Ríos ",
   "venta": "16500",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1755540192184-658071618-Ara - Tannat.jpg",
@@ -20066,7 +20074,7 @@
     "$date": "2025-08-18T18:03:12.188Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T18:41:40.064Z"
+    "$date": "2026-02-20T22:38:06.178Z"
   },
   "__v": 0,
   "carrito": false,
@@ -20135,7 +20143,7 @@
   "year": "2023",
   "origen": "Tunuyán - Mendoza",
   "venta": "25000",
-  "cantidad": 13,
+  "cantidad": 12,
   "posicion": "D2",
   "descripcion": "",
   "foto": "uploads\\foto-1758132026758-323951665-Mahakala - PN.jpg",
@@ -20144,7 +20152,7 @@
     "$date": "2025-08-28T16:36:13.860Z"
   },
   "updatedAt": {
-    "$date": "2026-01-16T18:37:37.918Z"
+    "$date": "2026-02-17T21:18:31.183Z"
   },
   "__v": 0,
   "carrito": false,
@@ -20473,7 +20481,7 @@
   "year": "2023",
   "origen": "El Cepillo - Mendoza",
   "venta": "10500",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1757548001311-871173716-Simonetto - M 2023 1.jpg",
@@ -20482,7 +20490,7 @@
     "$date": "2025-09-10T17:12:50.208Z"
   },
   "updatedAt": {
-    "$date": "2025-10-31T18:49:47.551Z"
+    "$date": "2026-02-28T00:12:20.288Z"
   },
   "__v": 0,
   "carrito": false,
@@ -20575,7 +20583,7 @@
   "year": "2022",
   "origen": "Pampa El Cepillo - Valle De Uco",
   "venta": "13000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1757524571866-820823598-Simonetto - CS 1.jpg",
@@ -20584,7 +20592,7 @@
     "$date": "2025-09-10T17:16:11.868Z"
   },
   "updatedAt": {
-    "$date": "2026-01-17T22:31:09.885Z"
+    "$date": "2026-02-10T00:06:18.628Z"
   },
   "__v": 0,
   "carrito": false,
@@ -20935,7 +20943,7 @@
   "year": "2021",
   "origen": "Valle Calchaquí - Salta",
   "venta": "10000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1759794754189-300012215-Yuros - T1.jpg",
@@ -20944,7 +20952,7 @@
     "$date": "2025-10-01T17:50:03.364Z"
   },
   "updatedAt": {
-    "$date": "2026-01-02T21:46:04.625Z"
+    "$date": "2026-02-22T00:10:03.538Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21039,7 +21047,7 @@
   "year": "2025",
   "origen": "Cachi - Salta",
   "venta": "15000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1759794720167-277273035-Puna - TorrontÃ©s 1.jpg",
@@ -21048,7 +21056,7 @@
     "$date": "2025-10-01T18:05:55.678Z"
   },
   "updatedAt": {
-    "$date": "2026-01-14T16:40:23.019Z"
+    "$date": "2026-02-26T23:07:36.507Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21117,16 +21125,16 @@
   "year": "2024",
   "origen": "Cachi - Salta",
   "venta": "18000",
-  "cantidad": 6,
+  "cantidad": 4,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1759794687371-415071304-Puna - RosÃ© dulce 1.jpg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-10-01T18:13:44.426Z"
   },
   "updatedAt": {
-    "$date": "2026-01-14T16:41:49.856Z"
+    "$date": "2026-02-22T00:10:03.538Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21178,7 +21186,7 @@
     "$date": "2025-10-01T18:23:16.624Z"
   },
   "updatedAt": {
-    "$date": "2026-01-21T00:46:45.687Z"
+    "$date": "2026-02-18T23:26:48.894Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21247,7 +21255,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "7000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1759794620807-994616105-Pugile - Pedro Ximenez 1.jpg",
@@ -21256,7 +21264,7 @@
     "$date": "2025-10-01T18:26:53.458Z"
   },
   "updatedAt": {
-    "$date": "2025-12-31T00:09:13.628Z"
+    "$date": "2026-02-22T00:10:03.538Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21505,7 +21513,7 @@
   "year": "2020",
   "origen": "",
   "venta": "25000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767648241144-95323764-MAHAKALA.jpeg",
@@ -21514,7 +21522,7 @@
     "$date": "2025-10-15T00:04:36.706Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T21:24:01.148Z"
+    "$date": "2026-02-20T22:50:38.593Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21531,7 +21539,7 @@
   "year": "2025",
   "origen": "Valle De Uco - Mendoza",
   "venta": "16000",
-  "cantidad": 26,
+  "cantidad": 22,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767476099944-991968104-WhatsApp Image 2026-01-03 at 18.19.01.jpeg",
@@ -21540,7 +21548,7 @@
     "$date": "2025-10-17T20:30:42.466Z"
   },
   "updatedAt": {
-    "$date": "2026-02-05T22:41:41.131Z"
+    "$date": "2026-02-20T23:26:46.601Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21557,7 +21565,7 @@
   "year": "",
   "origen": "San Martín - Mendoza",
   "venta": "7500",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "J6",
   "descripcion": "",
   "foto": "uploads\\foto-1762893344626-71917740-Imagen de WhatsApp 2025-11-11 a las 17.26.58_322135bf.jpg",
@@ -21566,7 +21574,7 @@
     "$date": "2025-10-24T19:27:34.143Z"
   },
   "updatedAt": {
-    "$date": "2026-01-25T01:28:08.343Z"
+    "$date": "2026-02-26T21:25:36.871Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21583,7 +21591,7 @@
   "year": "",
   "origen": "San Martín - Mendoza",
   "venta": "7500",
-  "cantidad": 3,
+  "cantidad": 4,
   "posicion": "H5",
   "descripcion": "",
   "foto": "uploads\\foto-1762893340192-231034985-Imagen de WhatsApp 2025-11-11 a las 17.26.58_7420755b.jpg",
@@ -21592,7 +21600,7 @@
     "$date": "2025-10-24T19:28:25.065Z"
   },
   "updatedAt": {
-    "$date": "2026-01-26T17:25:13.522Z"
+    "$date": "2026-03-01T00:58:34.747Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21609,7 +21617,7 @@
   "year": "",
   "origen": "San Martín - Mendoza",
   "venta": "7500",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "J5",
   "descripcion": "",
   "foto": "uploads\\foto-1762893319036-296760391-Imagen de WhatsApp 2025-11-11 a las 17.26.57_dc727aba.jpg",
@@ -21618,7 +21626,7 @@
     "$date": "2025-10-24T19:28:55.542Z"
   },
   "updatedAt": {
-    "$date": "2026-01-26T23:53:13.068Z"
+    "$date": "2026-03-01T00:58:34.747Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21685,9 +21693,9 @@
   "cepa": "Cabernet Sauvignon",
   "nombre": "Quinta Navarro",
   "year": "",
-  "origen": "",
+  "origen": "San Martín - Mendoza",
   "venta": "7500",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "C6",
   "descripcion": "",
   "foto": "uploads\\foto-1762893297797-483711171-Imagen de WhatsApp 2025-11-11 a las 17.26.53_60ed9cb9.jpg",
@@ -21696,7 +21704,7 @@
     "$date": "2025-10-24T19:30:59.101Z"
   },
   "updatedAt": {
-    "$date": "2025-12-04T22:21:52.049Z"
+    "$date": "2026-02-26T21:26:04.131Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21817,7 +21825,7 @@
   "year": "2024",
   "origen": "Patagonia, Argentina",
   "venta": "28000",
-  "cantidad": 8,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1762294160247-533923955-Imagen de WhatsApp 2025-11-04 a las 18.55.44_215ace88.jpg",
@@ -21826,7 +21834,7 @@
     "$date": "2025-11-04T22:09:20.256Z"
   },
   "updatedAt": {
-    "$date": "2025-12-29T19:02:03.066Z"
+    "$date": "2026-02-26T20:11:54.181Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21869,7 +21877,7 @@
   "year": "2024",
   "origen": "Río Colorado - Río Negro",
   "venta": "25000",
-  "cantidad": 8,
+  "cantidad": 6,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1762294645457-765388046-Imagen de WhatsApp 2025-11-04 a las 18.55.46_d2818404.jpg",
@@ -21878,7 +21886,7 @@
     "$date": "2025-11-04T22:17:25.459Z"
   },
   "updatedAt": {
-    "$date": "2025-12-24T15:54:46.735Z"
+    "$date": "2026-02-26T20:15:07.506Z"
   },
   "__v": 0,
   "carrito": false,
@@ -21973,7 +21981,7 @@
   "year": "",
   "origen": "Santa Rosa - La Pampa",
   "venta": "16000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1762641512324-950454346-Imagen de WhatsApp 2025-11-08 a las 19.25.31_c2693201.jpg",
@@ -21982,7 +21990,7 @@
     "$date": "2025-11-08T22:38:32.326Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T20:42:01.951Z"
+    "$date": "2026-02-20T22:34:07.239Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22410,7 +22418,7 @@
   "year": "2008",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "50000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "Fue plantado antes del año 1895, por lo que mediante la Resolución N° 1212–2010 el Honorable Consejo Deliberante del Departamento de Luján de Cuyo declara este viñedo patrimonio cultural por tratarse del viñedo más antiguo del departamento. Cabe destacar que el viñedo se trabaja en forma orgánica.",
   "foto": "uploads\\foto-1767478797952-916761905-WhatsApp Image 2026-01-03 at 19.15.22.jpeg",
@@ -22419,7 +22427,7 @@
     "$date": "2025-11-23T20:21:52.661Z"
   },
   "updatedAt": {
-    "$date": "2026-01-03T22:19:57.954Z"
+    "$date": "2026-02-17T21:18:31.183Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22445,9 +22453,10 @@
     "$date": "2025-11-25T22:08:10.560Z"
   },
   "updatedAt": {
-    "$date": "2026-01-05T20:32:03.977Z"
+    "$date": "2026-02-20T18:37:17.542Z"
   },
-  "__v": 0
+  "__v": 0,
+  "carrito": false
 },
 {
   "_id": {
@@ -22460,7 +22469,7 @@
   "year": "2023",
   "origen": "Maipú - Mendoza",
   "venta": "36000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766792175595-302187584-WhatsApp Image 2025-12-26 at 20.33.25 (1).jpeg",
@@ -22469,9 +22478,11 @@
     "$date": "2025-11-26T16:30:57.114Z"
   },
   "updatedAt": {
-    "$date": "2025-12-26T23:36:15.602Z"
+    "$date": "2026-02-18T21:30:25.113Z"
   },
-  "__v": 0
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -22562,7 +22573,7 @@
   "year": "",
   "origen": "Los Chacayes - Mendoza",
   "venta": "36000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766792154313-945118173-WhatsApp Image 2025-12-26 at 20.33.24 (1).jpeg",
@@ -22571,7 +22582,7 @@
     "$date": "2025-11-26T16:56:18.954Z"
   },
   "updatedAt": {
-    "$date": "2026-02-08T00:22:17.809Z"
+    "$date": "2026-02-21T20:39:52.823Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22614,7 +22625,7 @@
   "year": "2024",
   "origen": "Los Chacayes - Mendoza",
   "venta": "35000",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766792142481-164374608-WhatsApp Image 2025-12-26 at 20.33.24.jpeg",
@@ -22623,7 +22634,7 @@
     "$date": "2025-11-26T16:57:57.197Z"
   },
   "updatedAt": {
-    "$date": "2026-02-08T00:22:17.809Z"
+    "$date": "2026-02-26T22:54:33.278Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22714,7 +22725,7 @@
   "year": "2021",
   "origen": "San Juan",
   "venta": "8000",
-  "cantidad": 4,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766792111715-567031731-WhatsApp Image 2025-12-26 at 20.33.26 (1).jpeg",
@@ -22723,7 +22734,7 @@
     "$date": "2025-11-26T18:30:28.825Z"
   },
   "updatedAt": {
-    "$date": "2025-12-31T00:00:01.159Z"
+    "$date": "2026-02-22T00:10:03.538Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22749,7 +22760,7 @@
     "$date": "2025-11-26T18:32:01.956Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T19:23:36.589Z"
+    "$date": "2026-02-20T18:37:17.714Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22792,7 +22803,7 @@
   "year": "",
   "origen": "La Rioja",
   "venta": "10000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766790589742-417945686-WhatsApp Image 2025-12-26 at 20.02.04.jpeg",
@@ -22801,9 +22812,11 @@
     "$date": "2025-11-26T18:33:38.467Z"
   },
   "updatedAt": {
-    "$date": "2025-12-26T23:09:49.753Z"
+    "$date": "2026-02-20T22:38:06.178Z"
   },
-  "__v": 0
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -22867,7 +22880,7 @@
   "year": "2024",
   "origen": "Mendoza",
   "venta": "8000",
-  "cantidad": 4,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766790572868-477439332-WhatsApp Image 2025-12-26 at 20.02.03 (2).jpeg",
@@ -22876,7 +22889,7 @@
     "$date": "2025-11-26T18:37:35.853Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T19:43:52.704Z"
+    "$date": "2026-03-01T00:58:34.747Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22893,7 +22906,7 @@
   "year": "",
   "origen": "La Rioja",
   "venta": "10000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766790566932-401916659-WhatsApp Image 2025-12-26 at 20.02.03.jpeg",
@@ -22902,7 +22915,7 @@
     "$date": "2025-11-26T18:38:17.623Z"
   },
   "updatedAt": {
-    "$date": "2025-12-30T17:49:51.531Z"
+    "$date": "2026-02-28T00:18:37.885Z"
   },
   "__v": 0,
   "carrito": false,
@@ -22919,16 +22932,16 @@
   "year": "2021",
   "origen": "Río Negro",
   "venta": "15000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766790559430-228687958-WhatsApp Image 2025-12-26 at 20.02.03 (1).jpeg",
-  "carritoCantidad": 2,
+  "carritoCantidad": 1,
   "createdAt": {
     "$date": "2025-11-26T20:00:41.373Z"
   },
   "updatedAt": {
-    "$date": "2025-12-26T23:09:19.434Z"
+    "$date": "2026-02-20T23:57:05.927Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23093,13 +23106,13 @@
     "$oid": "69289f52a40ce50da81bd606"
   },
   "codigo": "8764269866181",
-  "bodega": "La Mal María",
+  "bodega": "La Mala María",
   "cepa": "Malbec",
   "nombre": "Malbec Joven",
   "year": "2023",
   "origen": "Luján de Cuyo - Mendoza",
   "venta": "12000",
-  "cantidad": 6,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1764800356916-696319503-La mala maria MAlbec.jpg",
@@ -23108,7 +23121,7 @@
     "$date": "2025-11-27T18:58:26.247Z"
   },
   "updatedAt": {
-    "$date": "2025-12-10T03:07:55.239Z"
+    "$date": "2026-02-28T23:26:52.756Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23149,7 +23162,7 @@
   "year": "2024",
   "origen": "La Consulta - Mendoza",
   "venta": "25000",
-  "cantidad": 3,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766787366499-196450632-WhatsApp Image 2025-12-26 at 19.12.21 (3).jpeg",
@@ -23158,7 +23171,7 @@
     "$date": "2025-11-27T20:41:35.558Z"
   },
   "updatedAt": {
-    "$date": "2025-12-26T22:16:06.505Z"
+    "$date": "2026-02-28T00:16:21.538Z"
   },
   "__v": 0
 },
@@ -23225,7 +23238,7 @@
   "year": "2023",
   "origen": "Mendoza",
   "venta": "12000",
-  "cantidad": 23,
+  "cantidad": 14,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766787379867-33084057-WhatsApp Image 2025-12-26 at 19.12.21 (1).jpeg",
@@ -23234,7 +23247,7 @@
     "$date": "2025-12-03T23:14:19.484Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T02:48:19.421Z"
+    "$date": "2026-02-28T00:13:30.220Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23250,7 +23263,7 @@
   "nombre": "Envío",
   "year": "",
   "origen": "",
-  "venta": "5040",
+  "venta": "4790",
   "cantidad": -1,
   "posicion": "",
   "descripcion": "",
@@ -23260,7 +23273,7 @@
     "$date": "2025-12-10T22:58:41.109Z"
   },
   "updatedAt": {
-    "$date": "2026-01-17T00:53:37.445Z"
+    "$date": "2026-02-28T19:57:14.085Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23277,7 +23290,7 @@
   "year": "",
   "origen": "",
   "venta": "12000",
-  "cantidad": 2,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "",
@@ -23286,7 +23299,7 @@
     "$date": "2025-12-11T23:52:20.096Z"
   },
   "updatedAt": {
-    "$date": "2026-02-08T01:03:48.403Z"
+    "$date": "2026-02-19T19:00:38.394Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23329,7 +23342,7 @@
   "year": "2025",
   "origen": "San Juan",
   "venta": "20000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1766787397959-843193950-WhatsApp Image 2025-12-26 at 19.12.20.jpeg",
@@ -23338,7 +23351,7 @@
     "$date": "2025-12-15T20:12:41.596Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T20:10:07.600Z"
+    "$date": "2026-02-26T20:57:30.359Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23381,7 +23394,7 @@
   "year": "",
   "origen": "",
   "venta": "6000",
-  "cantidad": 1,
+  "cantidad": 0,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1767723887759-175744507-WhatsApp Image 2026-01-06 at 15.24.32.jpeg",
@@ -23390,7 +23403,7 @@
     "$date": "2025-12-24T14:38:18.770Z"
   },
   "updatedAt": {
-    "$date": "2026-01-06T18:24:47.767Z"
+    "$date": "2026-02-28T00:03:50.976Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23407,16 +23420,16 @@
   "year": "",
   "origen": "",
   "venta": "10000",
-  "cantidad": 93,
+  "cantidad": 88,
   "posicion": "",
   "descripcion": "",
   "foto": "",
-  "carritoCantidad": 1,
+  "carritoCantidad": 2,
   "createdAt": {
     "$date": "2025-12-30T20:45:27.944Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T21:41:02.830Z"
+    "$date": "2026-02-25T23:32:10.247Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23433,7 +23446,7 @@
   "year": "2024",
   "origen": "Cachi - Salta",
   "venta": "18000",
-  "cantidad": 4,
+  "cantidad": 2,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1768515798331-121119724-SB P.jpeg",
@@ -23442,7 +23455,7 @@
     "$date": "2026-01-14T16:43:17.222Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T20:39:15.909Z"
+    "$date": "2026-02-24T22:32:50.433Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23459,7 +23472,7 @@
   "year": "2023",
   "origen": "Lujan De Cuyo - Mendoza",
   "venta": "15000",
-  "cantidad": 6,
+  "cantidad": 4,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1768515744571-837928123-SB.jpeg",
@@ -23468,9 +23481,11 @@
     "$date": "2026-01-14T17:11:09.632Z"
   },
   "updatedAt": {
-    "$date": "2026-01-15T22:22:24.573Z"
+    "$date": "2026-02-24T23:45:49.991Z"
   },
-  "__v": 0
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -23561,7 +23576,7 @@
   "year": "",
   "origen": "Mendoza",
   "venta": "15000",
-  "cantidad": 5,
+  "cantidad": 3,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1768515704378-420474592-TORIN.jpeg",
@@ -23570,7 +23585,7 @@
     "$date": "2026-01-14T18:04:57.745Z"
   },
   "updatedAt": {
-    "$date": "2026-02-09T22:35:18.621Z"
+    "$date": "2026-02-26T19:52:23.084Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23587,7 +23602,7 @@
   "year": "",
   "origen": "Mendoza",
   "venta": "15000",
-  "cantidad": 6,
+  "cantidad": 5,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1768515693893-559919804-FRANCES.jpeg",
@@ -23596,9 +23611,11 @@
     "$date": "2026-01-14T18:06:02.883Z"
   },
   "updatedAt": {
-    "$date": "2026-01-15T22:21:33.904Z"
+    "$date": "2026-02-21T23:45:08.610Z"
   },
-  "__v": 0
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
 },
 {
   "_id": {
@@ -23611,7 +23628,7 @@
   "year": "2020",
   "origen": "Mendoza",
   "venta": "20500",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1768515722422-484270252-PV.jpeg",
@@ -23620,7 +23637,7 @@
     "$date": "2026-01-14T18:19:32.894Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T20:53:27.978Z"
+    "$date": "2026-02-18T21:15:45.225Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23663,7 +23680,7 @@
   "year": "2020",
   "origen": "Jujuy",
   "venta": "20500",
-  "cantidad": 3,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1768515784793-579052399-CV M.jpeg",
@@ -23672,7 +23689,7 @@
     "$date": "2026-01-14T18:37:52.140Z"
   },
   "updatedAt": {
-    "$date": "2026-02-06T18:30:00.724Z"
+    "$date": "2026-02-24T18:25:57.839Z"
   },
   "__v": 0,
   "carrito": false,
@@ -23689,7 +23706,7 @@
   "year": "2023",
   "origen": "San Juan",
   "venta": "30000",
-  "cantidad": 2,
+  "cantidad": 1,
   "posicion": "",
   "descripcion": "",
   "foto": "uploads\\foto-1769111139520-987627501-memoria de elef merlot.jpeg",
@@ -23698,9 +23715,261 @@
     "$date": "2026-01-22T19:45:39.525Z"
   },
   "updatedAt": {
-    "$date": "2026-02-07T22:36:16.932Z"
+    "$date": "2026-02-25T18:13:55.884Z"
   },
   "__v": 0,
   "carrito": false,
   "favorito": false
+},
+{
+  "_id": {
+    "$oid": "698e31396936ed90b5660a94"
+  },
+  "codigo": "8770926260650",
+  "bodega": "La Rosendo",
+  "cepa": "Espumante Criolla Blanca",
+  "nombre": "Beba Alegre",
+  "year": "2024",
+  "origen": "San Rafael - Mendoza",
+  "venta": "22000",
+  "cantidad": 3,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926393454-544437884-WhatsApp Image 24026-02-12 at 16.56.30.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T19:59:53.487Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-12T19:59:53.487Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698e31736936ed90b5660a99"
+  },
+  "codigo": "8770926396700",
+  "bodega": "La Rosendo",
+  "cepa": "Rosado de Syrah",
+  "nombre": "Rosado",
+  "year": "2024",
+  "origen": "San Rafael - Mendoza",
+  "venta": "22000",
+  "cantidad": 6,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926451448-494950326-WhatsApp Image 2026-02-142 at 16.56.29.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T20:00:51.451Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-12T20:00:51.451Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698e31d76936ed90b5660a9e"
+  },
+  "codigo": "8770926455339",
+  "bodega": "La Rosendo",
+  "cepa": "Syrah",
+  "nombre": "Esta es una pipa",
+  "year": "2023",
+  "origen": "San Rafael - Mendoza",
+  "venta": "22000",
+  "cantidad": 2,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926551420-427964302-WhatsApp Image 2026-02-12 444at 16.56.30.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T20:02:31.433Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-18T21:15:45.225Z"
+  },
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
+},
+{
+  "_id": {
+    "$oid": "698e323a6936ed90b5660aa3"
+  },
+  "codigo": "8770926571886",
+  "bodega": "Sante Vins - Musa",
+  "cepa": "Blend (Pedro Gimenez, Riesling, Sauvignon Blanc, Malbec)",
+  "nombre": "Prismal",
+  "year": "",
+  "origen": "Buenos Aires y Río Negro",
+  "venta": "undefined",
+  "cantidad": 3,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926650315-43789551-WhatsApp Image 2026-02-12 at 164.56.30.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T20:04:10.319Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-12T20:04:10.319Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698e325c6936ed90b5660aa8"
+  },
+  "codigo": "8770926656583",
+  "bodega": "La Rosendo",
+  "cepa": "Criolla",
+  "nombre": "Caminante",
+  "year": "2025",
+  "origen": "San Rafael - Mendoza",
+  "venta": "22000",
+  "cantidad": 1,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926684137-965772133-WhatsApp Image 2026-02-12 44at 16.56.30.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T20:04:44.141Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T19:51:43.961Z"
+  },
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
+},
+{
+  "_id": {
+    "$oid": "698e32786936ed90b5660aad"
+  },
+  "codigo": "8770926691942",
+  "bodega": "",
+  "cepa": "Vemur",
+  "nombre": "Americo",
+  "year": "",
+  "origen": "",
+  "venta": "15000",
+  "cantidad": 5,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926712501-736545389-WhatsAp4 Image 2026-02-12 at 16.56.29.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T20:05:12.506Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T22:31:02.114Z"
+  },
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
+},
+{
+  "_id": {
+    "$oid": "698e331e6936ed90b5660ab2"
+  },
+  "codigo": "8770926733956",
+  "bodega": "",
+  "cepa": "Vemut Rosso",
+  "nombre": "Naturaleza",
+  "year": "",
+  "origen": "Valle De Uco - Mendoza",
+  "venta": "15000",
+  "cantidad": 5,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1770926886960-778225224-WhatsApp Image 2026-02-12 at 16.56.29.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-12T20:07:58.499Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T22:31:02.114Z"
+  },
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
+},
+{
+  "_id": {
+    "$oid": "69a1fb7691cc59ad9625d637"
+  },
+  "codigo": "7798382200028",
+  "bodega": "Finca Iral",
+  "cepa": "Cabernet Franc",
+  "nombre": "Single Vineyard",
+  "year": "2022",
+  "origen": "Luján De Cuyo - Mendoza",
+  "venta": "17000",
+  "cantidad": 5,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1772223350369-588697450-WhatsApp Image 2026-02-27 at 17.13.22.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-27T20:15:50.383Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T00:12:20.288Z"
+  },
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
+},
+{
+  "_id": {
+    "$oid": "69a1fbae91cc59ad9625d63c"
+  },
+  "codigo": "7798382200080",
+  "bodega": "Finca Iral",
+  "cepa": "Rosado",
+  "nombre": "Single Vineyard",
+  "year": "2023",
+  "origen": "Luján de Cuyo - Mendoza",
+  "venta": "17000",
+  "cantidad": 5,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1772223406546-347603443-WhatsApp Image 24026-02-27 at 17.13.23.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-27T20:16:46.554Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T23:45:00.962Z"
+  },
+  "__v": 0,
+  "carrito": false,
+  "favorito": false
+},
+{
+  "_id": {
+    "$oid": "69a1fbd991cc59ad9625d641"
+  },
+  "codigo": "7798382200295",
+  "bodega": "Finca Iral",
+  "cepa": "Bonarda",
+  "nombre": "Exclusive Rows",
+  "year": "2022",
+  "origen": "Luján de Cuyo - Mendoza",
+  "venta": "29000",
+  "cantidad": 6,
+  "posicion": "",
+  "descripcion": "",
+  "foto": "uploads\\foto-1772223449330-717061851-Wha5tsApp Image 2026-02-27 at 17.13.23.jpeg",
+  "carritoCantidad": 1,
+  "createdAt": {
+    "$date": "2026-02-27T20:17:29.335Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T20:18:02.269Z"
+  },
+  "__v": 0
 }]

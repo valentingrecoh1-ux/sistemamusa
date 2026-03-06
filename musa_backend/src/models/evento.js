@@ -14,6 +14,7 @@ const gastoEstimadoSchema = new mongoose.Schema({
   monto: { type: Number, default: 0 },
   realizado: { type: Boolean, default: false },
   operacionId: { type: mongoose.Schema.Types.ObjectId, ref: "Operacion" },
+  infoPago: { type: String, default: "" },
 });
 
 const eventoSchema = new mongoose.Schema(

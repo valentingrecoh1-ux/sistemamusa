@@ -17963,19 +17963,19 @@
   "_id": {
     "$oid": "695ee70b1fd25be8b4ecf989"
   },
-  "fecha": "2026-01-15",
+  "fecha": "2026-03-07",
   "turno": "SEGUNDO TURNO",
   "nombre": "Lu Amorone",
-  "cantidad": 3,
-  "observaciones": "RESERVA QUEDA PENDIENTE PARA SIN TACC FEBRERO",
+  "cantidad": 2,
+  "observaciones": "SIN TACC",
   "cobrado": 77000,
-  "total": 152000,
+  "total": 104000,
   "telefono": "1156192859",
   "createdAt": {
     "$date": "2026-01-07T23:06:51.502Z"
   },
   "updatedAt": {
-    "$date": "2026-01-17T00:00:14.818Z"
+    "$date": "2026-02-18T22:29:32.049Z"
   },
   "__v": 0,
   "facturado": true,
@@ -18370,6 +18370,446 @@
   },
   "updatedAt": {
     "$date": "2026-02-06T23:03:13.659Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "698bc47f6936ed90b5660490"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Arturo Vicco",
+  "cantidad": 2,
+  "observaciones": "SIN TACC",
+  "cobrado": 90000,
+  "total": 90000,
+  "telefono": "1151613961",
+  "createdAt": {
+    "$date": "2026-02-10T23:51:27.056Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T00:05:32.004Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "698cd2c36936ed90b56605c4"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Laura y maxi",
+  "cantidad": 2,
+  "observaciones": "",
+  "cobrado": 90000,
+  "total": 90000,
+  "telefono": "1161604954",
+  "createdAt": {
+    "$date": "2026-02-11T19:04:35.803Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-11T19:06:35.901Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698cd2df6936ed90b566061a"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Jimena y Pablo",
+  "cantidad": 2,
+  "observaciones": "ALERGICO AL QUESO, SERVIR APARTE",
+  "cobrado": 90000,
+  "total": 90000,
+  "telefono": "",
+  "createdAt": {
+    "$date": "2026-02-11T19:05:03.606Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-11T23:10:21.069Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698e17cf6936ed90b56608f2"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Brian",
+  "cantidad": 1,
+  "observaciones": "Vegetariano",
+  "cobrado": 45000,
+  "total": 45000,
+  "telefono": "1124822013",
+  "createdAt": {
+    "$date": "2026-02-12T18:11:27.097Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T00:01:38.406Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698e17f86936ed90b566094c"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Alejandra Tamote",
+  "cantidad": 1,
+  "observaciones": "SIN TACC",
+  "cobrado": 52000,
+  "total": 52000,
+  "telefono": "1136978415",
+  "createdAt": {
+    "$date": "2026-02-12T18:12:08.413Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T00:06:58.356Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "698e1c986936ed90b56609b8"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Tomas",
+  "cantidad": 2,
+  "observaciones": "1 vegana",
+  "cobrado": 90000,
+  "total": 90000,
+  "telefono": "1167974326",
+  "createdAt": {
+    "$date": "2026-02-12T18:31:52.357Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T03:06:01.474Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698e1d136936ed90b56609f6"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Daniela ",
+  "cantidad": 1,
+  "observaciones": "",
+  "cobrado": 52000,
+  "total": 52000,
+  "telefono": "",
+  "createdAt": {
+    "$date": "2026-02-12T18:33:55.099Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-13T18:17:34.898Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698e268a6936ed90b5660a5a"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Leandro ",
+  "cantidad": 1,
+  "observaciones": "PAGO $26.000",
+  "cobrado": 26000,
+  "total": 52000,
+  "telefono": "1123997826",
+  "createdAt": {
+    "$date": "2026-02-12T19:14:18.296Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-13T23:55:00.195Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "698f6f646936ed90b5660bbc"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Jorge",
+  "cantidad": 1,
+  "observaciones": "",
+  "cobrado": 45000,
+  "total": 45000,
+  "telefono": "1156964710",
+  "createdAt": {
+    "$date": "2026-02-13T18:37:24.658Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-13T18:37:30.263Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698f70976936ed90b5660c83"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Belén",
+  "cantidad": 2,
+  "observaciones": "2x1\n1 sin TACC\n1 vegatiano",
+  "cobrado": 52000,
+  "total": 52000,
+  "telefono": "3487659225",
+  "createdAt": {
+    "$date": "2026-02-13T18:42:31.693Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T00:02:45.308Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "698f824f6936ed90b5660cec"
+  },
+  "fecha": "2026-02-13",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Silvana",
+  "cantidad": 2,
+  "observaciones": "",
+  "cobrado": 104000,
+  "total": 104000,
+  "telefono": "1159142421",
+  "createdAt": {
+    "$date": "2026-02-13T19:58:07.399Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T00:22:38.212Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "69974d4c91cc59ad9625bbc8"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Jorge",
+  "cantidad": 1,
+  "observaciones": "",
+  "cobrado": 30000,
+  "total": 30000,
+  "telefono": "1156964710",
+  "createdAt": {
+    "$date": "2026-02-19T17:50:04.160Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T17:50:10.012Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "69979a6191cc59ad9625bd9f"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Guada",
+  "cantidad": 1,
+  "observaciones": "",
+  "cobrado": 30000,
+  "total": 30000,
+  "telefono": "1159553381",
+  "createdAt": {
+    "$date": "2026-02-19T23:18:57.361Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T23:19:15.812Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "6998af3791cc59ad9625bf8e"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Eugenia ",
+  "cantidad": 2,
+  "observaciones": "",
+  "cobrado": 40000,
+  "total": 40000,
+  "telefono": "1145575008",
+  "createdAt": {
+    "$date": "2026-02-20T19:00:07.442Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T22:24:14.449Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "6998b86491cc59ad9625bfed"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Adrián",
+  "cantidad": 3,
+  "observaciones": "1 SIN TACC",
+  "cobrado": 90000,
+  "total": 90000,
+  "telefono": "1165605282",
+  "createdAt": {
+    "$date": "2026-02-20T19:39:16.709Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T22:27:06.955Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "6998dbc291cc59ad9625c1c9"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Lorena",
+  "cantidad": 1,
+  "observaciones": "",
+  "cobrado": 20000,
+  "total": 20000,
+  "telefono": "1163646737",
+  "createdAt": {
+    "$date": "2026-02-20T22:10:10.727Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-20T22:10:17.146Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "6998fe7391cc59ad9625c3dd"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Alan",
+  "cantidad": 1,
+  "observaciones": "",
+  "cobrado": 20000,
+  "total": 20000,
+  "telefono": "1165060070",
+  "createdAt": {
+    "$date": "2026-02-21T00:38:11.196Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T00:38:17.561Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "699a083391cc59ad9625c48b"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Papi y Mami Maru",
+  "cantidad": 2,
+  "observaciones": "",
+  "cobrado": 40000,
+  "total": 40000,
+  "telefono": "",
+  "createdAt": {
+    "$date": "2026-02-21T19:32:03.865Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-22T00:49:19.186Z"
+  },
+  "__v": 0,
+  "facturado": false,
+  "formaDeCobro": "EFECTIVO"
+},
+{
+  "_id": {
+    "$oid": "699a337791cc59ad9625c5aa"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Kristen",
+  "cantidad": 2,
+  "observaciones": "",
+  "cobrado": 40000,
+  "total": 40000,
+  "telefono": "",
+  "createdAt": {
+    "$date": "2026-02-21T22:36:39.045Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T22:36:59.074Z"
+  },
+  "__v": 0,
+  "facturado": true,
+  "formaDeCobro": "DIGITAL"
+},
+{
+  "_id": {
+    "$oid": "699a3f9691cc59ad9625c5ec"
+  },
+  "fecha": "2026-02-21",
+  "turno": "SEGUNDO TURNO",
+  "nombre": "Uruguayo",
+  "cantidad": 2,
+  "observaciones": "",
+  "cobrado": 60000,
+  "total": 60000,
+  "telefono": "",
+  "createdAt": {
+    "$date": "2026-02-21T23:28:22.484Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-22T00:59:24.037Z"
   },
   "__v": 0,
   "facturado": false,

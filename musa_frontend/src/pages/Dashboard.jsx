@@ -109,11 +109,18 @@ export default function Dashboard({ usuario }) {
               <div className={s.sectionTitle}><i className="bi bi-bag-check"></i> Ventas del Dia</div>
               <i className={`bi bi-arrow-right ${s.sectionArrow}`}></i>
             </div>
-            <div className={s.grid}>
-              <KPICard label="Ventas" value={dashData.ventas.cantidad} />
-              <KPICard label="Total" value={money(dashData.ventas.total)} />
+            <div className={s.grid3}>
+              <KPICard label="Ventas" value={dashData.ventasVinos?.cantidad || 0} />
+              <KPICard label="Total Ventas" value={money(dashData.ventasVinos?.total || 0)} />
               <KPICard label="Ticket Vinos" value={money(dashData.ventasVinos?.ticketPromedio || 0)} />
+            </div>
+            <div className={s.grid3}>
+              <KPICard label="Reservas" value={dashData.ventasReservas?.cantidad || 0} />
+              <KPICard label="Total Reservas" value={money(dashData.ventasReservas?.total || 0)} />
               <KPICard label="Ticket Reservas" value={money(dashData.ventasReservas?.ticketPromedio || 0)} />
+            </div>
+            <div className={s.grid1}>
+              <KPICard label="Total" value={money(dashData.ventas.total)} />
             </div>
             {dashData.ultimasVentas.length > 0 && (
               <div className={s.miniList}>

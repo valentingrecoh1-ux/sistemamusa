@@ -3317,6 +3317,34 @@ Origen: ${producto.origen || ""}`;
     }
   });
 
+  socket.on("guardar-info-pago-gasto", async ({ eventoId, gastoIndex, infoPago }) => {
+    try {
+      const evento = await Evento.findById(eventoId);
+      if (!evento || !evento.gastosEstimados[gastoIndex]) return;
+      evento.gastosEstimados[gastoIndex].infoPago = infoPago || "";
+      await evento.save();
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error guardar-info-pago-gasto:", err);
+    }
+  });
+
+  socket.on("notificar-pago-gasto", async ({ eventoId, gastoIndex }) => {
+    try {
+      const evento = await Evento.findById(eventoId);
+      if (!evento || !evento.gastosEstimados[gastoIndex]) return;
+      const gasto = evento.gastosEstimados[gastoIndex];
+      await crearNotificacion({
+        tipo: "pago_pendiente",
+        mensaje: `Pagar ${gasto.descripcion} (${evento.nombre}) — $${gasto.monto}${gasto.infoPago ? ` — ${gasto.infoPago}` : ""}`,
+        destinatarioRol: "admin",
+        referenciaId: evento._id,
+      });
+    } catch (err) {
+      console.error("Error notificar-pago-gasto:", err);
+    }
+  });
+
   socket.on("request-flujos", async (ordenadoFechaPago, todos) => {
     try {
       let filter = {};

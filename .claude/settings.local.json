@@ -24,7 +24,16 @@
       "WebFetch(domain:psp.bind.com.ar)",
       "WebFetch(domain:sandbox.bind.com.ar)",
       "Bash(ipconfig)",
-      "Bash(powershell -Command \"Get-Printer | Select-Object Name, DriverName, PortName | Format-Table -AutoSize\")"
+      "Bash(powershell -Command \"Get-Printer | Select-Object Name, DriverName, PortName | Format-Table -AutoSize\")",
+      "WebFetch(domain:www.neodynamic.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:www.componentsource.com)",
+      "WebFetch(domain:buy.qz.io)",
+      "WebFetch(domain:qz.io)",
+      "Bash(xargs grep -l \"usuario\\\\|Usuario\")",
+      "Bash(grep -v \"^//\")",
+      "Bash(wmic process where \"name like ''%qz%''\" get ExecutablePath)",
+      "Bash(xargs grep -l \"mensaje\\\\|chat\\\\|comment\")"
     ]
   }
 }

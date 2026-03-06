@@ -81,6 +81,8 @@ function Eventos({ usuario }) {
   const [newGasto, setNewGasto] = useState({ descripcion: "", monto: "" });
   const [editingGastoIdx, setEditingGastoIdx] = useState(null);
   const [editGastoData, setEditGastoData] = useState({ descripcion: "", monto: 0 });
+  const [infoOpenIdx, setInfoOpenIdx] = useState(null);
+  const [infoPagoEdit, setInfoPagoEdit] = useState("");
 
   // Stats
   const [totalPersonas, setTotalPersonas] = useState(0);
@@ -1204,6 +1206,16 @@ function Eventos({ usuario }) {
                               </span>
                             ) : (
                               <div className={s.gastoActions}>
+                                <button className={s.gastoIconBtn} onClick={() => {
+                                  socket.emit("notificar-pago-gasto", { eventoId: detailData._id, gastoIndex: idx });
+                                }} title="Notificar para pagar">
+                                  <i className="bi bi-bell"></i>
+                                </button>
+                                <button className={`${s.gastoIconBtn} ${g.infoPago ? s.gastoIconBtnActive : ''}`} onClick={() => {
+                                  if (infoOpenIdx === idx) { setInfoOpenIdx(null); } else { setInfoOpenIdx(idx); setInfoPagoEdit(g.infoPago || ""); }
+                                }} title="Info de pago">
+                                  <i className="bi bi-info-circle"></i>
+                                </button>
                                 <button className={s.gastoConcretarBtn} onClick={() => concretarGasto(idx)} title="Enviar a caja">
                                   <i className="bi bi-send"></i> Enviar a caja
                                 </button>
@@ -1213,6 +1225,28 @@ function Eventos({ usuario }) {
                                 <button className={s.borrarReservaBtn} onClick={() => eliminarGasto(idx)} title="Eliminar">
                                   <i className="bi bi-trash3"></i>
                                 </button>
+                              </div>
+                            )}
+                            {infoOpenIdx === idx && !g.realizado && (
+                              <div className={s.infoPagoPanel}>
+                                <textarea
+                                  className={s.infoPagoInput}
+                                  placeholder="Datos de pago (CBU, alias, etc.)"
+                                  value={infoPagoEdit}
+                                  onChange={(e) => setInfoPagoEdit(e.target.value)}
+                                  rows={2}
+                                />
+                                <div className={s.infoPagoBtns}>
+                                  <button className={s.miniAddBtn} onClick={() => {
+                                    socket.emit("guardar-info-pago-gasto", { eventoId: detailData._id, gastoIndex: idx, infoPago: infoPagoEdit });
+                                    setInfoOpenIdx(null);
+                                  }}>
+                                    <i className="bi bi-check-lg"></i> Guardar
+                                  </button>
+                                  <button className={s.borrarReservaBtn} onClick={() => setInfoOpenIdx(null)}>
+                                    <i className="bi bi-x-lg"></i>
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </>

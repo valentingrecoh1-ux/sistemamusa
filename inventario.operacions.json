@@ -39050,4 +39050,1281 @@
     "$date": "2026-02-09T19:56:33.773Z"
   },
   "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698a77b06936ed90b56602e8"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Servicio de limpieza. Patricia",
+  "nombre": "LIMPIEZA",
+  "monto": -16000,
+  "fecha": "2026-02-09",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-10T00:11:28.350Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-10T00:11:28.350Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698a782a6936ed90b56602f1"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -8808.3,
+  "fecha": "2026-02-09",
+  "createdAt": {
+    "$date": "2026-02-10T00:13:30.832Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-10T00:13:30.832Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698a78446936ed90b56602fa"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Reintegro MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 5617.97,
+  "fecha": "2026-02-09",
+  "createdAt": {
+    "$date": "2026-02-10T00:13:56.387Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-10T00:13:56.387Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698bcaa76936ed90b5660517"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2010.76,
+  "fecha": "2026-02-10",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-11T00:17:43.513Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-11T00:17:43.513Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698bcafe6936ed90b5660520"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -14645.8,
+  "fecha": "2026-02-10",
+  "createdAt": {
+    "$date": "2026-02-11T00:19:10.610Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-11T00:19:10.610Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698cc08e6936ed90b5660576"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Pago de Factura MP",
+  "nombre": "MERCADOPAGO",
+  "monto": -8156.66,
+  "fecha": "2026-02-11",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-11T17:46:54.692Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-11T17:46:54.692Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698cfd316936ed90b5660680"
+  },
+  "tipoOperacion": "RETIRO",
+  "formaPago": "DIGITAL",
+  "descripcion": "sueldo vero",
+  "nombre": "SUELDO",
+  "monto": -479094.94,
+  "fecha": "2026-02-11",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-11T22:05:37.987Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-11T22:05:37.987Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698d1e736936ed90b5660821"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -7896.7,
+  "fecha": "2026-02-11",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-12T00:27:31.711Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-12T00:27:31.711Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698d1e906936ed90b566082a"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Reintegro MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2187.14,
+  "fecha": "2026-02-11",
+  "createdAt": {
+    "$date": "2026-02-12T00:28:00.595Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-12T00:28:00.595Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698d1ecb6936ed90b5660833"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Ajuste de caja",
+  "nombre": "AJUSTE DE CAJA",
+  "monto": 2185,
+  "fecha": "2026-02-11",
+  "createdAt": {
+    "$date": "2026-02-12T00:28:59.760Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-12T00:28:59.760Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698e72fa6936ed90b5660b41"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -9134.1,
+  "fecha": "2026-02-12",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-13T00:40:26.347Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-13T00:40:26.347Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698e73196936ed90b5660b4a"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2361.65,
+  "fecha": "2026-02-12",
+  "createdAt": {
+    "$date": "2026-02-13T00:40:57.777Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-13T00:40:57.777Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698f8c4d6936ed90b5660d05"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Flores",
+  "nombre": "VARIOS",
+  "monto": -14000,
+  "fecha": "2026-02-13",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-13T20:40:45.214Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-13T20:40:45.214Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698ff1226936ed90b5660ea8"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Sushi. Cata 13/2",
+  "nombre": "DEGUSTACION",
+  "monto": -152000,
+  "fecha": "2026-02-14",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-14T03:50:58.467Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T03:50:58.467Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698ff2a36936ed90b5660ebf"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "IMPRESIONES",
+  "nombre": "VARIOS",
+  "monto": -16200,
+  "filePath": "comprobantes\\file-1771041443162-663627343-WhatsApp Image 2026-02-13 at 20.01.53.jpeg",
+  "fecha": "2026-02-14",
+  "createdAt": {
+    "$date": "2026-02-14T03:57:23.169Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T03:57:23.169Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698ff30e6936ed90b5660ec8"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -6753.45,
+  "fecha": "2026-02-14",
+  "createdAt": {
+    "$date": "2026-02-14T03:59:10.030Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T03:59:10.030Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "698ff3286936ed90b5660ed1"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2416.8,
+  "fecha": "2026-02-14",
+  "createdAt": {
+    "$date": "2026-02-14T03:59:36.460Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-14T03:59:36.460Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69911db76936ed90b5660fd3"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -6045.8,
+  "fecha": "2026-02-14",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-15T01:13:27.684Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-15T01:13:27.684Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69911dee6936ed90b5660fdc"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Ajuste de caja",
+  "nombre": "AJUSTE DE CAJA",
+  "monto": 50,
+  "fecha": "2026-02-14",
+  "createdAt": {
+    "$date": "2026-02-15T01:14:22.981Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-15T01:14:22.981Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699393e06936ed90b5661013"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Supermercado. Bidones de agua (no hay agua en el local)",
+  "nombre": "VARIOS",
+  "monto": -7700,
+  "fecha": "2026-02-16",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-16T22:02:08.661Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-16T22:02:08.661Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6993ac796936ed90b56610b0"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Peaje",
+  "nombre": "",
+  "monto": -1258.38,
+  "fecha": "2026-02-16",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-16T23:47:05.457Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-16T23:47:30.783Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6993acaf6936ed90b56610c2"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Peaje",
+  "nombre": "",
+  "monto": -5380.15,
+  "fecha": "2026-02-16",
+  "createdAt": {
+    "$date": "2026-02-16T23:47:59.806Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-16T23:47:59.806Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6993ad016936ed90b56610cb"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -4151.8,
+  "fecha": "2026-02-16",
+  "createdAt": {
+    "$date": "2026-02-16T23:49:21.610Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-16T23:49:21.610Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699504bd6936ed90b5661144"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Peaje",
+  "nombre": "",
+  "monto": -1581.68,
+  "fecha": "2026-02-17",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-18T00:15:57.505Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-18T00:15:57.505Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699504e56936ed90b566114d"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -13292.25,
+  "fecha": "2026-02-17",
+  "createdAt": {
+    "$date": "2026-02-18T00:16:37.162Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-18T00:16:37.162Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699728a391cc59ad9625bb77"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Arreglo camaras",
+  "nombre": "VARIOS",
+  "monto": -80000,
+  "fecha": "2026-02-19",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-19T15:13:39.556Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T15:13:39.556Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6997480d91cc59ad9625bb92"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Uber. Paro Nacional",
+  "nombre": "VARIOS",
+  "monto": -6500,
+  "filePath": "comprobantes\\file-1771522061853-577032680-Recibo UBER.pdf",
+  "fecha": "2026-02-19",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-19T17:27:41.862Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T17:27:41.862Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6997521991cc59ad9625bc13"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP 18/2",
+  "nombre": "MERCADOPAGO",
+  "monto": 13896.27,
+  "fecha": "2026-02-19",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-19T18:10:33.574Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T18:10:33.574Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6997522d91cc59ad9625bc1c"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP 19/2",
+  "nombre": "MERCADOPAGO",
+  "monto": 3757.97,
+  "fecha": "2026-02-19",
+  "createdAt": {
+    "$date": "2026-02-19T18:10:53.876Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T18:12:17.526Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6997527291cc59ad9625bc25"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP 18/2",
+  "nombre": "POSNET",
+  "monto": -23483.6,
+  "fecha": "2026-02-19",
+  "createdAt": {
+    "$date": "2026-02-19T18:12:02.922Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-19T18:19:07.539Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6997a5b291cc59ad9625bde1"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -4513.3,
+  "fecha": "2026-02-19",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-20T00:07:14.402Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-20T00:07:14.402Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6998caf391cc59ad9625c0a8"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Supermercado. Producto de limpieza y cepillo nuevo",
+  "nombre": "LIMPIEZA",
+  "monto": -16600,
+  "fecha": "2026-02-20",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-20T20:58:27.585Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-20T20:58:27.585Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6998cb8491cc59ad9625c0b1"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Uber. Paro Nacional",
+  "nombre": "VARIOS",
+  "monto": -6500,
+  "filePath": "comprobantes\\file-1771621252353-764042509-Comprobante Uber.pdf",
+  "fecha": "2026-02-20",
+  "createdAt": {
+    "$date": "2026-02-20T21:00:52.369Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-20T21:01:12.698Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6998fe5191cc59ad9625c3aa"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -22169.65,
+  "fecha": "2026-02-20",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-21T00:37:37.977Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T00:37:37.977Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6998ffca91cc59ad9625c41a"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 4342.51,
+  "fecha": "2026-02-20",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-21T00:43:54.790Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T00:43:54.790Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699a315b91cc59ad9625c55f"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Tequeños. Cata 21/2",
+  "nombre": "DEGUSTACION",
+  "monto": -63000,
+  "fecha": "2026-02-21",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-21T22:27:39.925Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T22:27:39.925Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699a317091cc59ad9625c568"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Hielo. Cata 21/2",
+  "nombre": "DEGUSTACION",
+  "monto": -9300,
+  "fecha": "2026-02-21",
+  "createdAt": {
+    "$date": "2026-02-21T22:28:00.441Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T22:28:00.441Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699a318491cc59ad9625c571"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Flores",
+  "nombre": "VARIOS",
+  "monto": -14000,
+  "fecha": "2026-02-21",
+  "createdAt": {
+    "$date": "2026-02-21T22:28:20.412Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T22:28:20.412Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699a451891cc59ad9625c65d"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Menú sin TACC. Cata 21/2",
+  "nombre": "DEGUSTACION",
+  "monto": -24000,
+  "fecha": "2026-02-21",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-21T23:51:52.760Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-21T23:51:52.760Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699a4fff91cc59ad9625c762"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -12773.45,
+  "fecha": "2026-02-21",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-22T00:38:23.558Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-22T00:38:23.558Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699a550d91cc59ad9625c78d"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Horas Cris",
+  "nombre": "DEGUSTACION",
+  "monto": -45000,
+  "fecha": "2026-02-21",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-22T00:59:57.778Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-22T00:59:57.778Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699b021b91cc59ad9625c79d"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Internet",
+  "nombre": "SERVICIOS",
+  "monto": -30490.98,
+  "fecha": "2026-02-22",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-22T13:18:19.758Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-22T13:20:46.278Z"
+  },
+  "__v": 0,
+  "filePath": "comprobantes\\file-1771766446265-319708819-IMG_7443.jpeg"
+},
+{
+  "_id": {
+    "$oid": "699c9f8691cc59ad9625c902"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Fumigador",
+  "nombre": "Fumigacion",
+  "monto": -40000,
+  "fecha": "2026-02-23",
+  "factura": "C",
+  "createdAt": {
+    "$date": "2026-02-23T18:42:14.079Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-23T22:02:19.010Z"
+  },
+  "__v": 0,
+  "filePath": "comprobantes\\file-1771884139004-449115873-27257127104_011_00001_00000279.pdf"
+},
+{
+  "_id": {
+    "$oid": "699cc65d91cc59ad9625c958"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Limpieza de vidrio",
+  "nombre": "LIMPIEZA",
+  "monto": -15000,
+  "fecha": "2026-02-23",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-23T21:27:57.045Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-23T21:27:57.045Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699cc66991cc59ad9625c961"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Servicio de limpieza",
+  "nombre": "LIMPIEZA",
+  "monto": -16000,
+  "fecha": "2026-02-23",
+  "createdAt": {
+    "$date": "2026-02-23T21:28:09.470Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-23T21:28:09.470Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699cd0b191cc59ad9625c992"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Dharma Wines",
+  "nombre": "VINOS",
+  "monto": -426600,
+  "filePath": "comprobantes\\file-1771884721521-734680579-Factura de Venta NÂ° A-00004-00001701 VALENTIN GRECO 6-1-26.pdf",
+  "fecha": "2026-02-23",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-23T22:12:01.535Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-23T22:12:01.535Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699cd28591cc59ad9625ca2f"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Vesta",
+  "nombre": "VINOS",
+  "monto": -267120,
+  "filePath": "comprobantes\\file-1771885189641-823158945-FC00667 - VESTA- MUSA.pdf",
+  "fecha": "2026-02-23",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-23T22:19:49.653Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-23T22:19:49.653Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699cd38f91cc59ad9625caf0"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Obon Wines",
+  "nombre": "VINOS",
+  "monto": -528800,
+  "filePath": "comprobantes\\file-1771885455303-502964969-20313997910_001_00002_00000146.pdf",
+  "fecha": "2026-02-23",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-23T22:24:15.311Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-23T22:24:15.311Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699cf0c591cc59ad9625cb91"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 13766.14,
+  "fecha": "2026-02-23",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-24T00:28:53.360Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T00:28:53.360Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699cf17291cc59ad9625cb9a"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisión MP",
+  "nombre": "POSNET",
+  "monto": -12950.5,
+  "fecha": "2026-02-23",
+  "createdAt": {
+    "$date": "2026-02-24T00:31:46.047Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T00:31:46.047Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699dba8b91cc59ad9625cbb0"
+  },
+  "tipoOperacion": "RETIRO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Factura barto",
+  "nombre": "VALENTIN GRECO",
+  "monto": -1031056.91,
+  "filePath": "comprobantes\\file-1771944587235-434711372-FC A 00006-00002839.pdf",
+  "fecha": "2026-02-24",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-24T14:49:47.248Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T14:49:47.248Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699dbaa891cc59ad9625cbc0"
+  },
+  "tipoOperacion": "RETIRO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Factura barto",
+  "nombre": "VALENTIN GRECO",
+  "monto": -450474.5,
+  "filePath": "comprobantes\\file-1771944616170-782603998-FC A 00006-00002649.pdf",
+  "fecha": "2026-02-24",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-24T14:50:16.176Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T14:50:16.176Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699dbac291cc59ad9625cbd0"
+  },
+  "tipoOperacion": "RETIRO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Factura barto",
+  "nombre": "VALENTIN GRECO",
+  "monto": -93153.83,
+  "filePath": "comprobantes\\file-1771944642483-648388776-FC A 00006-00002649.pdf",
+  "fecha": "2026-02-24",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-24T14:50:42.488Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T14:50:42.488Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699dbadb91cc59ad9625cbe0"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Compra factura",
+  "nombre": "COMPRA FACTURA",
+  "monto": -62000,
+  "fecha": "2026-02-24",
+  "createdAt": {
+    "$date": "2026-02-24T14:51:07.753Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T14:51:07.753Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699dbae391cc59ad9625cbf0"
+  },
+  "tipoOperacion": "APORTE",
+  "formaPago": "EFECTIVO",
+  "descripcion": "",
+  "nombre": "VALENTIN GRECO",
+  "monto": 62000,
+  "fecha": "2026-02-24",
+  "createdAt": {
+    "$date": "2026-02-24T14:51:15.974Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-24T14:51:15.974Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699e3cd891cc59ad9625cd38"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisión MP",
+  "nombre": "POSNET",
+  "monto": -8554.5,
+  "fecha": "2026-02-24",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-25T00:05:44.026Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-25T00:05:44.026Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699e3cf991cc59ad9625cd41"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 4667.01,
+  "fecha": "2026-02-24",
+  "createdAt": {
+    "$date": "2026-02-25T00:06:17.017Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-25T00:06:17.017Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699f948c91cc59ad9625cf93"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -41550.64,
+  "fecha": "2026-02-25",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-26T00:32:12.069Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T00:32:12.069Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699f94b091cc59ad9625cf9c"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2374.38,
+  "fecha": "2026-02-25",
+  "createdAt": {
+    "$date": "2026-02-26T00:32:48.814Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T00:32:48.814Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "699f958b91cc59ad9625cfa5"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Ajuste de caja",
+  "nombre": "AJUSTE",
+  "monto": 500,
+  "fecha": "2026-02-25",
+  "createdAt": {
+    "$date": "2026-02-26T00:36:27.308Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T00:36:27.308Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a0cfc191cc59ad9625d4a4"
+  },
+  "tipoOperacion": "RETIRO",
+  "formaPago": "DIGITAL",
+  "descripcion": "",
+  "nombre": "VALENTIN GRECO",
+  "monto": -155005.02,
+  "fecha": "2026-02-26",
+  "factura": "A",
+  "createdAt": {
+    "$date": "2026-02-26T22:57:05.050Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T22:57:47.682Z"
+  },
+  "__v": 0,
+  "filePath": "comprobantes\\file-1772146667672-105269250-IMG_7575.jpeg"
+},
+{
+  "_id": {
+    "$oid": "69a0cfd591cc59ad9625d4ae"
+  },
+  "tipoOperacion": "RETIRO",
+  "formaPago": "DIGITAL",
+  "descripcion": "",
+  "nombre": "VALENTIN GRECO",
+  "monto": -6396.42,
+  "fecha": "2026-02-26",
+  "createdAt": {
+    "$date": "2026-02-26T22:57:25.187Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-26T22:57:25.187Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a0e1a991cc59ad9625d58f"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisión MP",
+  "nombre": "POSNET",
+  "monto": -7836.9,
+  "fecha": "2026-02-26",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-27T00:13:29.798Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T00:13:29.798Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a0e1c591cc59ad9625d598"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2194.25,
+  "fecha": "2026-02-26",
+  "createdAt": {
+    "$date": "2026-02-27T00:13:57.254Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T00:13:57.254Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a236dc91cc59ad9625d792"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "EFECTIVO",
+  "descripcion": "Papelera",
+  "nombre": "LIMPIEZA",
+  "monto": -55000,
+  "filePath": "comprobantes\\file-1772238556313-448525346-WhatsApp Image 2026-02-27 at 21.28.12.jpeg",
+  "fecha": "2026-02-27",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-28T00:29:16.323Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T00:29:16.323Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a238d791cc59ad9625d79b"
+  },
+  "tipoOperacion": "INGRESO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Rendimiento MP",
+  "nombre": "MERCADOPAGO",
+  "monto": 2064.51,
+  "fecha": "2026-02-27",
+  "createdAt": {
+    "$date": "2026-02-28T00:37:43.874Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T00:37:43.874Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a2398391cc59ad9625d7bc"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Comisiones MP",
+  "nombre": "POSNET",
+  "monto": -4549.77,
+  "fecha": "2026-02-27",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-28T00:40:35.346Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T00:40:35.346Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69a23c9391cc59ad9625d7e8"
+  },
+  "tipoOperacion": "GASTO",
+  "formaPago": "DIGITAL",
+  "descripcion": "Diferencia comisiones MP 26/2 Total: $12.002,7",
+  "nombre": "POSNET",
+  "monto": -4165.8,
+  "fecha": "2026-02-27",
+  "factura": "null",
+  "createdAt": {
+    "$date": "2026-02-28T00:53:39.972Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-28T00:53:39.972Z"
+  },
+  "__v": 0
 }]

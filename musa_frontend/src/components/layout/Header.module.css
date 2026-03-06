@@ -222,6 +222,29 @@
   color: var(--text-muted);
 }
 
+.notifCheckBtn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--input-border);
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  margin-top: 2px;
+}
+.notifCheckBtn:hover {
+  color: var(--success);
+  border-color: var(--success);
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
 @media (max-width: 768px) {
   .header {
     padding: 0 12px;

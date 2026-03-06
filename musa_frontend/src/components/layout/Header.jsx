@@ -111,6 +111,15 @@ export default function Header({ onToggleMobile, usuario }) {
                         {n.createdAt ? new Date(n.createdAt).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''}
                       </span>
                     </div>
+                    {!n.leida && (
+                      <button
+                        className={s.notifCheckBtn}
+                        onClick={(e) => { e.stopPropagation(); socket.emit('marcar-notificacion-leida', n._id); }}
+                        title="Marcar como leída"
+                      >
+                        <i className="bi bi-check-lg" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

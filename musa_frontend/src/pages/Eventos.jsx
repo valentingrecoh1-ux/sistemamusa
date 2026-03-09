@@ -1065,7 +1065,7 @@ function Eventos({ usuario }) {
                                   style={{ marginLeft: 4, background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 13 }}
                                   onClick={() => {
                                     const link = `${window.location.origin}/feedback/${detailData._id}/${r._id}`;
-                                    const msg = `Hola ${r.nombre}! 🍷 Gracias por haber venido a "${detailData.nombre}". Nos encantaría saber qué te pareció la degustación. Podés dejarnos tu opinión acá: ${link}`;
+                                    const msg = `Hola ${r.nombre}! 🍷 Gracias por haber venido a "${detailData.nombre}". Nos encantaría saber qué te pareció la degustación. Tu opinión nos importa mucho para seguir mejorando! Podés dejarnos tu feedback acá: ${link}`;
                                     window.open(`https://wa.me/549${r.telefono}?text=${encodeURIComponent(msg)}`, "_blank");
                                   }}
                                   title="Pedir reseña"

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useTheme } from '../../context/ThemeContext';
 import { fetchConfig } from '../../lib/tiendaApi';
 import { tiendaPath, TIENDA_BASE } from '../../tiendaConfig';
 import logo from '../../assets/musa.jpg';
@@ -11,15 +12,14 @@ const home = TIENDA_BASE || '/';
 export default function TiendaLayout() {
   const { totalItems } = useCart();
   const { pathname } = useLocation();
+  const { forceTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [config, setConfig] = useState({});
 
-  // Tienda siempre en dark mode
+  // Tienda siempre en dark mode — uses ThemeContext to avoid race condition
   useEffect(() => {
-    const prev = document.documentElement.getAttribute('data-theme');
-    document.documentElement.setAttribute('data-theme', 'dark');
-    return () => document.documentElement.setAttribute('data-theme', prev || 'light');
-  }, []);
+    return forceTheme('dark');
+  }, [forceTheme]);
 
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});

@@ -28,6 +28,7 @@ const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
 const Notificacion = require("./models/notificacion");
 const Cliente = require("./models/cliente");
+const { isCloudinaryConfigured, uploadBuffer, uploadBase64, deleteByUrl, isUrl } = require("./cloudinaryHelper");
 const ValoracionVino = require("./models/valoracionVino");
 const MediaTV = require("./models/mediaTV");
 const FeedbackEvento = require("./models/feedbackEvento");
@@ -488,6 +489,11 @@ app.get("/api/usuario-foto/:id", async (req, res) => {
   try {
     const u = await Usuario.findById(req.params.id).select("foto").lean();
     if (!u || !u.foto) return res.status(404).send("No photo");
+    // Si es URL (Cloudinary), redirigir
+    if (isUrl(u.foto)) {
+      res.set("Cache-Control", "public, max-age=86400");
+      return res.redirect(301, u.foto);
+    }
     const match = u.foto.match(/^data:(.+?);base64,(.+)$/);
     if (!match) return res.status(404).send("Bad format");
     res.set("Content-Type", match[1]);
@@ -508,7 +514,6 @@ app.get("/api/producto-foto/:id/:index?", async (req, res) => {
     const idx = req.params.index != null ? parseInt(req.params.index) : null;
 
     if (idx !== null && p.fotos && p.fotos[idx]) {
-      // Servir foto por indice especifico
       foto = p.fotos[idx];
     } else if (p.usarFotoIA && p.fotoIA) {
       foto = p.fotoIA;
@@ -519,6 +524,14 @@ app.get("/api/producto-foto/:id/:index?", async (req, res) => {
     }
 
     if (!foto) return res.status(404).send("No photo");
+
+    // Si es URL (Cloudinary), redirigir
+    if (isUrl(foto)) {
+      res.set("Cache-Control", "public, max-age=86400");
+      return res.redirect(301, foto);
+    }
+
+    // Fallback: servir base64
     const match = foto.match(/^data:(.+?);base64,(.+)$/);
     if (!match) return res.status(404).send("Bad format");
     res.set("Content-Type", match[1]);
@@ -704,11 +717,16 @@ app.post("/upload", upload.array("fotos", 10), async (req, res) => {
   const formData = req.body;
   const files = req.files || [];
   try {
-    // Convertir fotos nuevas a base64
-    const nuevasFotos = files.map((file) => {
-      const mime = file.mimetype || "image/jpeg";
-      return `data:${mime};base64,${file.buffer.toString("base64")}`;
-    });
+    // Subir fotos nuevas a Cloudinary (o fallback a base64)
+    let nuevasFotos;
+    if (isCloudinaryConfigured()) {
+      nuevasFotos = await Promise.all(files.map((file) => uploadBuffer(file.buffer, "musa/productos")));
+    } else {
+      nuevasFotos = files.map((file) => {
+        const mime = file.mimetype || "image/jpeg";
+        return `data:${mime};base64,${file.buffer.toString("base64")}`;
+      });
+    }
 
     // Indices de fotos existentes a mantener (enviados como JSON string)
     const fotosKeepIdx = formData.fotosKeepIdx ? JSON.parse(formData.fotosKeepIdx) : null;
@@ -810,6 +828,78 @@ app.post("/upload", upload.array("fotos", 10), async (req, res) => {
     res
       .status(500)
       .json({ status: "error", message: "Error al guardar el producto" });
+  }
+});
+
+// ── Migrar fotos existentes de base64 a Cloudinary ──
+app.post("/api/migrar-cloudinary", async (req, res) => {
+  if (!isCloudinaryConfigured()) return res.status(400).json({ error: "Cloudinary no configurado" });
+  const results = { productos: 0, usuarios: 0, mediaTV: 0, errors: [] };
+  try {
+    // 1. Migrar productos
+    const productos = await Product.find({}).select("foto fotos fotoIA").lean();
+    for (const p of productos) {
+      try {
+        const updates = {};
+        // Migrar fotos array
+        if (p.fotos && p.fotos.length > 0) {
+          const newFotos = [];
+          for (const f of p.fotos) {
+            if (f && !isUrl(f) && f.startsWith("data:")) {
+              newFotos.push(await uploadBase64(f, "musa/productos"));
+            } else {
+              newFotos.push(f);
+            }
+          }
+          updates.fotos = newFotos;
+          updates.foto = newFotos[p.fotoPrincipalIdx || 0] || newFotos[0] || "";
+        } else if (p.foto && !isUrl(p.foto) && p.foto.startsWith("data:")) {
+          const url = await uploadBase64(p.foto, "musa/productos");
+          updates.foto = url;
+          updates.fotos = [url];
+        }
+        // Migrar fotoIA
+        if (p.fotoIA && !isUrl(p.fotoIA) && p.fotoIA.startsWith("data:")) {
+          updates.fotoIA = await uploadBase64(p.fotoIA, "musa/productos-ia");
+        }
+        if (Object.keys(updates).length > 0) {
+          await Product.findByIdAndUpdate(p._id, updates);
+          results.productos++;
+        }
+      } catch (err) {
+        results.errors.push(`Producto ${p._id}: ${err.message}`);
+      }
+    }
+    // 2. Migrar fotos de usuarios
+    const usuarios = await Usuario.find({ foto: { $exists: true, $ne: "" } }).select("foto").lean();
+    for (const u of usuarios) {
+      try {
+        if (u.foto && !isUrl(u.foto) && u.foto.startsWith("data:")) {
+          const url = await uploadBase64(u.foto, "musa/usuarios");
+          await Usuario.findByIdAndUpdate(u._id, { foto: url });
+          results.usuarios++;
+        }
+      } catch (err) {
+        results.errors.push(`Usuario ${u._id}: ${err.message}`);
+      }
+    }
+    // 3. Migrar media TV
+    const medias = await MediaTV.find({}).select("archivo").lean();
+    for (const m of medias) {
+      try {
+        if (m.archivo && !isUrl(m.archivo) && m.archivo.startsWith("data:")) {
+          const url = await uploadBase64(m.archivo, "musa/tv");
+          await MediaTV.findByIdAndUpdate(m._id, { archivo: url });
+          results.mediaTV++;
+        }
+      } catch (err) {
+        results.errors.push(`MediaTV ${m._id}: ${err.message}`);
+      }
+    }
+    res.json({ ok: true, migrados: results });
+  } catch (err) {
+    console.error("Error migración Cloudinary:", err);
+    res.status(500).json({ error: err.message, parcial: results });
   }
 });
 
@@ -1317,13 +1407,18 @@ app.delete("/api/oc/:id/factura/:idx", async (req, res) => {
   }
 });
 
-// ── Profile photo upload (base64 en MongoDB) ──
+// ── Profile photo upload ──
 app.post("/upload_foto_perfil", uploadPerfil.single("foto"), async (req, res) => {
   try {
     const userId = req.body.userId;
     if (!userId || !req.file) return res.status(400).json({ error: "Faltan datos" });
-    const mime = req.file.mimetype || "image/jpeg";
-    const foto = `data:${mime};base64,${req.file.buffer.toString("base64")}`;
+    let foto;
+    if (isCloudinaryConfigured()) {
+      foto = await uploadBuffer(req.file.buffer, "musa/usuarios");
+    } else {
+      const mime = req.file.mimetype || "image/jpeg";
+      foto = `data:${mime};base64,${req.file.buffer.toString("base64")}`;
+    }
     await Usuario.findByIdAndUpdate(userId, { foto });
     io.emit("cambios");
     res.json({ ok: true, foto });
@@ -1338,8 +1433,13 @@ app.post("/api/chat/upload-imagen", uploadPerfil.single("imagen"), async (req, r
   try {
     const file = req.file;
     if (!file) return res.status(400).json({ error: "No se envió imagen" });
-    const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-    res.json({ ok: true, imagen: base64 });
+    let imagen;
+    if (isCloudinaryConfigured()) {
+      imagen = await uploadBuffer(file.buffer, "musa/chat");
+    } else {
+      imagen = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+    }
+    res.json({ ok: true, imagen });
   } catch (err) {
     console.error("Error upload imagen chat:", err);
     res.status(500).json({ error: err.message });
@@ -1351,11 +1451,16 @@ app.post("/api/tv/upload", uploadMediaTV.single("archivo"), async (req, res) => 
   try {
     const file = req.file;
     if (!file) return res.status(400).json({ error: "No se envió archivo" });
-    const base64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+    let archivo;
+    if (isCloudinaryConfigured()) {
+      archivo = await uploadBuffer(file.buffer, "musa/tv");
+    } else {
+      archivo = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+    }
     const count = await MediaTV.countDocuments();
     const doc = await MediaTV.create({
       nombre: req.body.nombre || file.originalname,
-      archivo: base64,
+      archivo,
       orden: count,
       subidoPor: req.body.usuario || "",
     });
@@ -1371,6 +1476,10 @@ app.get("/api/tv/imagen/:id", async (req, res) => {
   try {
     const doc = await MediaTV.findById(req.params.id).select("archivo");
     if (!doc || !doc.archivo) return res.status(404).send("No encontrado");
+    if (isUrl(doc.archivo)) {
+      res.set("Cache-Control", "public, max-age=86400");
+      return res.redirect(301, doc.archivo);
+    }
     const matches = doc.archivo.match(/^data:(.+);base64,(.+)$/);
     if (!matches) return res.status(500).send("Formato inválido");
     res.set("Content-Type", matches[1]);
@@ -1735,14 +1844,22 @@ Origen: ${producto.origen || ""}`;
         return;
       }
 
-      // Extraer base64 del data URI
-      const match = producto.foto.match(/^data:(image\/[\w+]+);base64,(.+)$/);
-      if (!match) {
-        if (cb) cb({ error: "Formato de foto invalido (se espera data URI base64)" });
-        return;
+      // Si la foto es una URL de Cloudinary, descargarla y convertir a base64
+      let mimeType, base64Image;
+      if (isUrl(producto.foto)) {
+        const imgFetch = await fetch(producto.foto);
+        const buf = Buffer.from(await imgFetch.arrayBuffer());
+        mimeType = imgFetch.headers.get("content-type") || "image/jpeg";
+        base64Image = buf.toString("base64");
+      } else {
+        const match = producto.foto.match(/^data:(image\/[\w+]+);base64,(.+)$/);
+        if (!match) {
+          if (cb) cb({ error: "Formato de foto invalido" });
+          return;
+        }
+        mimeType = match[1];
+        base64Image = match[2];
       }
-      const mimeType = match[1];
-      const base64Image = match[2];
 
       const imgRes = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
@@ -1777,7 +1894,12 @@ Origen: ${producto.origen || ""}`;
       // Buscar la imagen generada en el output
       const imageOutput = imgData.output?.find((o) => o.type === "image_generation_call");
       if (imageOutput?.result) {
-        const fotoIA = `data:image/png;base64,${imageOutput.result}`;
+        let fotoIA;
+        if (isCloudinaryConfigured()) {
+          fotoIA = await uploadBase64(`data:image/png;base64,${imageOutput.result}`, "musa/productos-ia");
+        } else {
+          fotoIA = `data:image/png;base64,${imageOutput.result}`;
+        }
         await Product.findByIdAndUpdate(id, { fotoIA });
         io.emit("cambios");
         if (cb) cb({ ok: true, fotoIA });

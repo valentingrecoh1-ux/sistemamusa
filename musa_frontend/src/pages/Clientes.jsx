@@ -11,6 +11,10 @@ const EMPTY = { nombre: '', apellido: '', dni: '', whatsapp: '', email: '', tele
 const NIVEL_COLORS = { Nuevo: '#94a3b8', Curioso: '#60a5fa', Explorador: '#34d399', Conocedor: '#f59e0b', Sommelier: '#a78bfa', Maestro: '#f43f5e' };
 const NIVEL_PROGRESS = [0, 3, 10, 25, 50, 75];
 
+const PREMIO_ICONS = { descuento: 'bi-percent', vino_gratis: 'bi-cup-straw', degustacion_gratis: 'bi-people' };
+const PREMIO_COLORS = { descuento: '#3b82f6', vino_gratis: '#8b5cf6', degustacion_gratis: '#ec4899' };
+const PREMIO_LABELS = { descuento: 'Descuento', vino_gratis: 'Vino gratis', degustacion_gratis: 'Degustacion gratis' };
+
 const Stars = ({ value, onChange, size = 18 }) => (
   <div className={s.stars}>
     {[1, 2, 3, 4, 5].map((n) => (
@@ -337,6 +341,7 @@ export default function Clientes({ usuario }) {
                   { key: 'historial', label: 'Historial', icon: 'bi-clock-history' },
                   { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
                   { key: 'logros', label: 'Logros', icon: 'bi-trophy' },
+                  { key: 'premios', label: 'Premios', icon: 'bi-gift' },
                   { key: 'catalogo', label: 'Catalogo', icon: 'bi-grid-3x3-gap' },
                 ].map((t) => (
                   <button key={t.key} className={`${s.tab} ${perfilTab === t.key ? s.tabActive : ''}`} onClick={() => setPerfilTab(t.key)}>
@@ -481,11 +486,70 @@ export default function Clientes({ usuario }) {
                         <div className={s.logroInfo}>
                           <span className={s.logroNombre}>{l.nombre}</span>
                           <span className={s.logroDesc}>{l.desc}</span>
+                          {l.premio && (
+                            <span className={s.logroPremioChip} style={{ color: PREMIO_COLORS[l.premio.tipo] || '#3b82f6' }}>
+                              <i className={`bi ${PREMIO_ICONS[l.premio.tipo] || 'bi-gift'}`} /> {l.premio.descripcion}
+                            </span>
+                          )}
                         </div>
                         {l.req && <i className="bi bi-check-circle-fill" style={{ color: '#34d399' }} />}
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Tab: Premios */}
+              {perfilTab === 'premios' && (
+                <div className={s.tabContent}>
+                  {(() => {
+                    const premiosGanados = (perfil.logros || []).filter((l) => l.premio);
+                    const premiosPendientes = (perfil.todosLogros || []).filter((l) => !l.req && l.premio);
+                    return (
+                      <>
+                        <h4>Premios disponibles ({premiosGanados.length})</h4>
+                        {premiosGanados.length === 0 ? (
+                          <div className={s.emptyDetalle}>Aun no desbloqueaste premios. Segui comprando para ganar recompensas!</div>
+                        ) : (
+                          <div className={s.premiosGrid}>
+                            {premiosGanados.map((l) => (
+                              <div key={l.id} className={s.premioCard}>
+                                <div className={s.premioIconWrap} style={{ background: `${PREMIO_COLORS[l.premio.tipo]}18`, color: PREMIO_COLORS[l.premio.tipo] }}>
+                                  <i className={`bi ${PREMIO_ICONS[l.premio.tipo] || 'bi-gift'}`} />
+                                </div>
+                                <div className={s.premioInfo}>
+                                  <span className={s.premioTipo} style={{ color: PREMIO_COLORS[l.premio.tipo] }}>{PREMIO_LABELS[l.premio.tipo] || 'Premio'}</span>
+                                  <span className={s.premioDesc}>{l.premio.descripcion}</span>
+                                  <span className={s.premioOrigen}>Por: {l.nombre}</span>
+                                </div>
+                                <i className="bi bi-check-circle-fill" style={{ color: '#34d399', fontSize: 18 }} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {premiosPendientes.length > 0 && (
+                          <>
+                            <h4 style={{ marginTop: 8 }}>Proximos premios</h4>
+                            <div className={s.premiosGrid}>
+                              {premiosPendientes.map((l) => (
+                                <div key={l.id} className={`${s.premioCard} ${s.premioPendiente}`}>
+                                  <div className={s.premioIconWrap} style={{ background: 'var(--surface-3)', color: 'var(--text-muted)' }}>
+                                    <i className={`bi ${PREMIO_ICONS[l.premio.tipo] || 'bi-gift'}`} />
+                                  </div>
+                                  <div className={s.premioInfo}>
+                                    <span className={s.premioTipo} style={{ color: 'var(--text-muted)' }}>{PREMIO_LABELS[l.premio.tipo] || 'Premio'}</span>
+                                    <span className={s.premioDesc}>{l.premio.descripcion}</span>
+                                    <span className={s.premioOrigen}><i className="bi bi-lock" /> {l.nombre} - {l.desc}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 

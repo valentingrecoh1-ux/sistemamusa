@@ -855,6 +855,84 @@
   color: var(--text-muted);
 }
 
+.logroPremioChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.logroPremioChip i {
+  font-size: 9px;
+}
+
+/* ── Premios Grid ── */
+.premiosGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.premioCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  transition: all var(--transition-fast);
+}
+
+.premioCard:hover {
+  border-color: var(--primary);
+}
+
+.premioPendiente {
+  opacity: 0.45;
+}
+
+.premioIconWrap {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.premioInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.premioTipo {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.premioDesc {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.premioOrigen {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ── Catalogo Vinos ── */
 .catalogoHeader {
   display: flex;

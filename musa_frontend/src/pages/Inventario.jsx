@@ -21,12 +21,16 @@ function Inventario({ usuario }) {
     posicion: "",
     descripcion: "",
     tipo: "vino",
-    foto: null,
     proveedorId: "",
     proveedorNombre: "",
     stockMinimo: "3",
   });
   const fileInputRef = useRef(null);
+  // Multi-foto state
+  const [fotosExistentes, setFotosExistentes] = useState([]); // base64 strings from DB
+  const [fotosNuevas, setFotosNuevas] = useState([]); // File objects to upload
+  const [fotosNuevasPreview, setFotosNuevasPreview] = useState([]); // preview URLs
+  const [fotoPrincipalIdx, setFotoPrincipalIdx] = useState(0);
   const [productos, setProductos] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -203,11 +207,12 @@ function Inventario({ usuario }) {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "foto") {
-      setFormData({
-        ...formData,
-        foto: files[0],
-      });
+    if (name === "fotos") {
+      const newFiles = Array.from(files);
+      setFotosNuevas((prev) => [...prev, ...newFiles]);
+      const previews = newFiles.map((f) => URL.createObjectURL(f));
+      setFotosNuevasPreview((prev) => [...prev, ...previews]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     } else {
       const numericFields = ["codigo", "year", "cantidad", "stockMinimo"];
       if (numericFields.includes(name)) {
@@ -222,6 +227,29 @@ function Inventario({ usuario }) {
           [name]: value,
         }));
       }
+    }
+  };
+
+  const totalFotos = fotosExistentes.length + fotosNuevas.length;
+
+  const removeFotoExistente = (idx) => {
+    setFotosExistentes((prev) => prev.filter((_, i) => i !== idx));
+    // Ajustar indice principal
+    if (fotoPrincipalIdx >= idx && fotoPrincipalIdx > 0) {
+      setFotoPrincipalIdx((prev) => prev - 1);
+    }
+    if (fotoPrincipalIdx >= fotosExistentes.length - 1 + fotosNuevas.length) {
+      setFotoPrincipalIdx(Math.max(0, totalFotos - 2));
+    }
+  };
+
+  const removeFotoNueva = (idx) => {
+    URL.revokeObjectURL(fotosNuevasPreview[idx]);
+    setFotosNuevas((prev) => prev.filter((_, i) => i !== idx));
+    setFotosNuevasPreview((prev) => prev.filter((_, i) => i !== idx));
+    const globalIdx = fotosExistentes.length + idx;
+    if (fotoPrincipalIdx >= globalIdx && fotoPrincipalIdx > 0) {
+      setFotoPrincipalIdx((prev) => prev - 1);
     }
   };
 
@@ -265,12 +293,44 @@ function Inventario({ usuario }) {
     });
   };
 
+  const resetForm = () => {
+    setFormData({
+      codigo: "",
+      bodega: "",
+      cepa: "",
+      nombre: "",
+      year: "",
+      origen: "",
+      venta: "",
+      cantidad: "",
+      posicion: "",
+      descripcion: "",
+      tipo: "vino",
+      proveedorId: "",
+      proveedorNombre: "",
+      stockMinimo: "3",
+    });
+    setEditingId(null);
+    setFotosExistentes([]);
+    fotosNuevasPreview.forEach((u) => URL.revokeObjectURL(u));
+    setFotosNuevas([]);
+    setFotosNuevasPreview([]);
+    setFotoPrincipalIdx(0);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
     for (const key in formData) {
-      formDataToSend.append(key, formData[key]);
+      if (formData[key] != null) formDataToSend.append(key, formData[key]);
     }
+    // Fotos: enviar indices a mantener de las existentes
+    const keepIdx = fotosExistentes.map((_, i) => i);
+    formDataToSend.append("fotosKeepIdx", JSON.stringify(keepIdx));
+    formDataToSend.append("fotoPrincipalIdx", fotoPrincipalIdx);
+    // Fotos nuevas
+    fotosNuevas.forEach((file) => formDataToSend.append("fotos", file));
     try {
       const response = await fetch(`${IP()}/upload`, {
         method: "POST",
@@ -281,27 +341,7 @@ function Inventario({ usuario }) {
         await dialog.alert(result.message);
         return;
       }
-      setFormData({
-        codigo: "",
-        bodega: "",
-        cepa: "",
-        nombre: "",
-        year: "",
-        origen: "",
-        venta: "",
-        cantidad: "",
-        posicion: "",
-        descripcion: "",
-        tipo: "vino",
-        foto: null,
-        proveedorId: "",
-        proveedorNombre: "",
-        stockMinimo: "3",
-      });
-      setEditingId(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      resetForm();
     } catch (error) {
       console.error("Error al enviar los datos:", error);
     }
@@ -359,31 +399,21 @@ E
     e.stopPropagation();
     setFormData(producto);
     setEditingId(producto._id);
+    // Fetch fotos del producto
+    socket.emit("request-producto-fotos", producto._id, (res) => {
+      if (res && !res.error) {
+        setFotosExistentes(res.fotos || []);
+        setFotoPrincipalIdx(res.fotoPrincipalIdx || 0);
+      }
+    });
+    fotosNuevasPreview.forEach((u) => URL.revokeObjectURL(u));
+    setFotosNuevas([]);
+    setFotosNuevasPreview([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelarEdicion = () => {
-    setFormData({
-      codigo: "",
-      bodega: "",
-      cepa: "",
-      nombre: "",
-      year: "",
-      origen: "",
-      venta: "",
-      cantidad: "",
-      posicion: "",
-      descripcion: "",
-      tipo: "vino",
-      foto: null,
-      proveedorId: "",
-      proveedorNombre: "",
-      stockMinimo: "3",
-    });
-    setEditingId(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    resetForm();
   };
 
   const imprimir = async (codigo, e) => {
@@ -599,25 +629,20 @@ E
           </div>
           <div className={s.formRow}>
             <div className={s.formGroup}>
-              <label>Foto</label>
+              <label>Fotos ({totalFotos}/10)</label>
               <div
                 className={s.fileInputWrap}
                 onClick={() => fileInputRef.current?.click()}
               >
                 <i className="bi bi-cloud-arrow-up"></i>
-                <span>
-                  {formData.foto
-                    ? typeof formData.foto === "string"
-                      ? formData.foto
-                      : formData.foto.name
-                    : "Elegir archivo..."}
-                </span>
+                <span>Agregar fotos...</span>
               </div>
               <input
                 ref={fileInputRef}
                 type="file"
-                name="foto"
+                name="fotos"
                 accept="image/*"
+                multiple
                 onChange={handleChange}
                 className={s.fileInputHidden}
               />
@@ -633,6 +658,43 @@ E
               />
             </div>
           </div>
+          {/* Fotos preview grid */}
+          {totalFotos > 0 && (
+            <div className={s.fotosGrid}>
+              {fotosExistentes.map((foto, i) => (
+                <div key={`ex-${i}`} className={`${s.fotoThumb} ${fotoPrincipalIdx === i ? s.fotoThumbPrincipal : ""}`}>
+                  <img src={foto} alt="" />
+                  <div className={s.fotoThumbActions}>
+                    <button type="button" title="Foto principal" className={`${s.fotoThumbBtn} ${fotoPrincipalIdx === i ? s.fotoThumbBtnActive : ""}`} onClick={() => setFotoPrincipalIdx(i)}>
+                      <i className="bi bi-star-fill"></i>
+                    </button>
+                    <button type="button" title="Eliminar" className={`${s.fotoThumbBtn} ${s.fotoThumbBtnDel}`} onClick={() => removeFotoExistente(i)}>
+                      <i className="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                  {fotoPrincipalIdx === i && <span className={s.fotoThumbBadge}>Principal</span>}
+                </div>
+              ))}
+              {fotosNuevasPreview.map((url, i) => {
+                const globalIdx = fotosExistentes.length + i;
+                return (
+                  <div key={`new-${i}`} className={`${s.fotoThumb} ${fotoPrincipalIdx === globalIdx ? s.fotoThumbPrincipal : ""}`}>
+                    <img src={url} alt="" />
+                    <div className={s.fotoThumbActions}>
+                      <button type="button" title="Foto principal" className={`${s.fotoThumbBtn} ${fotoPrincipalIdx === globalIdx ? s.fotoThumbBtnActive : ""}`} onClick={() => setFotoPrincipalIdx(globalIdx)}>
+                        <i className="bi bi-star-fill"></i>
+                      </button>
+                      <button type="button" title="Eliminar" className={`${s.fotoThumbBtn} ${s.fotoThumbBtnDel}`} onClick={() => removeFotoNueva(i)}>
+                        <i className="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                    {fotoPrincipalIdx === globalIdx && <span className={s.fotoThumbBadge}>Principal</span>}
+                    <span className={s.fotoThumbNew}>Nueva</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div className={s.formActions}>
             <button className={s.saveBtn} type="submit">
               <i className={`bi ${editingId ? "bi-check-lg" : "bi-plus-lg"}`}></i>

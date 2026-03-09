@@ -24,10 +24,49 @@
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   background: var(--input-bg);
-  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .image {
+  width: 100%;
+  flex: 1;
+  object-fit: cover;
+  aspect-ratio: 1;
+}
+
+.galleryThumbs {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  overflow-x: auto;
+  background: var(--card-bg);
+}
+
+.galleryThumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  transition: border-color var(--transition), opacity var(--transition);
+  opacity: 0.6;
+}
+
+.galleryThumb:hover {
+  opacity: 0.9;
+}
+
+.galleryThumbActive {
+  border-color: var(--primary-light, var(--primary));
+  opacity: 1;
+}
+
+.galleryThumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;

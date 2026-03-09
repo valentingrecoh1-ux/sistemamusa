@@ -336,6 +336,15 @@
   letter-spacing: 0.4px;
 }
 
+.optionalTag {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: lowercase;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
 .choiceSection {
   display: flex;
   flex-direction: column;

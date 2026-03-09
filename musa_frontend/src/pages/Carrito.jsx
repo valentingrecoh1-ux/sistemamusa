@@ -839,7 +839,7 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
   if (clienteSeleccionado) {
     return (
       <div className={s.choiceSection}>
-        <h2 className={s.sectionLabel}>CLIENTE</h2>
+        <h2 className={s.sectionLabel}>CLIENTE <span className={s.optionalTag}>opcional</span></h2>
         <div className={s.clienteSelected}>
           <div className={s.clienteSelectedInfo}>
             <i className="bi bi-person-check" />

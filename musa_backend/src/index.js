@@ -125,22 +125,31 @@ function mpRawToDoc(p, ownCollectorId) {
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();
   let tipo = "cobro";
-  if (desc.startsWith("pago:") || desc.startsWith("pago :")) {
-    // Descripcion "Pago: ..." = pagos que hicimos nosotros → gasto
+  if (desc.startsWith("pago:") || desc.startsWith("pago :") || desc.startsWith("pago de")) {
+    // Descripcion "Pago: ...", "Pago de servicio", etc → pagos que hicimos → gasto
     tipo = "gasto";
-  } else if (p.operation_type === "payout") {
-    // Retiros/transferencias bancarias → cobro (plata que recibimos en banco)
-    tipo = "cobro";
-  } else if (p.operation_type === "money_transfer" && bruto > 0 && p.status === "approved") {
-    // Transferencias recibidas con monto positivo → cobro
-    tipo = "cobro";
   } else if (ownCollectorId && p.payer?.id && String(p.payer.id) === String(ownCollectorId)) {
     // Nosotros somos el pagador → dinero que sale → gasto
     tipo = "gasto";
   } else if (ownCollectorId && p.collector_id) {
+    // Comparar collector_id con el nuestro para determinar dirección
     tipo = (String(p.collector_id) === String(ownCollectorId)) ? "cobro" : "gasto";
+  } else if (p.operation_type === "payout") {
+    // Retiros/transferencias bancarias → cobro (plata que recibimos en banco)
+    tipo = "cobro";
+  } else if (ownCollectorId && !p.collector_id) {
+    // Conocemos nuestro ID pero el pago no tiene collector → pago de servicio u otro egreso → gasto
+    tipo = "gasto";
+  } else if (p.operation_type === "money_transfer" && bruto > 0 && p.status === "approved") {
+    // Transferencias sin collector conocido, monto positivo → cobro
+    tipo = "cobro";
   } else if (p.operation_type === "money_transfer") {
     tipo = "gasto";
+  }
+
+  // Log para diagnóstico de clasificación dudosa (sin ownCollectorId o sin collector_id)
+  if (!ownCollectorId || !p.collector_id) {
+    console.log(`[MP clasificación] id=${p.id} desc="${p.description}" op=${p.operation_type} collector=${p.collector_id} payer=${p.payer?.id} ownId=${ownCollectorId} → ${tipo}`);
   }
 
   // Gastos no tienen comisiones ni retenciones

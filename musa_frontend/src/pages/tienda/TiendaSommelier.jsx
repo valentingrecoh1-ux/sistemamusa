@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { IP, fotoSrc, tiendaPath } from '../../main';
+import { IP, fotoSrc } from '../../main';
+import { tiendaPath } from '../../tiendaConfig';
 import { dialog } from '../../components/shared/dialog';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';

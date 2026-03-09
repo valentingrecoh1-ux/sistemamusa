@@ -35,7 +35,8 @@ import Clientes from './pages/Clientes';
 import Usuarios from './pages/admin/Usuarios';
 import Setup from './pages/admin/Setup';
 
-import { socket, isTiendaDomain } from './main';
+import { socket } from './main';
+import { isTiendaDomain } from './tiendaConfig';
 import { connectQZ, printPDF, listPrinters } from './utils/qzPrint';
 
 // Impresoras virtuales que no sirven para tickets

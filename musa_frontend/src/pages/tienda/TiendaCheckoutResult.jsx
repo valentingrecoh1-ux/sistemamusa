@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchEstadoPedido, fetchConfig } from '../../lib/tiendaApi';
-import { tiendaPath, TIENDA_BASE } from '../../main';
+import { tiendaPath, TIENDA_BASE } from '../../tiendaConfig';
 import s from './TiendaCheckoutResult.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);

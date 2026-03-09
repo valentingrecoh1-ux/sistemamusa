@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { crearPedido, fetchConfig } from '../../lib/tiendaApi';
-import { tiendaPath } from '../../main';
+import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { fotoSrc, tiendaPath } from '../../main';
+import { fotoSrc } from '../../main';
+import { tiendaPath } from '../../tiendaConfig';
 import s from './ProductCard.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);

@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from '../../context/CartContext';
-import { TIENDA_BASE } from '../../main';
+import { TIENDA_BASE } from '../../tiendaConfig';
 import TiendaLayout from './TiendaLayout';
 import TiendaHome from '../../pages/tienda/TiendaHome';
 import TiendaCatalogo from '../../pages/tienda/TiendaCatalogo';

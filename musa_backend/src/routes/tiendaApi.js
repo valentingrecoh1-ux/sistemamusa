@@ -962,14 +962,14 @@ IMPORTANT RULES:
         dni: dni?.trim() || "",
         email: email?.trim() || "",
         whatsapp: whatsapp?.trim() || "",
-        estadoPerfil: "pendiente",
+        estadoPerfil: "aprobado",
         autoRegistro: true,
         tags: ["auto-registro"],
       });
       await nuevoCliente.save();
       io.emit("cambios-clientes");
 
-      res.json({ ok: true, token: nuevoCliente.tokenAcceso, yaExiste: false, mensaje: "Registro exitoso! Tu perfil esta pendiente de aprobacion." });
+      res.json({ ok: true, token: nuevoCliente.tokenAcceso, yaExiste: false, mensaje: "Registro exitoso! Te redirigimos a tu perfil." });
     } catch (err) {
       console.error("Error registro cliente:", err.message);
       res.status(500).json({ error: "Error al registrarte" });

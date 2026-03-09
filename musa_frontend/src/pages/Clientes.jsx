@@ -307,7 +307,7 @@ export default function Clientes({ usuario }) {
                   <td>
                     <div className={s.clienteName}>
                       {c.nombre}{c.apellido ? ` ${c.apellido}` : ''}
-                      {c.estadoPerfil === 'pendiente' && <span className={s.pendienteBadge}>Pendiente</span>}
+                      {c.autoRegistro && <span className={s.autoRegistroBadge}>Auto-registro</span>}
                     </div>
                     {c.razonSocial && <div className={s.clienteSub}>{c.razonSocial}</div>}
                   </td>
@@ -326,9 +326,6 @@ export default function Clientes({ usuario }) {
                   </td>
                   <td>
                     <div className={s.actions} onClick={(e) => e.stopPropagation()}>
-                      {c.estadoPerfil === 'pendiente' && (
-                        <button className={s.approveBtn} onClick={() => socket.emit('aprobar-cliente', c._id)} title="Aprobar"><i className="bi bi-check-lg" /></button>
-                      )}
                       <button className={s.editBtn} onClick={() => handleEdit(c)} title="Editar"><i className="bi bi-pencil" /></button>
                       <button className={s.deleteBtn} onClick={() => handleDelete(c._id)} title="Eliminar"><i className="bi bi-trash" /></button>
                     </div>

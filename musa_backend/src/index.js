@@ -1425,8 +1425,15 @@ async function crearNotificacion({ tipo, mensaje, destinatarioRol, destinatarioI
 }
 
 // Helper: auto-vincular venta a cliente por CUIT
-async function vincularVentaCliente(ventaDoc) {
+async function vincularVentaCliente(ventaDoc, clienteIdExplicito) {
   try {
+    // Si se pasa un clienteId explicito desde el carrito, usarlo directamente
+    if (clienteIdExplicito) {
+      ventaDoc.clienteId = clienteIdExplicito;
+      await ventaDoc.save();
+      return;
+    }
+    // Fallback: vincular por CUIT
     const cuit = ventaDoc.cuit;
     if (!cuit || cuit.length < 5) return;
     let cliente = await Cliente.findOne({ cuit });
@@ -1974,7 +1981,7 @@ Origen: ${producto.origen || ""}`;
         };
         ventaCreada1 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada1);
-        vincularVentaCliente(ventaCreada1);
+        vincularVentaCliente(ventaCreada1, datosCompra.clienteId);
 
         // Factura B
       } else if (datosCompra.factura === "B") {
@@ -2035,7 +2042,7 @@ Origen: ${producto.origen || ""}`;
         };
         ventaCreada2 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada2);
-        vincularVentaCliente(ventaCreada2);
+        vincularVentaCliente(ventaCreada2, datosCompra.clienteId);
 
         // Sin factura
       } else {
@@ -2056,7 +2063,7 @@ Origen: ${producto.origen || ""}`;
         };
         ventaCreada3 = await Venta.create(venta);
         autoLinkMpPayment(ventaCreada3);
-        vincularVentaCliente(ventaCreada3);
+        vincularVentaCliente(ventaCreada3, datosCompra.clienteId);
       }
 
       // Actualizamos el stock de los productos en el carrito
@@ -5121,13 +5128,27 @@ Reglas:
     }
   });
 
-  // ── Aprobar/rechazar cliente auto-registrado ──
-  socket.on("aprobar-cliente", async (clienteId) => {
+  // ── Buscar clientes (predictivo para carrito) ──
+  socket.on("buscar-clientes", async (query) => {
     try {
-      await Cliente.findByIdAndUpdate(clienteId, { estadoPerfil: "aprobado" });
-      io.emit("cambios-clientes");
+      if (!query || query.trim().length < 2) return socket.emit("resultado-buscar-clientes", []);
+      const regex = new RegExp(query.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      const clientes = await Cliente.find({
+        $or: [
+          { nombre: regex },
+          { apellido: regex },
+          { dni: regex },
+          { email: regex },
+          { whatsapp: regex },
+        ],
+      })
+        .select("nombre apellido dni whatsapp email")
+        .limit(8)
+        .lean();
+      socket.emit("resultado-buscar-clientes", clientes);
     } catch (err) {
-      console.error("Error aprobar-cliente:", err);
+      console.error("Error buscar-clientes:", err);
+      socket.emit("resultado-buscar-clientes", []);
     }
   });
 

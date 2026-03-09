@@ -14,6 +14,13 @@ export default function TiendaLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [config, setConfig] = useState({});
 
+  // Tienda siempre en dark mode
+  useEffect(() => {
+    const prev = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    return () => document.documentElement.setAttribute('data-theme', prev || 'light');
+  }, []);
+
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});
   }, []);

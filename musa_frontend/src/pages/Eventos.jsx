@@ -84,6 +84,10 @@ function Eventos({ usuario }) {
   const [infoOpenIdx, setInfoOpenIdx] = useState(null);
   const [infoPagoEdit, setInfoPagoEdit] = useState("");
 
+  // Feedback
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [orgFeedback, setOrgFeedback] = useState({ puntaje: 0, notasInternas: "" });
+
   // Vincular gasto modal
   const [showVincularModal, setShowVincularModal] = useState(false);
   const [vincularGastoIdx, setVincularGastoIdx] = useState(null);
@@ -462,6 +466,7 @@ function Eventos({ usuario }) {
     setEditingGastoIdx(null);
     setModalVinoBusqueda("");
     setModalVinoResultados([]);
+    socket.emit("request-feedback-evento", ev._id);
   };
 
   const cerrarDetalle = () => {
@@ -591,6 +596,12 @@ function Eventos({ usuario }) {
         setVinoResultados(productos);
       }
     });
+    socket.on("response-feedback-evento", (data) => {
+      const clientFbs = data.filter((f) => f.tipo === "cliente");
+      const orgFb = data.find((f) => f.tipo === "organizador");
+      setFeedbacks(clientFbs);
+      setOrgFeedback(orgFb ? { puntaje: orgFb.puntaje, notasInternas: orgFb.notasInternas || "" } : { puntaje: 0, notasInternas: "" });
+    });
 
     fetchEventos();
 
@@ -598,6 +609,7 @@ function Eventos({ usuario }) {
       socket.off("cambios", cambiosHandler);
       socket.off("response-eventos");
       socket.off("response-buscar-producto-evento");
+      socket.off("response-feedback-evento");
     };
   }, [page, search, filtroEstado]);
 
@@ -815,21 +827,11 @@ function Eventos({ usuario }) {
               <th>Fecha</th>
               <th>Evento</th>
               <th>Capacidad</th>
-              <th>Cobrado</th>
-              <th>Costo</th>
-              <th>Resultado</th>
+              <th>Cobrado <span className={s.subHeaderHint}>cobrado / total</span></th>
+              <th>Costo <span className={s.subHeaderHint}>real / estimado</span></th>
+              <th>Resultado <span className={s.subHeaderHint}>real / estimado</span></th>
               <th>Estado</th>
               <th>Acciones</th>
-            </tr>
-            <tr className={s.subHeaderRow}>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th><span className={s.subHeaderHint}>cobrado / total</span></th>
-              <th><span className={s.subHeaderHint}>real / estimado</span></th>
-              <th><span className={s.subHeaderHint}>real / estimado</span></th>
-              <th></th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -841,7 +843,14 @@ function Eventos({ usuario }) {
                     {formatFecha(ev.fecha)}
                   </span>
                 </td>
-                <td>{ev.nombre}</td>
+                <td>
+                  {ev.nombre}
+                  {ev.feedbackPromedio && (
+                    <span className={s.puntajeBadge} title={`${ev.feedbackCount} feedback${ev.feedbackCount > 1 ? "s" : ""}`}>
+                      <i className="bi bi-star-fill"></i> {ev.feedbackPromedio}
+                    </span>
+                  )}
+                </td>
                 <td>
                   <span className={`${s.capacityBadge} ${s["capacity" + capacityClass(ev)]}`}>
                     <i className="bi bi-people"></i>
@@ -1044,13 +1053,26 @@ function Eventos({ usuario }) {
                           <span className={s.reservaNombre}>
                             {r.nombre}
                             {r.telefono && (
-                              <button
-                                style={{ marginLeft: 6, background: "none", border: "none", color: "var(--success)", cursor: "pointer", fontSize: 13 }}
-                                onClick={() => window.open(`https://wa.me/549${r.telefono}`, "_blank")}
-                                title="WhatsApp"
-                              >
-                                <i className="bi bi-whatsapp"></i>
-                              </button>
+                              <>
+                                <button
+                                  style={{ marginLeft: 6, background: "none", border: "none", color: "var(--success)", cursor: "pointer", fontSize: 13 }}
+                                  onClick={() => window.open(`https://wa.me/549${r.telefono}`, "_blank")}
+                                  title="WhatsApp"
+                                >
+                                  <i className="bi bi-whatsapp"></i>
+                                </button>
+                                <button
+                                  style={{ marginLeft: 4, background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 13 }}
+                                  onClick={() => {
+                                    const link = `${window.location.origin}/feedback/${detailData._id}/${r._id}`;
+                                    const msg = `Hola ${r.nombre}! 🍷 Gracias por haber venido a "${detailData.nombre}". Nos encantaría saber qué te pareció la degustación. Tu opinión nos importa mucho para seguir mejorando! Podés dejarnos tu feedback acá: ${link}`;
+                                    window.open(`https://wa.me/549${r.telefono}?text=${encodeURIComponent(msg)}`, "_blank");
+                                  }}
+                                  title="Pedir reseña"
+                                >
+                                  <i className="bi bi-star"></i>
+                                </button>
+                              </>
                             )}
                           </span>
                           <span className={s.reservaDetail}>
@@ -1307,6 +1329,69 @@ function Eventos({ usuario }) {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* ── Feedback clientes ── */}
+              <div className={s.modalSection}>
+                <div className={s.modalSectionTitle}>
+                  <i className="bi bi-chat-heart"></i> Feedback clientes ({feedbacks.length})
+                </div>
+                {feedbacks.length > 0 ? (
+                  <div className={s.modalList}>
+                    {feedbacks.map((fb) => (
+                      <div key={fb._id} className={s.feedbackItem}>
+                        <div className={s.feedbackHeader}>
+                          <span className={s.feedbackNombre}>{fb.nombre}</span>
+                          <span className={s.feedbackStars}>
+                            {[1,2,3,4,5].map((n) => <span key={n} style={{ color: n <= fb.puntaje ? "#f5a623" : "#555" }}>{n <= fb.puntaje ? "\u2605" : "\u2606"}</span>)}
+                          </span>
+                        </div>
+                        {fb.loPositivo && <div className={s.feedbackLine}><i className="bi bi-hand-thumbs-up" style={{ color: "var(--success)" }}></i> {fb.loPositivo}</div>}
+                        {fb.loNegativo && <div className={s.feedbackLine}><i className="bi bi-hand-thumbs-down" style={{ color: "var(--danger)" }}></i> {fb.loNegativo}</div>}
+                        {fb.mejoraria && <div className={s.feedbackLine}><i className="bi bi-lightbulb" style={{ color: "var(--accent)" }}></i> {fb.mejoraria}</div>}
+                        {fb.comentario && <div className={s.feedbackLine} style={{ opacity: 0.7, fontStyle: "italic" }}>{fb.comentario}</div>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={s.emptyHint}>Sin feedback todavía</div>
+                )}
+              </div>
+
+              {/* ── Feedback organizador ── */}
+              <div className={s.modalSection}>
+                <div className={s.modalSectionTitle}>
+                  <i className="bi bi-clipboard2-check"></i> Feedback organizador
+                </div>
+                <div className={s.orgFeedbackForm}>
+                  <div className={s.orgFeedbackRow}>
+                    <span style={{ fontSize: 12, color: "var(--text-muted)" }}>Puntaje:</span>
+                    <div className={s.feedbackStars}>
+                      {[1,2,3,4,5].map((n) => (
+                        <button key={n} onClick={() => setOrgFeedback((p) => ({ ...p, puntaje: n }))} className={s.starBtn} style={{ color: n <= orgFeedback.puntaje ? "#f5a623" : "#555" }}>
+                          {n <= orgFeedback.puntaje ? "\u2605" : "\u2606"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <textarea
+                    className={s.miniInput}
+                    style={{ width: "100%", minHeight: 60, resize: "vertical" }}
+                    placeholder="Notas internas: cómo salió el evento, qué mejorar para la próxima..."
+                    value={orgFeedback.notasInternas}
+                    onChange={(e) => setOrgFeedback((p) => ({ ...p, notasInternas: e.target.value }))}
+                  />
+                  <button
+                    className={s.miniAddBtn}
+                    style={{ alignSelf: "flex-end", marginTop: 6 }}
+                    onClick={() => {
+                      if (!orgFeedback.puntaje) return;
+                      socket.emit("guardar-feedback-organizador", { eventoId: detailData._id, ...orgFeedback });
+                    }}
+                  >
+                    <i className="bi bi-check-lg"></i> Guardar
+                  </button>
+                </div>
               </div>
 
               {/* ── Resumen financiero ── */}

@@ -381,16 +381,13 @@
   white-space: nowrap;
 }
 
-.subHeaderRow th {
-  padding: 0 14px 6px;
-  border-bottom: 1px solid var(--table-border);
-}
 .subHeaderHint {
   font-size: 9px;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
   opacity: 0.55;
+  margin-left: 4px;
 }
 
 .table td {
@@ -903,6 +900,36 @@
   border-radius: 4px;
   background-color: var(--success);
   transition: width 0.3s ease;
+}
+
+/* ── Feedback ── */
+.feedbackItem {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+.feedbackItem:last-child { border-bottom: none; }
+.feedbackHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.feedbackNombre { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.feedbackStars { display: flex; gap: 2px; font-size: 16px; }
+.feedbackLine { font-size: 12px; color: var(--text-secondary); margin: 2px 0; display: flex; align-items: baseline; gap: 6px; }
+.feedbackLine i { font-size: 11px; flex-shrink: 0; }
+.starBtn { background: none; border: none; cursor: pointer; font-size: 20px; padding: 0; line-height: 1; }
+.orgFeedbackForm { display: flex; flex-direction: column; gap: 6px; }
+.orgFeedbackRow { display: flex; align-items: center; gap: 8px; }
+.emptyHint { font-size: 12px; color: var(--text-muted); text-align: center; padding: 10px 0; }
+.puntajeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f5a623;
+  margin-left: 6px;
 }
 
 /* ── Gastos estimados ── */

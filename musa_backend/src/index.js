@@ -29,6 +29,7 @@ const Resena = require("./models/resena");
 const Notificacion = require("./models/notificacion");
 const Cliente = require("./models/cliente");
 const MediaTV = require("./models/mediaTV");
+const FeedbackEvento = require("./models/feedbackEvento");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const createTiendaRouter = require("./routes/tiendaApi");
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJSON, initAuthCreds } = require("@whiskeysockets/baileys");
@@ -1367,6 +1368,34 @@ app.get("/api/tv/imagen/:id", async (req, res) => {
   } catch (err) {
     res.status(500).send("Error");
   }
+});
+
+// ── Feedback de eventos (público) ──
+app.get("/api/feedback-evento/:eventoId/:turnoId", async (req, res) => {
+  try {
+    const evento = await Evento.findById(req.params.eventoId, { nombre: 1, fecha: 1 }).lean();
+    const turno = await Turno.findById(req.params.turnoId, { nombre: 1 }).lean();
+    if (!evento || !turno) return res.status(404).json({ error: "No encontrado" });
+    const yaRespondio = await FeedbackEvento.findOne({ eventoId: req.params.eventoId, turnoId: req.params.turnoId, tipo: "cliente" }).lean();
+    res.json({ evento, turno, yaRespondio: !!yaRespondio });
+  } catch (err) { res.status(500).json({ error: "Error interno" }); }
+});
+
+app.post("/api/feedback-evento", async (req, res) => {
+  try {
+    const { eventoId, turnoId, puntaje, loPositivo, loNegativo, mejoraria, comentario } = req.body;
+    if (!eventoId || !turnoId || !puntaje) return res.status(400).json({ error: "Faltan datos" });
+    const existe = await FeedbackEvento.findOne({ eventoId, turnoId, tipo: "cliente" });
+    if (existe) return res.status(409).json({ error: "Ya dejaste tu feedback" });
+    const turno = await Turno.findById(turnoId, { nombre: 1, telefono: 1 }).lean();
+    await FeedbackEvento.create({
+      eventoId, turnoId, tipo: "cliente",
+      nombre: turno?.nombre || "Anónimo", telefono: turno?.telefono || "",
+      puntaje, loPositivo, loNegativo, mejoraria, comentario,
+    });
+    io.emit("cambios");
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: "Error interno" }); }
 });
 
 // Servir la aplicación principal (index.html) para cualquier ruta no-API
@@ -4450,14 +4479,17 @@ Reglas:
 
       // Batch: 2 queries en vez de 2*N
       const evIds = eventos.map(ev => ev._id);
-      const [allTurnos, allOps] = await Promise.all([
+      const [allTurnos, allOps, allFeedbacks] = await Promise.all([
         Turno.find({ eventoId: { $in: evIds } }).lean(),
         Operacion.find({ $or: [{ eventoId: { $in: evIds } }, { degustacionId: { $in: evIds } }] }).lean(),
+        FeedbackEvento.find({ eventoId: { $in: evIds }, tipo: "cliente" }, { eventoId: 1, puntaje: 1 }).lean(),
       ]);
       const turnosByEv = {};
       for (const t of allTurnos) { const k = t.eventoId.toString(); (turnosByEv[k] ||= []).push(t); }
       const opsByEv = {};
       for (const o of allOps) { const k = (o.eventoId || o.degustacionId).toString(); (opsByEv[k] ||= []).push(o); }
+      const fbByEv = {};
+      for (const f of allFeedbacks) { const k = f.eventoId.toString(); (fbByEv[k] ||= []).push(f); }
 
       for (const ev of eventos) {
         const id = ev._id.toString();
@@ -4481,6 +4513,10 @@ Reglas:
         }));
         ev.totalGastosCaja = ops.filter((o) => o.tipoOperacion === "GASTO").reduce((sum, o) => sum + Math.abs(o.monto || 0), 0);
         ev.totalIngresosCaja = ops.filter((o) => o.tipoOperacion === "INGRESO").reduce((sum, o) => sum + (o.monto || 0), 0);
+
+        const fbs = fbByEv[id] || [];
+        ev.feedbackCount = fbs.length;
+        ev.feedbackPromedio = fbs.length > 0 ? Math.round((fbs.reduce((s, f) => s + f.puntaje, 0) / fbs.length) * 10) / 10 : null;
       }
 
       const totalEventos = await Evento.countDocuments(filter);
@@ -4541,6 +4577,26 @@ Reglas:
     } catch (err) {
       console.error("Error cambiar-estado-evento:", err);
     }
+  });
+
+  // ── Feedback eventos ──
+  socket.on("request-feedback-evento", async (eventoId) => {
+    try {
+      const feedbacks = await FeedbackEvento.find({ eventoId }).sort({ createdAt: -1 }).lean();
+      socket.emit("response-feedback-evento", feedbacks);
+    } catch (err) { console.error("Error request-feedback-evento:", err); }
+  });
+
+  socket.on("guardar-feedback-organizador", async ({ eventoId, puntaje, notasInternas }) => {
+    try {
+      const existe = await FeedbackEvento.findOne({ eventoId, tipo: "organizador" });
+      if (existe) {
+        await FeedbackEvento.findByIdAndUpdate(existe._id, { puntaje, notasInternas });
+      } else {
+        await FeedbackEvento.create({ eventoId, tipo: "organizador", nombre: "Organizador", puntaje, notasInternas });
+      }
+      io.emit("cambios");
+    } catch (err) { console.error("Error guardar-feedback-organizador:", err); }
   });
 
   socket.on("request-reporte-eventos", async (filtro) => {

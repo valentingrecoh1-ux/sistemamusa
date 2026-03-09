@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import TiendaApp from './components/tienda/TiendaApp';
 import TvDisplay from './pages/tv/TvDisplay';
 import Vidriera from './pages/Vidriera';
+import FeedbackPublico from './pages/FeedbackPublico';
 
 import Dashboard from './pages/Dashboard';
 import Info from './pages/Info';
@@ -155,6 +156,15 @@ function AppRoutes({ firstRender, usuario, loginForm, setLoginForm, loginError, 
   // Tienda publica - sin auth
   if (pathname.startsWith('/tienda')) {
     return <TiendaApp />;
+  }
+
+  // Feedback público de eventos - sin auth
+  if (pathname.startsWith('/feedback/')) {
+    return (
+      <Routes>
+        <Route path="/feedback/:eventoId/:turnoId" element={<FeedbackPublico />} />
+      </Routes>
+    );
   }
 
   if (!firstRender) return null;

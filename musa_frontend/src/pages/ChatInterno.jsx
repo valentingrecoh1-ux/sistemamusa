@@ -45,6 +45,9 @@ export default function ChatInterno({ usuario }) {
   // Expandir mensaje
   const [expanded, setExpanded] = useState({});
 
+  // Modal imagen
+  const [modalImg, setModalImg] = useState(null);
+
   // Fotos de perfil: { nombre: userId } — las fotos se cargan por HTTP con cache
   const [fotoMap, setFotoMap] = useState({});
   const [fotoBust, setFotoBust] = useState(0);
@@ -336,7 +339,7 @@ export default function ChatInterno({ usuario }) {
             <div className={s.cardBody}>
               {msg.texto && <p className={s.texto}>{msg.texto}</p>}
               {msg.imagen && (
-                <img src={msg.imagen} alt="" className={s.msgImg} onClick={() => window.open(msg.imagen, '_blank')} />
+                <img src={msg.imagen} alt="" className={s.msgImg} onClick={() => setModalImg(msg.imagen)} />
               )}
             </div>
 
@@ -383,7 +386,7 @@ export default function ChatInterno({ usuario }) {
                       </div>
                       {r.texto && <p>{r.texto}</p>}
                       {r.imagen && (
-                        <img src={r.imagen} alt="" className={s.replyImg} onClick={() => window.open(r.imagen, '_blank')} />
+                        <img src={r.imagen} alt="" className={s.replyImg} onClick={() => setModalImg(r.imagen)} />
                       )}
                     </div>
                   </div>
@@ -445,6 +448,16 @@ export default function ChatInterno({ usuario }) {
       {/* Pagination */}
       {totalPages > 1 && (
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      )}
+
+      {/* Modal imagen */}
+      {modalImg && (
+        <div className={s.imgModal} onClick={() => setModalImg(null)}>
+          <button className={s.imgModalClose} onClick={() => setModalImg(null)}>
+            <i className="bi bi-x-lg" />
+          </button>
+          <img src={modalImg} alt="" onClick={(e) => e.stopPropagation()} />
+        </div>
       )}
     </div>
   );

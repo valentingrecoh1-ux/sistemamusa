@@ -63,6 +63,7 @@ if (!MONGO_URI) {
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
+  maxHttpBufferSize: 10 * 1024 * 1024, // 10MB para soportar imagenes base64
   cors: {
     origin: "*", // Cambia esto al origen de tu cliente
     methods: ["GET", "POST"],

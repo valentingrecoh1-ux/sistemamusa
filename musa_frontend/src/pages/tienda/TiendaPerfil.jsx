@@ -191,16 +191,6 @@ export default function TiendaPerfil() {
       {/* Profile content */}
       {perfil && (
         <div className={s.profileWrap}>
-          {/* Pending approval banner */}
-          {perfil.cliente?.estadoPerfil === 'pendiente' && (
-            <div className={s.pendingBanner}>
-              <i className="bi bi-hourglass-split" />
-              <div>
-                <strong>Perfil pendiente de aprobacion</strong>
-                <p>Tu registro esta siendo revisado. Una vez aprobado, tus compras se vincularan automaticamente.</p>
-              </div>
-            </div>
-          )}
 
           {/* Header card */}
           <div className={s.profileHeader}>

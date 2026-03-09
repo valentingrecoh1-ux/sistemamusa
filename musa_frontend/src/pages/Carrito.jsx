@@ -36,6 +36,9 @@ const Carrito = () => {
 
   const [inputBuffer, setInputBuffer] = useState("");
 
+  // Cliente vinculado
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+
   const [descuento, setDescuento] = useState(0);
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(null);
   const [detalle, setDetalle] = useState("");
@@ -194,6 +197,8 @@ const Carrito = () => {
         efectivoMixto,
         digitalMixto,
       }),
+      // Cliente vinculado
+      ...(clienteSeleccionado && { clienteId: clienteSeleccionado._id }),
     };
 
     console.log("FINALIZANDO COMPRA", datosCompra);
@@ -295,6 +300,7 @@ const Carrito = () => {
       setTodoOK(false);
       setEfectivoMixto(0);
       setDigitalMixto(0);
+      setClienteSeleccionado(null);
       // Si pago digital/mixto, navegar a Ventas para vincular MP
       if (info?.ventaId && (info.formaPago === "DIGITAL" || info.formaPago === "MIXTO")) {
         navegar("/ventas", { state: { mpLinkVenta: info } });
@@ -375,6 +381,9 @@ const Carrito = () => {
         setEfectivoMixto={setEfectivoMixto}
         digitalMixto={digitalMixto}
         setDigitalMixto={setDigitalMixto}
+        // Cliente vinculado
+        clienteSeleccionado={clienteSeleccionado}
+        setClienteSeleccionado={setClienteSeleccionado}
       />
     </div>
   );
@@ -488,6 +497,9 @@ const ResumenCompra = ({
   setEfectivoMixto,
   digitalMixto,
   setDigitalMixto,
+  // Cliente vinculado
+  clienteSeleccionado,
+  setClienteSeleccionado,
 }) => (
   <div className={s.resumenSection}>
     <h2 className={s.resumenTitle}>RESUMEN DE COMPRA</h2>
@@ -586,6 +598,12 @@ const ResumenCompra = ({
         decimalSeparator=","
       />
     </div>
+
+    {/* Cliente */}
+    <ClienteSearch
+      clienteSeleccionado={clienteSeleccionado}
+      setClienteSeleccionado={setClienteSeleccionado}
+    />
 
     {/* Forma de Pago */}
     <div className={s.choiceSection}>
@@ -787,6 +805,101 @@ const DatosCompra = ({
         />
       </div>
     </>
+  );
+};
+
+const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
+  const [query, setQuery] = useState("");
+  const [resultados, setResultados] = useState([]);
+  const [buscando, setBuscando] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setResultados([]);
+      return;
+    }
+    setBuscando(true);
+    const timeout = setTimeout(() => {
+      socket.emit("buscar-clientes", query.trim());
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [query]);
+
+  useEffect(() => {
+    const handler = (res) => {
+      setResultados(res || []);
+      setBuscando(false);
+      setShowResults(true);
+    };
+    socket.on("resultado-buscar-clientes", handler);
+    return () => socket.off("resultado-buscar-clientes", handler);
+  }, []);
+
+  if (clienteSeleccionado) {
+    return (
+      <div className={s.choiceSection}>
+        <h2 className={s.sectionLabel}>CLIENTE</h2>
+        <div className={s.clienteSelected}>
+          <div className={s.clienteSelectedInfo}>
+            <i className="bi bi-person-check" />
+            <div>
+              <strong>{clienteSeleccionado.nombre}{clienteSeleccionado.apellido ? ` ${clienteSeleccionado.apellido}` : ''}</strong>
+              {clienteSeleccionado.dni && <span className={s.clienteSelectedMeta}>DNI {clienteSeleccionado.dni}</span>}
+            </div>
+          </div>
+          <button className={s.clienteRemoveBtn} onClick={() => setClienteSeleccionado(null)}>
+            <i className="bi bi-x-lg" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={s.choiceSection}>
+      <h2 className={s.sectionLabel}>CLIENTE</h2>
+      <div className={s.clienteSearchWrap}>
+        <input
+          type="text"
+          className={s.fieldInput}
+          placeholder="Buscar por nombre, DNI, email..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => resultados.length > 0 && setShowResults(true)}
+          onBlur={() => setTimeout(() => setShowResults(false), 200)}
+        />
+        {buscando && <span className={s.clienteSearching}>Buscando...</span>}
+        {showResults && resultados.length > 0 && (
+          <div className={s.clienteDropdown}>
+            {resultados.map((c) => (
+              <button
+                key={c._id}
+                className={s.clienteOption}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setClienteSeleccionado(c);
+                  setQuery("");
+                  setShowResults(false);
+                }}
+              >
+                <span className={s.clienteOptName}>{c.nombre}{c.apellido ? ` ${c.apellido}` : ''}</span>
+                <span className={s.clienteOptMeta}>
+                  {c.dni && `DNI ${c.dni}`}
+                  {c.dni && c.whatsapp && ' · '}
+                  {c.whatsapp && `${c.whatsapp}`}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        {showResults && !buscando && query.trim().length >= 2 && resultados.length === 0 && (
+          <div className={s.clienteDropdown}>
+            <div className={s.clienteNoResult}>Sin resultados</div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

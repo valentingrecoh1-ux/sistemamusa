@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 
 const clienteSchema = new mongoose.Schema(
   {
@@ -15,9 +16,20 @@ const clienteSchema = new mongoose.Schema(
     provincia: { type: String },
     notas: { type: String },
     tags: [String],
+    tokenAcceso: { type: String, unique: true, sparse: true },
+    estadoPerfil: { type: String, enum: ["aprobado", "pendiente"], default: "aprobado" },
+    autoRegistro: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+// Auto-generate access token on save if not present
+clienteSchema.pre("save", function (next) {
+  if (!this.tokenAcceso) {
+    this.tokenAcceso = crypto.randomBytes(16).toString("hex");
+  }
+  next();
+});
 
 const Cliente = mongoose.model("Cliente", clienteSchema);
 module.exports = Cliente;

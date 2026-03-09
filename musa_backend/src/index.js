@@ -31,6 +31,7 @@ const Cliente = require("./models/cliente");
 const ValoracionVino = require("./models/valoracionVino");
 const MediaTV = require("./models/mediaTV");
 const FeedbackEvento = require("./models/feedbackEvento");
+const SugerenciaCliente = require("./models/sugerenciaCliente");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const createTiendaRouter = require("./routes/tiendaApi");
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJSON, initAuthCreds } = require("@whiskeysockets/baileys");
@@ -610,7 +611,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
 
 app.post(
   "/upload_flujo",
@@ -5004,41 +5005,45 @@ Reglas:
       const cepaFav = Object.entries(cepaCount).sort((a, b) => b[1] - a[1])[0];
       const bodegaFav = Object.entries(bodegaCount).sort((a, b) => b[1] - a[1])[0];
 
-      // Logros
+      // Logros con premios
       const logros = [];
-      if (cantCompras >= 1) logros.push({ id: "primera_compra", nombre: "Primera Compra", desc: "Realizaste tu primera compra", icono: "bi-bag-check" });
-      if (cantCompras >= 5) logros.push({ id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras realizadas", icono: "bi-arrow-repeat" });
-      if (cantCompras >= 10) logros.push({ id: "fiel", nombre: "Cliente Fiel", desc: "10 compras realizadas", icono: "bi-heart" });
-      if (cantCompras >= 25) logros.push({ id: "vip", nombre: "VIP", desc: "25 compras realizadas", icono: "bi-star" });
-      if (vinosUnicos >= 5) logros.push({ id: "explorador_5", nombre: "Explorador", desc: "Probaste 5 vinos diferentes", icono: "bi-compass" });
-      if (vinosUnicos >= 15) logros.push({ id: "explorador_15", nombre: "Gran Explorador", desc: "Probaste 15 vinos diferentes", icono: "bi-binoculars" });
-      if (vinosUnicos >= 30) logros.push({ id: "explorador_30", nombre: "Aventurero", desc: "Probaste 30 vinos diferentes", icono: "bi-globe" });
-      if (cepasProbadas.size >= 3) logros.push({ id: "cepas_3", nombre: "Multicepas", desc: "Probaste 3 cepas diferentes", icono: "bi-collection" });
-      if (cepasProbadas.size >= 5) logros.push({ id: "cepas_5", nombre: "Conocedor de Cepas", desc: "Probaste 5 cepas diferentes", icono: "bi-grid-3x3" });
-      if (cepasProbadas.size >= todasCepas.length && todasCepas.length > 0) logros.push({ id: "todas_cepas", nombre: "Coleccionista", desc: "Probaste todas las cepas!", icono: "bi-trophy" });
-      if (bodegasProbadas.size >= 3) logros.push({ id: "bodegas_3", nombre: "Viajero", desc: "Probaste 3 bodegas diferentes", icono: "bi-geo-alt" });
-      if (bodegasProbadas.size >= 8) logros.push({ id: "bodegas_8", nombre: "Trotamundos", desc: "Probaste 8 bodegas diferentes", icono: "bi-map" });
-      if (valoraciones.length >= 1) logros.push({ id: "primera_nota", nombre: "Critico Novato", desc: "Escribiste tu primera nota de cata", icono: "bi-pencil" });
-      if (valoraciones.length >= 5) logros.push({ id: "critico", nombre: "Critico", desc: "5 vinos valorados", icono: "bi-journal-text" });
-      if (valoraciones.length >= 10) logros.push({ id: "gran_critico", nombre: "Gran Critico", desc: "10 vinos valorados", icono: "bi-award" });
-      if (totalGastado >= 50000) logros.push({ id: "gastador", nombre: "Gran Inversor", desc: "Invertiste mas de $50.000 en vinos", icono: "bi-cash-coin" });
-      if (totalGastado >= 200000) logros.push({ id: "mecenas", nombre: "Mecenas", desc: "Invertiste mas de $200.000 en vinos", icono: "bi-gem" });
+      if (cantCompras >= 1) logros.push({ id: "primera_compra", nombre: "Primera Compra", desc: "Realizaste tu primera compra", icono: "bi-bag-check", premio: { tipo: "descuento", valor: 5, descripcion: "5% de descuento en tu proxima compra" } });
+      if (cantCompras >= 5) logros.push({ id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras realizadas", icono: "bi-arrow-repeat", premio: { tipo: "descuento", valor: 10, descripcion: "10% de descuento en tu proxima compra" } });
+      if (cantCompras >= 10) logros.push({ id: "fiel", nombre: "Cliente Fiel", desc: "10 compras realizadas", icono: "bi-heart", premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } });
+      if (cantCompras >= 25) logros.push({ id: "vip", nombre: "VIP", desc: "25 compras realizadas", icono: "bi-star", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 2 personas" } });
+      if (vinosUnicos >= 5) logros.push({ id: "explorador_5", nombre: "Explorador", desc: "Probaste 5 vinos diferentes", icono: "bi-compass", premio: { tipo: "descuento", valor: 5, descripcion: "5% en vinos que no hayas probado" } });
+      if (vinosUnicos >= 15) logros.push({ id: "explorador_15", nombre: "Gran Explorador", desc: "Probaste 15 vinos diferentes", icono: "bi-binoculars", premio: { tipo: "vino_gratis", descripcion: "Un vino sorpresa de regalo" } });
+      if (vinosUnicos >= 30) logros.push({ id: "explorador_30", nombre: "Aventurero", desc: "Probaste 30 vinos diferentes", icono: "bi-globe", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion premium gratuita para 2 personas" } });
+      if (cepasProbadas.size >= 3) logros.push({ id: "cepas_3", nombre: "Multicepas", desc: "Probaste 3 cepas diferentes", icono: "bi-collection", premio: { tipo: "descuento", valor: 5, descripcion: "5% en cepas que no probaste" } });
+      if (cepasProbadas.size >= 5) logros.push({ id: "cepas_5", nombre: "Conocedor de Cepas", desc: "Probaste 5 cepas diferentes", icono: "bi-grid-3x3", premio: { tipo: "descuento", valor: 10, descripcion: "10% en cepas que no probaste" } });
+      if (cepasProbadas.size >= todasCepas.length && todasCepas.length > 0) logros.push({ id: "todas_cepas", nombre: "Coleccionista", desc: "Probaste todas las cepas!", icono: "bi-trophy", premio: { tipo: "vino_gratis", descripcion: "Botella premium de regalo" } });
+      if (bodegasProbadas.size >= 3) logros.push({ id: "bodegas_3", nombre: "Viajero", desc: "Probaste 3 bodegas diferentes", icono: "bi-geo-alt", premio: { tipo: "descuento", valor: 5, descripcion: "5% en bodegas que no probaste" } });
+      if (bodegasProbadas.size >= 8) logros.push({ id: "bodegas_8", nombre: "Trotamundos", desc: "Probaste 8 bodegas diferentes", icono: "bi-map", premio: { tipo: "vino_gratis", descripcion: "Vino de bodega sorpresa de regalo" } });
+      if (valoraciones.length >= 1) logros.push({ id: "primera_nota", nombre: "Critico Novato", desc: "Escribiste tu primera nota de cata", icono: "bi-pencil", premio: { tipo: "descuento", valor: 5, descripcion: "5% en tu proxima compra" } });
+      if (valoraciones.length >= 5) logros.push({ id: "critico", nombre: "Critico", desc: "5 vinos valorados", icono: "bi-journal-text", premio: { tipo: "descuento", valor: 10, descripcion: "10% en tu proxima compra" } });
+      if (valoraciones.length >= 10) logros.push({ id: "gran_critico", nombre: "Gran Critico", desc: "10 vinos valorados", icono: "bi-award", premio: { tipo: "vino_gratis", descripcion: "Un vino a eleccion de regalo" } });
+      if (totalGastado >= 50000) logros.push({ id: "gastador", nombre: "Gran Inversor", desc: "Invertiste mas de $50.000 en vinos", icono: "bi-cash-coin", premio: { tipo: "descuento", valor: 15, descripcion: "15% en tu proxima compra" } });
+      if (totalGastado >= 200000) logros.push({ id: "mecenas", nombre: "Mecenas", desc: "Invertiste mas de $200.000 en vinos", icono: "bi-gem", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } });
 
       // Logros posibles (no desbloqueados aún) para mostrar progreso
       const todosLogros = [
-        { id: "primera_compra", nombre: "Primera Compra", desc: "Realiza tu primera compra", icono: "bi-bag-check", req: cantCompras >= 1 },
-        { id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras", icono: "bi-arrow-repeat", req: cantCompras >= 5 },
-        { id: "fiel", nombre: "Cliente Fiel", desc: "10 compras", icono: "bi-heart", req: cantCompras >= 10 },
-        { id: "vip", nombre: "VIP", desc: "25 compras", icono: "bi-star", req: cantCompras >= 25 },
-        { id: "explorador_5", nombre: "Explorador", desc: "5 vinos diferentes", icono: "bi-compass", req: vinosUnicos >= 5 },
-        { id: "explorador_15", nombre: "Gran Explorador", desc: "15 vinos diferentes", icono: "bi-binoculars", req: vinosUnicos >= 15 },
-        { id: "cepas_3", nombre: "Multicepas", desc: "3 cepas diferentes", icono: "bi-collection", req: cepasProbadas.size >= 3 },
-        { id: "cepas_5", nombre: "Conocedor de Cepas", desc: "5 cepas diferentes", icono: "bi-grid-3x3", req: cepasProbadas.size >= 5 },
-        { id: "todas_cepas", nombre: "Coleccionista", desc: "Todas las cepas", icono: "bi-trophy", req: cepasProbadas.size >= todasCepas.length && todasCepas.length > 0 },
-        { id: "bodegas_3", nombre: "Viajero", desc: "3 bodegas", icono: "bi-geo-alt", req: bodegasProbadas.size >= 3 },
-        { id: "bodegas_8", nombre: "Trotamundos", desc: "8 bodegas", icono: "bi-map", req: bodegasProbadas.size >= 8 },
-        { id: "primera_nota", nombre: "Critico Novato", desc: "Primera nota de cata", icono: "bi-pencil", req: valoraciones.length >= 1 },
-        { id: "critico", nombre: "Critico", desc: "5 valoraciones", icono: "bi-journal-text", req: valoraciones.length >= 5 },
+        { id: "primera_compra", nombre: "Primera Compra", desc: "Realiza tu primera compra", icono: "bi-bag-check", req: cantCompras >= 1, premio: { tipo: "descuento", valor: 5, descripcion: "5% de descuento en tu proxima compra" } },
+        { id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras", icono: "bi-arrow-repeat", req: cantCompras >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% de descuento en tu proxima compra" } },
+        { id: "fiel", nombre: "Cliente Fiel", desc: "10 compras", icono: "bi-heart", req: cantCompras >= 10, premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } },
+        { id: "vip", nombre: "VIP", desc: "25 compras", icono: "bi-star", req: cantCompras >= 25, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 2 personas" } },
+        { id: "explorador_5", nombre: "Explorador", desc: "5 vinos diferentes", icono: "bi-compass", req: vinosUnicos >= 5, premio: { tipo: "descuento", valor: 5, descripcion: "5% en vinos que no hayas probado" } },
+        { id: "explorador_15", nombre: "Gran Explorador", desc: "15 vinos diferentes", icono: "bi-binoculars", req: vinosUnicos >= 15, premio: { tipo: "vino_gratis", descripcion: "Un vino sorpresa de regalo" } },
+        { id: "explorador_30", nombre: "Aventurero", desc: "30 vinos diferentes", icono: "bi-globe", req: vinosUnicos >= 30, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion premium gratuita para 2 personas" } },
+        { id: "cepas_3", nombre: "Multicepas", desc: "3 cepas diferentes", icono: "bi-collection", req: cepasProbadas.size >= 3, premio: { tipo: "descuento", valor: 5, descripcion: "5% en cepas que no probaste" } },
+        { id: "cepas_5", nombre: "Conocedor de Cepas", desc: "5 cepas diferentes", icono: "bi-grid-3x3", req: cepasProbadas.size >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% en cepas que no probaste" } },
+        { id: "todas_cepas", nombre: "Coleccionista", desc: "Todas las cepas", icono: "bi-trophy", req: cepasProbadas.size >= todasCepas.length && todasCepas.length > 0, premio: { tipo: "vino_gratis", descripcion: "Botella premium de regalo" } },
+        { id: "bodegas_3", nombre: "Viajero", desc: "3 bodegas", icono: "bi-geo-alt", req: bodegasProbadas.size >= 3, premio: { tipo: "descuento", valor: 5, descripcion: "5% en bodegas que no probaste" } },
+        { id: "bodegas_8", nombre: "Trotamundos", desc: "8 bodegas", icono: "bi-map", req: bodegasProbadas.size >= 8, premio: { tipo: "vino_gratis", descripcion: "Vino de bodega sorpresa de regalo" } },
+        { id: "primera_nota", nombre: "Critico Novato", desc: "Primera nota de cata", icono: "bi-pencil", req: valoraciones.length >= 1, premio: { tipo: "descuento", valor: 5, descripcion: "5% en tu proxima compra" } },
+        { id: "critico", nombre: "Critico", desc: "5 valoraciones", icono: "bi-journal-text", req: valoraciones.length >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% en tu proxima compra" } },
+        { id: "gran_critico", nombre: "Gran Critico", desc: "10 valoraciones", icono: "bi-award", req: valoraciones.length >= 10, premio: { tipo: "vino_gratis", descripcion: "Un vino a eleccion de regalo" } },
+        { id: "gastador", nombre: "Gran Inversor", desc: "Mas de $50.000 invertidos", icono: "bi-cash-coin", req: totalGastado >= 50000, premio: { tipo: "descuento", valor: 15, descripcion: "15% en tu proxima compra" } },
+        { id: "mecenas", nombre: "Mecenas", desc: "Mas de $200.000 invertidos", icono: "bi-gem", req: totalGastado >= 200000, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } },
       ];
 
       // Vinos con valoraciones públicas de otros clientes (para los vinos que el cliente aún no probó)
@@ -5113,6 +5118,51 @@ Reglas:
       })));
     } catch (err) {
       socket.emit("response-valoraciones-producto", []);
+    }
+  });
+
+  // ── Aprobar/rechazar cliente auto-registrado ──
+  socket.on("aprobar-cliente", async (clienteId) => {
+    try {
+      await Cliente.findByIdAndUpdate(clienteId, { estadoPerfil: "aprobado" });
+      io.emit("cambios-clientes");
+    } catch (err) {
+      console.error("Error aprobar-cliente:", err);
+    }
+  });
+
+  // ── Sugerencias de clientes ──
+  socket.on("request-sugerencias-clientes", async (filtro) => {
+    try {
+      const query = {};
+      if (filtro?.estado) query.estado = filtro.estado;
+      const sugerencias = await SugerenciaCliente.find(query).sort({ createdAt: -1 }).limit(100).lean();
+      socket.emit("response-sugerencias-clientes", sugerencias);
+    } catch (err) {
+      console.error("Error request-sugerencias-clientes:", err);
+      socket.emit("response-sugerencias-clientes", []);
+    }
+  });
+
+  socket.on("responder-sugerencia", async (data) => {
+    try {
+      const { sugerenciaId, respuesta } = data;
+      await SugerenciaCliente.findByIdAndUpdate(sugerenciaId, {
+        respuesta,
+        estado: "respondido",
+        respondidoPor: socket.usuario?.nombre || "Admin",
+      });
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error responder-sugerencia:", err);
+    }
+  });
+
+  socket.on("marcar-sugerencia-leida", async (sugerenciaId) => {
+    try {
+      await SugerenciaCliente.findByIdAndUpdate(sugerenciaId, { estado: "leido" });
+    } catch (err) {
+      console.error("Error marcar-sugerencia-leida:", err);
     }
   });
 

@@ -289,6 +289,20 @@
 
 .clienteName {
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pendienteBadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .clienteSub {
@@ -336,6 +350,23 @@
 .actions {
   display: flex;
   gap: 4px;
+}
+
+.approveBtn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius-sm);
+  color: #34d399;
+  transition: all var(--transition-fast);
+}
+
+.approveBtn:hover {
+  background: rgba(52, 211, 153, 0.1);
+  color: #059669;
 }
 
 .editBtn, .deleteBtn {
@@ -457,6 +488,96 @@
 
 .prefChip i {
   font-size: 10px;
+}
+
+/* ── QR Section ── */
+.qrSection {
+  padding: 8px 0;
+}
+
+.qrBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed var(--input-border);
+  border-radius: var(--border-radius);
+  background: none;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.qrBtn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--accent-bg);
+}
+
+.qrBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qrResult {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qrLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.qrLinkRow {
+  display: flex;
+  gap: 6px;
+}
+
+.qrLinkInput {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-family: var(--font-heading);
+}
+
+.qrCopyBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--primary);
+  border-radius: var(--border-radius);
+  background: var(--accent-bg);
+  box-shadow: none;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.qrCopyBtn:hover {
+  background: var(--primary);
+  color: var(--text-inverse);
+}
+
+.qrHint {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* ── Tabs ── */
@@ -853,6 +974,84 @@
 .logroDesc {
   font-size: 10px;
   color: var(--text-muted);
+}
+
+.logroPremioChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.logroPremioChip i {
+  font-size: 9px;
+}
+
+/* ── Premios Grid ── */
+.premiosGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.premioCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  transition: all var(--transition-fast);
+}
+
+.premioCard:hover {
+  border-color: var(--primary);
+}
+
+.premioPendiente {
+  opacity: 0.45;
+}
+
+.premioIconWrap {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.premioInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.premioTipo {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.premioDesc {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.premioOrigen {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ── Catalogo Vinos ── */

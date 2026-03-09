@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { socket } from '../main';
+import { IP } from '../main';
 import Pagination from '../components/shared/Pagination';
 import Modal from '../components/shared/Modal';
 import { dialog } from '../components/shared/dialog';
+import { fetchClienteToken } from '../lib/tiendaApi';
 import s from './Clientes.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -10,6 +12,10 @@ const EMPTY = { nombre: '', apellido: '', dni: '', whatsapp: '', email: '', tele
 
 const NIVEL_COLORS = { Nuevo: '#94a3b8', Curioso: '#60a5fa', Explorador: '#34d399', Conocedor: '#f59e0b', Sommelier: '#a78bfa', Maestro: '#f43f5e' };
 const NIVEL_PROGRESS = [0, 3, 10, 25, 50, 75];
+
+const PREMIO_ICONS = { descuento: 'bi-percent', vino_gratis: 'bi-cup-straw', degustacion_gratis: 'bi-people' };
+const PREMIO_COLORS = { descuento: '#3b82f6', vino_gratis: '#8b5cf6', degustacion_gratis: '#ec4899' };
+const PREMIO_LABELS = { descuento: 'Descuento', vino_gratis: 'Vino gratis', degustacion_gratis: 'Degustacion gratis' };
 
 const Stars = ({ value, onChange, size = 18 }) => (
   <div className={s.stars}>
@@ -39,6 +45,8 @@ export default function Clientes({ usuario }) {
   const [valoracionForm, setValoracionForm] = useState({ puntuacion: 0, notas: '', publica: false });
   const [cepaFilter, setCepaFilter] = useState('');
   const [resenasProducto, setResenasProducto] = useState([]);
+  const [qrLink, setQrLink] = useState('');
+  const [qrLoading, setQrLoading] = useState(false);
 
   useEffect(() => {
     const onClientes = (data) => {
@@ -109,6 +117,7 @@ export default function Clientes({ usuario }) {
   const openPerfil = useCallback((c) => {
     setPerfil({ loading: true, cliente: c });
     setPerfilTab('resumen');
+    setQrLink('');
     socket.emit('request-cliente-perfil', c._id);
     const handler = (data) => {
       setPerfil(data ? { ...data, loading: false } : null);
@@ -132,6 +141,28 @@ export default function Clientes({ usuario }) {
       socket.off('response-valoraciones-producto', handler);
     };
     socket.on('response-valoraciones-producto', handler);
+  };
+
+  const generarQrLink = async (clienteId) => {
+    setQrLoading(true);
+    setQrLink('');
+    try {
+      const res = await fetchClienteToken(clienteId);
+      if (res.token) {
+        const origin = window.location.origin;
+        setQrLink(`${origin}/tienda/mi-perfil/${res.token}`);
+      }
+    } catch {
+      // silent
+    }
+    setQrLoading(false);
+  };
+
+  const copiarQrLink = () => {
+    if (qrLink) {
+      navigator.clipboard.writeText(qrLink);
+      dialog.alert('Link copiado al portapapeles!');
+    }
   };
 
   const guardarValoracion = () => {
@@ -274,7 +305,10 @@ export default function Clientes({ usuario }) {
               ) : clientes.map((c) => (
                 <tr key={c._id} className={s.clickableRow} onClick={() => openPerfil(c)}>
                   <td>
-                    <div className={s.clienteName}>{c.nombre}{c.apellido ? ` ${c.apellido}` : ''}</div>
+                    <div className={s.clienteName}>
+                      {c.nombre}{c.apellido ? ` ${c.apellido}` : ''}
+                      {c.estadoPerfil === 'pendiente' && <span className={s.pendienteBadge}>Pendiente</span>}
+                    </div>
                     {c.razonSocial && <div className={s.clienteSub}>{c.razonSocial}</div>}
                   </td>
                   <td>
@@ -292,6 +326,9 @@ export default function Clientes({ usuario }) {
                   </td>
                   <td>
                     <div className={s.actions} onClick={(e) => e.stopPropagation()}>
+                      {c.estadoPerfil === 'pendiente' && (
+                        <button className={s.approveBtn} onClick={() => socket.emit('aprobar-cliente', c._id)} title="Aprobar"><i className="bi bi-check-lg" /></button>
+                      )}
                       <button className={s.editBtn} onClick={() => handleEdit(c)} title="Editar"><i className="bi bi-pencil" /></button>
                       <button className={s.deleteBtn} onClick={() => handleDelete(c._id)} title="Eliminar"><i className="bi bi-trash" /></button>
                     </div>
@@ -330,6 +367,24 @@ export default function Clientes({ usuario }) {
                 )}
               </div>
 
+              {/* QR Link */}
+              <div className={s.qrSection}>
+                {!qrLink ? (
+                  <button className={s.qrBtn} onClick={() => generarQrLink(perfil.cliente?._id)} disabled={qrLoading}>
+                    <i className="bi bi-qr-code" /> {qrLoading ? 'Generando...' : 'Generar link de perfil publico'}
+                  </button>
+                ) : (
+                  <div className={s.qrResult}>
+                    <span className={s.qrLabel}><i className="bi bi-link-45deg" /> Link publico del cliente:</span>
+                    <div className={s.qrLinkRow}>
+                      <input className={s.qrLinkInput} value={qrLink} readOnly onClick={(e) => e.target.select()} />
+                      <button className={s.qrCopyBtn} onClick={copiarQrLink}><i className="bi bi-clipboard" /> Copiar</button>
+                    </div>
+                    <span className={s.qrHint}>El cliente puede acceder desde este link o escaneando un QR con esta URL</span>
+                  </div>
+                )}
+              </div>
+
               {/* Tabs */}
               <div className={s.tabs}>
                 {[
@@ -337,6 +392,7 @@ export default function Clientes({ usuario }) {
                   { key: 'historial', label: 'Historial', icon: 'bi-clock-history' },
                   { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
                   { key: 'logros', label: 'Logros', icon: 'bi-trophy' },
+                  { key: 'premios', label: 'Premios', icon: 'bi-gift' },
                   { key: 'catalogo', label: 'Catalogo', icon: 'bi-grid-3x3-gap' },
                 ].map((t) => (
                   <button key={t.key} className={`${s.tab} ${perfilTab === t.key ? s.tabActive : ''}`} onClick={() => setPerfilTab(t.key)}>
@@ -481,11 +537,70 @@ export default function Clientes({ usuario }) {
                         <div className={s.logroInfo}>
                           <span className={s.logroNombre}>{l.nombre}</span>
                           <span className={s.logroDesc}>{l.desc}</span>
+                          {l.premio && (
+                            <span className={s.logroPremioChip} style={{ color: PREMIO_COLORS[l.premio.tipo] || '#3b82f6' }}>
+                              <i className={`bi ${PREMIO_ICONS[l.premio.tipo] || 'bi-gift'}`} /> {l.premio.descripcion}
+                            </span>
+                          )}
                         </div>
                         {l.req && <i className="bi bi-check-circle-fill" style={{ color: '#34d399' }} />}
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Tab: Premios */}
+              {perfilTab === 'premios' && (
+                <div className={s.tabContent}>
+                  {(() => {
+                    const premiosGanados = (perfil.logros || []).filter((l) => l.premio);
+                    const premiosPendientes = (perfil.todosLogros || []).filter((l) => !l.req && l.premio);
+                    return (
+                      <>
+                        <h4>Premios disponibles ({premiosGanados.length})</h4>
+                        {premiosGanados.length === 0 ? (
+                          <div className={s.emptyDetalle}>Aun no desbloqueaste premios. Segui comprando para ganar recompensas!</div>
+                        ) : (
+                          <div className={s.premiosGrid}>
+                            {premiosGanados.map((l) => (
+                              <div key={l.id} className={s.premioCard}>
+                                <div className={s.premioIconWrap} style={{ background: `${PREMIO_COLORS[l.premio.tipo]}18`, color: PREMIO_COLORS[l.premio.tipo] }}>
+                                  <i className={`bi ${PREMIO_ICONS[l.premio.tipo] || 'bi-gift'}`} />
+                                </div>
+                                <div className={s.premioInfo}>
+                                  <span className={s.premioTipo} style={{ color: PREMIO_COLORS[l.premio.tipo] }}>{PREMIO_LABELS[l.premio.tipo] || 'Premio'}</span>
+                                  <span className={s.premioDesc}>{l.premio.descripcion}</span>
+                                  <span className={s.premioOrigen}>Por: {l.nombre}</span>
+                                </div>
+                                <i className="bi bi-check-circle-fill" style={{ color: '#34d399', fontSize: 18 }} />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {premiosPendientes.length > 0 && (
+                          <>
+                            <h4 style={{ marginTop: 8 }}>Proximos premios</h4>
+                            <div className={s.premiosGrid}>
+                              {premiosPendientes.map((l) => (
+                                <div key={l.id} className={`${s.premioCard} ${s.premioPendiente}`}>
+                                  <div className={s.premioIconWrap} style={{ background: 'var(--surface-3)', color: 'var(--text-muted)' }}>
+                                    <i className={`bi ${PREMIO_ICONS[l.premio.tipo] || 'bi-gift'}`} />
+                                  </div>
+                                  <div className={s.premioInfo}>
+                                    <span className={s.premioTipo} style={{ color: 'var(--text-muted)' }}>{PREMIO_LABELS[l.premio.tipo] || 'Premio'}</span>
+                                    <span className={s.premioDesc}>{l.premio.descripcion}</span>
+                                    <span className={s.premioOrigen}><i className="bi bi-lock" /> {l.nombre} - {l.desc}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 

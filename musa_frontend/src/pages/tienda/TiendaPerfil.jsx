@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda } from '../../lib/tiendaApi';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente } from '../../lib/tiendaApi';
 import s from './TiendaPerfil.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -14,12 +14,17 @@ const PREMIO_LABELS = { descuento: 'Descuento', vino_gratis: 'Vino gratis', degu
 export default function TiendaPerfil() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('resumen');
   const [busqueda, setBusqueda] = useState('');
   const [mode, setMode] = useState(token ? 'token' : 'search'); // 'token' or 'search'
+  const [showRegister, setShowRegister] = useState(false);
+  const [regForm, setRegForm] = useState({ nombre: '', apellido: '', dni: '', email: '', whatsapp: '' });
+  const [regLoading, setRegLoading] = useState(false);
+  const [regMsg, setRegMsg] = useState('');
 
   // Suggestion form
   const [sugTipo, setSugTipo] = useState('sugerencia');
@@ -51,6 +56,26 @@ export default function TiendaPerfil() {
       setPerfil(null);
     }
     setLoading(false);
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!regForm.nombre.trim()) return;
+    if (!regForm.dni.trim() && !regForm.email.trim()) return;
+    setRegLoading(true);
+    setRegMsg('');
+    try {
+      const res = await registrarCliente(regForm);
+      if (res.ok && res.token) {
+        setRegMsg(res.mensaje);
+        setTimeout(() => navigate(`/tienda/mi-perfil/${res.token}`), 1500);
+      } else if (res.error) {
+        setRegMsg(res.error);
+      }
+    } catch {
+      setRegMsg('Error al registrarte. Intenta de nuevo.');
+    }
+    setRegLoading(false);
   };
 
   const handleSugerencia = async (e) => {
@@ -87,8 +112,8 @@ export default function TiendaPerfil() {
         <p className={s.heroSub}>Tu progreso, logros y premios como cliente de MUSA Vinoteca</p>
       </section>
 
-      {/* Search form (if no token) */}
-      {!token && !perfil && (
+      {/* Search or Register form (if no token) */}
+      {!token && !perfil && !showRegister && (
         <section className={s.searchSection}>
           <h2 className={s.searchTitle}>Busca tu perfil</h2>
           <p className={s.searchDesc}>Ingresa tu DNI o email para ver tu progreso</p>
@@ -105,6 +130,58 @@ export default function TiendaPerfil() {
             </button>
           </form>
           {error && <p className={s.error}>{error}</p>}
+          <div className={s.registerLink}>
+            <span>No tenes perfil todavia?</span>
+            <button className={s.registerBtn} onClick={() => setShowRegister(true)}>Registrate aca</button>
+          </div>
+        </section>
+      )}
+
+      {/* Registration form */}
+      {!token && !perfil && showRegister && (
+        <section className={s.searchSection}>
+          <h2 className={s.searchTitle}>Registrate en MUSA</h2>
+          <p className={s.searchDesc}>Crea tu perfil para acumular logros y ganar premios</p>
+          {regMsg ? (
+            <div className={s.regMsg}>
+              <i className="bi bi-check-circle-fill" style={{ fontSize: 32, color: '#34d399' }} />
+              <p>{regMsg}</p>
+            </div>
+          ) : (
+            <form onSubmit={handleRegister} className={s.regForm}>
+              <div className={s.regRow}>
+                <div className={s.regField}>
+                  <label>Nombre *</label>
+                  <input type="text" placeholder="Tu nombre" value={regForm.nombre} onChange={(e) => setRegForm({ ...regForm, nombre: e.target.value })} />
+                </div>
+                <div className={s.regField}>
+                  <label>Apellido</label>
+                  <input type="text" placeholder="Tu apellido" value={regForm.apellido} onChange={(e) => setRegForm({ ...regForm, apellido: e.target.value })} />
+                </div>
+              </div>
+              <div className={s.regRow}>
+                <div className={s.regField}>
+                  <label>DNI *</label>
+                  <input type="text" placeholder="12345678" value={regForm.dni} onChange={(e) => setRegForm({ ...regForm, dni: e.target.value })} />
+                </div>
+                <div className={s.regField}>
+                  <label>Email *</label>
+                  <input type="email" placeholder="tu@email.com" value={regForm.email} onChange={(e) => setRegForm({ ...regForm, email: e.target.value })} />
+                </div>
+              </div>
+              <div className={s.regField}>
+                <label>WhatsApp</label>
+                <input type="text" placeholder="1155667788" value={regForm.whatsapp} onChange={(e) => setRegForm({ ...regForm, whatsapp: e.target.value })} />
+              </div>
+              <p className={s.regHint}>* DNI o email es obligatorio. Tu perfil queda pendiente hasta que te aprobemos en la vinoteca.</p>
+              <div className={s.regBtns}>
+                <button type="button" className={s.regBackBtn} onClick={() => setShowRegister(false)}>Volver</button>
+                <button type="submit" className={s.searchBtn} disabled={regLoading || !regForm.nombre.trim() || (!regForm.dni.trim() && !regForm.email.trim())}>
+                  {regLoading ? 'Registrando...' : 'Registrarme'}
+                </button>
+              </div>
+            </form>
+          )}
         </section>
       )}
 
@@ -114,6 +191,17 @@ export default function TiendaPerfil() {
       {/* Profile content */}
       {perfil && (
         <div className={s.profileWrap}>
+          {/* Pending approval banner */}
+          {perfil.cliente?.estadoPerfil === 'pendiente' && (
+            <div className={s.pendingBanner}>
+              <i className="bi bi-hourglass-split" />
+              <div>
+                <strong>Perfil pendiente de aprobacion</strong>
+                <p>Tu registro esta siendo revisado. Una vez aprobado, tus compras se vincularan automaticamente.</p>
+              </div>
+            </div>
+          )}
+
           {/* Header card */}
           <div className={s.profileHeader}>
             <div className={s.nivelBadge} style={{ background: NIVEL_COLORS[perfil.nivel] || '#94a3b8' }}>

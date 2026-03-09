@@ -122,6 +122,15 @@ export async function enviarSugerenciaBusqueda(data) {
   return res.json();
 }
 
+export async function registrarCliente(data) {
+  const res = await fetch(`${BASE()}/perfil/registrar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
 export async function fetchClienteToken(clienteId) {
   const res = await fetch(`${BASE()}/perfil/token/${clienteId}`);
   return res.json();

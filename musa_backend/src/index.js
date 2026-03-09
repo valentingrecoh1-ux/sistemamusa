@@ -5121,6 +5121,16 @@ Reglas:
     }
   });
 
+  // ── Aprobar/rechazar cliente auto-registrado ──
+  socket.on("aprobar-cliente", async (clienteId) => {
+    try {
+      await Cliente.findByIdAndUpdate(clienteId, { estadoPerfil: "aprobado" });
+      io.emit("cambios-clientes");
+    } catch (err) {
+      console.error("Error aprobar-cliente:", err);
+    }
+  });
+
   // ── Sugerencias de clientes ──
   socket.on("request-sugerencias-clientes", async (filtro) => {
     try {

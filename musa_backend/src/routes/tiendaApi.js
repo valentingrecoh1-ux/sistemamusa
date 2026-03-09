@@ -914,7 +914,7 @@ IMPORTANT RULES:
     });
 
     return {
-      cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido },
+      cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido, estadoPerfil: cliente.estadoPerfil || "aprobado" },
       metricas: { totalGastado, cantCompras, vinosUnicos },
       nivel, nivelNum,
       preferencias: {
@@ -928,6 +928,53 @@ IMPORTANT RULES:
       todosLogros,
     };
   }
+
+  // POST /api/tienda/perfil/registrar - Self-registration
+  router.post("/perfil/registrar", async (req, res) => {
+    try {
+      const { nombre, apellido, dni, email, whatsapp } = req.body;
+      if (!nombre || !nombre.trim()) return res.status(400).json({ error: "El nombre es obligatorio" });
+      if (!dni && !email) return res.status(400).json({ error: "Ingresa tu DNI o email" });
+
+      // Check if already exists
+      const orQuery = [];
+      if (dni) orQuery.push({ dni: dni.trim() });
+      if (email) orQuery.push({ email: new RegExp(`^${email.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") });
+
+      const existente = await Cliente.findOne({ $or: orQuery }).lean();
+      if (existente) {
+        // If already registered, return their token so they can access their profile
+        if (existente.tokenAcceso) {
+          return res.json({ ok: true, token: existente.tokenAcceso, yaExiste: true, mensaje: "Ya tenes un perfil! Te redirigimos." });
+        }
+        // Generate token for existing client without one
+        const cli = await Cliente.findById(existente._id);
+        const crypto = require("crypto");
+        cli.tokenAcceso = crypto.randomBytes(16).toString("hex");
+        await cli.save();
+        return res.json({ ok: true, token: cli.tokenAcceso, yaExiste: true, mensaje: "Ya tenes un perfil! Te redirigimos." });
+      }
+
+      // Create new client with pending status
+      const nuevoCliente = new Cliente({
+        nombre: nombre.trim(),
+        apellido: apellido?.trim() || "",
+        dni: dni?.trim() || "",
+        email: email?.trim() || "",
+        whatsapp: whatsapp?.trim() || "",
+        estadoPerfil: "pendiente",
+        autoRegistro: true,
+        tags: ["auto-registro"],
+      });
+      await nuevoCliente.save();
+      io.emit("cambios-clientes");
+
+      res.json({ ok: true, token: nuevoCliente.tokenAcceso, yaExiste: false, mensaje: "Registro exitoso! Tu perfil esta pendiente de aprobacion." });
+    } catch (err) {
+      console.error("Error registro cliente:", err.message);
+      res.status(500).json({ error: "Error al registrarte" });
+    }
+  });
 
   // GET /api/tienda/perfil/:token - Public profile by unique token (for QR)
   router.get("/perfil/:token", async (req, res) => {

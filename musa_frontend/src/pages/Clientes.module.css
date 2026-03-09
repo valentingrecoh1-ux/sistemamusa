@@ -289,6 +289,20 @@
 
 .clienteName {
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pendienteBadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .clienteSub {
@@ -336,6 +350,23 @@
 .actions {
   display: flex;
   gap: 4px;
+}
+
+.approveBtn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius-sm);
+  color: #34d399;
+  transition: all var(--transition-fast);
+}
+
+.approveBtn:hover {
+  background: rgba(52, 211, 153, 0.1);
+  color: #059669;
 }
 
 .editBtn, .deleteBtn {

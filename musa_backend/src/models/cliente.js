@@ -17,6 +17,8 @@ const clienteSchema = new mongoose.Schema(
     notas: { type: String },
     tags: [String],
     tokenAcceso: { type: String, unique: true, sparse: true },
+    estadoPerfil: { type: String, enum: ["aprobado", "pendiente"], default: "aprobado" },
+    autoRegistro: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

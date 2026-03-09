@@ -100,6 +100,151 @@
   cursor: not-allowed;
 }
 
+/* ── Register link ── */
+.registerLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--tienda-text-muted, #6b7280);
+}
+
+.registerBtn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #7c3aed;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.registerBtn:hover {
+  color: #6d28d9;
+}
+
+/* ── Registration form ── */
+.regForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.regRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.regField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.regField label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tienda-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.regField input {
+  padding: 10px 14px;
+  border: 1px solid var(--tienda-border, #d1d5db);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  background: var(--tienda-input-bg, #f9fafb);
+  color: var(--tienda-text, #111);
+}
+
+.regField input:focus {
+  outline: none;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+}
+
+.regHint {
+  font-size: 12px;
+  color: var(--tienda-text-muted, #9ca3af);
+  margin: 0;
+  font-style: italic;
+}
+
+.regBtns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.regBackBtn {
+  padding: 12px 24px;
+  border: 1px solid var(--tienda-border, #d1d5db);
+  border-radius: var(--border-radius);
+  background: none;
+  box-shadow: none;
+  color: var(--tienda-text-muted, #6b7280);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.regBackBtn:hover {
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+
+.regMsg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.regMsg p {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tienda-text, #111);
+  margin: 0;
+}
+
+/* ── Pending banner ── */
+.pendingBanner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: var(--border-radius-lg);
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #b45309;
+}
+
+.pendingBanner i {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.pendingBanner strong {
+  font-size: 14px;
+  display: block;
+}
+
+.pendingBanner p {
+  font-size: 13px;
+  margin: 4px 0 0;
+  opacity: 0.85;
+}
+
 .error {
   color: #ef4444;
   font-size: 14px;
@@ -646,6 +791,9 @@
   }
   .searchForm {
     flex-direction: column;
+  }
+  .regRow {
+    grid-template-columns: 1fr;
   }
   .sugTipos {
     flex-direction: column;

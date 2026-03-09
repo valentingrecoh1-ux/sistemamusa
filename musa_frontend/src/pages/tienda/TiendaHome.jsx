@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProductos, fetchConfig } from '../../lib/tiendaApi';
-import { tiendaPath } from '../../main';
+import { tiendaPath } from '../../tiendaConfig';
 import ProductCard from '../../components/tienda/ProductCard';
 import s from './TiendaHome.module.css';
 

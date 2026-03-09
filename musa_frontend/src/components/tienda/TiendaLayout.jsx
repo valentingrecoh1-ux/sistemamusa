@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { fetchConfig } from '../../lib/tiendaApi';
-import { tiendaPath, TIENDA_BASE } from '../../main';
+import { tiendaPath, TIENDA_BASE } from '../../tiendaConfig';
 import logo from '../../assets/musa.jpg';
 import s from './TiendaLayout.module.css';
 

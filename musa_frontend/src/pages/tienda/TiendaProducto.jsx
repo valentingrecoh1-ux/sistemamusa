@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchProducto, fetchResenas, crearResena, fetchAnalisis } from '../../lib/tiendaApi';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';
-import { IP, fotoSrc, tiendaPath } from '../../main';
+import { IP, fotoSrc } from '../../main';
+import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaProducto.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);

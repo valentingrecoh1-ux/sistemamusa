@@ -3403,6 +3403,50 @@ Origen: ${producto.origen || ""}`;
     }
   });
 
+  // ── Buscar gastos existentes en caja para vincular a gasto estimado de evento ──
+  socket.on("buscar-gastos-para-vincular", async ({ search }, callback) => {
+    try {
+      const query = { tipoOperacion: "GASTO" };
+      if (search) {
+        const regex = new RegExp(search, "i");
+        query.$or = [{ descripcion: regex }, { nombre: regex }, { beneficiario: regex }];
+      }
+      const gastos = await Operacion.find(query)
+        .sort({ createdAt: -1 })
+        .limit(30)
+        .select("_id nombre descripcion monto fecha beneficiario createdAt")
+        .lean();
+      if (typeof callback === "function") callback({ gastos });
+    } catch (err) {
+      console.error("Error buscar-gastos-para-vincular:", err);
+      if (typeof callback === "function") callback({ error: err.message, gastos: [] });
+    }
+  });
+
+  // ── Vincular gasto estimado de evento a una operacion existente ──
+  socket.on("vincular-gasto-evento", async ({ eventoId, gastoIndex, operacionId }, callback) => {
+    try {
+      const evento = await Evento.findById(eventoId);
+      if (!evento || !evento.gastosEstimados[gastoIndex]) {
+        if (typeof callback === "function") callback({ error: "Gasto no encontrado" });
+        return;
+      }
+      const op = await Operacion.findById(operacionId);
+      if (!op) {
+        if (typeof callback === "function") callback({ error: "Operación no encontrada" });
+        return;
+      }
+      evento.gastosEstimados[gastoIndex].realizado = true;
+      evento.gastosEstimados[gastoIndex].operacionId = op._id;
+      await evento.save();
+      io.emit("cambios");
+      if (typeof callback === "function") callback({ ok: true });
+    } catch (err) {
+      console.error("Error vincular-gasto-evento:", err);
+      if (typeof callback === "function") callback({ error: err.message });
+    }
+  });
+
   socket.on("guardar-info-pago-gasto", async ({ eventoId, gastoIndex, infoPago }) => {
     try {
       const evento = await Evento.findById(eventoId);

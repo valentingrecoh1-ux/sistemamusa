@@ -815,11 +815,21 @@ function Eventos({ usuario }) {
               <th>Fecha</th>
               <th>Evento</th>
               <th>Capacidad</th>
-              <th>Cobrado/Total</th>
+              <th>Cobrado</th>
               <th>Costo</th>
               <th>Resultado</th>
               <th>Estado</th>
               <th>Acciones</th>
+            </tr>
+            <tr className={s.subHeaderRow}>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th><span className={s.subHeaderHint}>cobrado / total</span></th>
+              <th><span className={s.subHeaderHint}>real / estimado</span></th>
+              <th><span className={s.subHeaderHint}>real / estimado</span></th>
+              <th></th>
+              <th></th>
             </tr>
           </thead>
           <tbody>

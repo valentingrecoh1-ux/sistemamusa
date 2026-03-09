@@ -618,8 +618,8 @@ export default function Clientes({ usuario }) {
                       .filter((v) => !cepaFilter || v.cepa === cepaFilter)
                       .map((v) => (
                         <div key={v._id} className={`${s.vinoCard} ${v.probado ? s.vinoProbado : ''}`} onClick={() => openVinoDetalle(v)}>
-                          {v.foto ? (
-                            <img src={v.foto} alt="" className={s.vinoImg} />
+                          {v.fotoUrl ? (
+                            <img src={v.fotoUrl} alt="" className={s.vinoImg} loading="lazy" />
                           ) : (
                             <div className={s.vinoImgPlaceholder}><i className="bi bi-cup-straw" /></div>
                           )}
@@ -651,8 +651,8 @@ export default function Clientes({ usuario }) {
         <Modal title={vinoDetalle.nombre} onClose={() => setVinoDetalle(null)}>
           <div className={s.vinoDetalleBody}>
             <div className={s.vinoDetalleHeader}>
-              {vinoDetalle.foto ? (
-                <img src={vinoDetalle.foto} alt="" className={s.vinoDetalleImg} />
+              {vinoDetalle.fotoUrl ? (
+                <img src={vinoDetalle.fotoUrl} alt="" className={s.vinoDetalleImg} loading="lazy" />
               ) : (
                 <div className={s.vinoDetalleImgPlaceholder}><i className="bi bi-cup-straw" /></div>
               )}

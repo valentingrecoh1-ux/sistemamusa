@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchProducto, fetchResenas, crearResena, fetchAnalisis } from '../../lib/tiendaApi';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';
-import { IP, fotoSrc } from '../../main';
+import { IP, fotoSrc, tiendaPath } from '../../main';
 import s from './TiendaProducto.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -98,7 +98,7 @@ export default function TiendaProducto() {
   };
 
   if (loading) return <div className={s.loading}>Cargando...</div>;
-  if (!data?.producto) return <div className={s.notFound}><p>Producto no encontrado</p><Link to="/tienda/catalogo">Volver al catalogo</Link></div>;
+  if (!data?.producto) return <div className={s.notFound}><p>Producto no encontrado</p><Link to={tiendaPath('/catalogo')}>Volver al catalogo</Link></div>;
 
   const p = data.producto;
   const stockStatus = p.cantidad <= 0 ? 'sin-stock' : p.cantidad <= 3 ? 'pocas' : 'disponible';
@@ -111,7 +111,7 @@ export default function TiendaProducto() {
 
   return (
     <div>
-      <Link to="/tienda/catalogo" className={s.back}>
+      <Link to={tiendaPath('/catalogo')} className={s.back}>
         <i className="bi bi-arrow-left" /> Volver al catalogo
       </Link>
 

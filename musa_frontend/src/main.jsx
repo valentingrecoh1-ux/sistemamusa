@@ -46,6 +46,13 @@ export const userFotoUrl = (userId, v) => {
   return `${ip_variable}/api/usuario-foto/${userId}${v ? `?v=${v}` : ''}`;
 };
 
+// Detectar si estamos en el dominio de la tienda (musavinos.com sin subdomain "sistema")
+const host = window.location.hostname;
+export const isTiendaDomain = host !== 'localhost' && host !== '127.0.0.1' && !host.startsWith('sistema.');
+// Prefijo de rutas de tienda: "" en musavinos.com, "/tienda" en sistema.musavinos.com o local
+export const TIENDA_BASE = isTiendaDomain ? '' : '/tienda';
+export const tiendaPath = (path = '') => `${TIENDA_BASE}${path}`;
+
 export let socket;
 
 const probeSocketServer = async (baseUrl) => {

@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { fetchConfig } from '../../lib/tiendaApi';
+import { tiendaPath, TIENDA_BASE } from '../../main';
 import logo from '../../assets/musa.jpg';
 import s from './TiendaLayout.module.css';
+
+const home = TIENDA_BASE || '/';
 
 export default function TiendaLayout() {
   const { totalItems } = useCart();
@@ -23,7 +26,7 @@ export default function TiendaLayout() {
     <div className={s.tienda}>
       <nav className={s.navbar}>
         <div className={s.navInner}>
-          <Link to="/tienda" className={s.brand}>
+          <Link to={home} className={s.brand}>
             <img src={logo} alt="MUSA" className={s.logo} />
             <div className={s.brandText}>
               <span className={s.brandName}>MUSA</span>
@@ -32,16 +35,16 @@ export default function TiendaLayout() {
           </Link>
 
           <div className={`${s.navLinks} ${menuOpen ? s.navLinksOpen : ''}`}>
-            <Link to="/tienda" className={`${s.navLink} ${pathname === '/tienda' ? s.navActive : ''}`}>Inicio</Link>
-            <Link to="/tienda/catalogo" className={`${s.navLink} ${pathname.includes('catalogo') ? s.navActive : ''}`}>Vinos</Link>
-            <Link to="/tienda/sommelier" className={`${s.navLink} ${pathname.includes('sommelier') ? s.navActive : ''}`}>Sommelier</Link>
-            <Link to="/tienda/club" className={`${s.navLink} ${pathname.includes('club') ? s.navActive : ''}`}>Club</Link>
-            <Link to="/tienda/etiqueta" className={`${s.navLink} ${pathname.includes('etiqueta') ? s.navActive : ''}`}>Etiquetas</Link>
-            <Link to="/tienda/mi-perfil" className={`${s.navLink} ${pathname.includes('mi-perfil') ? s.navActive : ''}`}>Mi Perfil</Link>
+            <Link to={home} className={`${s.navLink} ${pathname === home || pathname === `${home}/` ? s.navActive : ''}`}>Inicio</Link>
+            <Link to={tiendaPath('/catalogo')} className={`${s.navLink} ${pathname.includes('catalogo') ? s.navActive : ''}`}>Vinos</Link>
+            <Link to={tiendaPath('/sommelier')} className={`${s.navLink} ${pathname.includes('sommelier') ? s.navActive : ''}`}>Sommelier</Link>
+            <Link to={tiendaPath('/club')} className={`${s.navLink} ${pathname.includes('club') ? s.navActive : ''}`}>Club</Link>
+            <Link to={tiendaPath('/etiqueta')} className={`${s.navLink} ${pathname.includes('etiqueta') ? s.navActive : ''}`}>Etiquetas</Link>
+            <Link to={tiendaPath('/mi-perfil')} className={`${s.navLink} ${pathname.includes('mi-perfil') ? s.navActive : ''}`}>Mi Perfil</Link>
           </div>
 
           <div className={s.navRight}>
-            <Link to="/tienda/carrito" className={s.cartBtn}>
+            <Link to={tiendaPath('/carrito')} className={s.cartBtn}>
               <i className="bi bi-bag" />
               {totalItems > 0 && <span className={s.cartBadge}>{totalItems}</span>}
             </Link>

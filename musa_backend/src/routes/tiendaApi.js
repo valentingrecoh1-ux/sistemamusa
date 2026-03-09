@@ -172,7 +172,9 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
         try {
           // Usar Origin del frontend para back_urls (no el host del backend)
           const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, "") || `${req.protocol}://${req.get("host")}`;
-          const backUrl = `${origin}/tienda/checkout/resultado`;
+          // Si el origin es el dominio de tienda (no sistema.*), usar ruta sin /tienda
+          const isTiendaDomain = origin && !origin.includes('sistema.') && !origin.includes('localhost');
+          const backUrl = isTiendaDomain ? `${origin}/checkout/resultado` : `${origin}/tienda/checkout/resultado`;
           // Para webhook necesitamos la URL del backend
           const apiBase = `${req.protocol}://${req.get("host")}`;
 

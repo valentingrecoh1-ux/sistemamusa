@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { IP, fotoSrc } from '../../main';
+import { IP, fotoSrc, tiendaPath } from '../../main';
 import s from './TiendaCarrito.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -14,7 +14,7 @@ export default function TiendaCarrito() {
         <i className="bi bi-bag" />
         <h2>Tu carrito esta vacio</h2>
         <p>Agrega vinos desde nuestro catalogo</p>
-        <Link to="/tienda/catalogo" className={s.emptyBtn}>Ver catalogo</Link>
+        <Link to={tiendaPath('/catalogo')} className={s.emptyBtn}>Ver catalogo</Link>
       </div>
     );
   }
@@ -31,7 +31,7 @@ export default function TiendaCarrito() {
                 <img src={fotoSrc(item.foto, item.productoId)} alt={item.nombre} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <div className={s.itemInfo}>
-                <Link to={`/tienda/producto/${item.productoId}`} className={s.itemName}>{item.nombre}</Link>
+                <Link to={tiendaPath(`/producto/${item.productoId}`)} className={s.itemName}>{item.nombre}</Link>
                 <div className={s.itemMeta}>
                   {item.bodega && <span>{item.bodega}</span>}
                   {item.cepa && <span> · {item.cepa}</span>}
@@ -63,10 +63,10 @@ export default function TiendaCarrito() {
             <span>Total</span>
             <span>{money(totalPrice)}</span>
           </div>
-          <Link to="/tienda/checkout" className={s.checkoutBtn}>
+          <Link to={tiendaPath('/checkout')} className={s.checkoutBtn}>
             Ir al checkout <i className="bi bi-arrow-right" />
           </Link>
-          <Link to="/tienda/catalogo" className={s.continueLink}>
+          <Link to={tiendaPath('/catalogo')} className={s.continueLink}>
             <i className="bi bi-arrow-left" /> Seguir comprando
           </Link>
         </div>

@@ -1,5 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from '../../context/CartContext';
+import { TIENDA_BASE } from '../../main';
 import TiendaLayout from './TiendaLayout';
 import TiendaHome from '../../pages/tienda/TiendaHome';
 import TiendaCatalogo from '../../pages/tienda/TiendaCatalogo';
@@ -13,22 +14,28 @@ import TiendaEtiqueta from '../../pages/tienda/TiendaEtiqueta';
 import TiendaPerfil from '../../pages/tienda/TiendaPerfil';
 import '../../styles/tienda.css';
 
+const B = TIENDA_BASE; // "" on store domain, "/tienda" on system domain
+
 export default function TiendaApp() {
   return (
     <CartProvider>
       <Routes>
         <Route element={<TiendaLayout />}>
-          <Route path="/tienda" element={<TiendaHome />} />
-          <Route path="/tienda/catalogo" element={<TiendaCatalogo />} />
-          <Route path="/tienda/producto/:id" element={<TiendaProducto />} />
-          <Route path="/tienda/carrito" element={<TiendaCarrito />} />
-          <Route path="/tienda/checkout" element={<TiendaCheckout />} />
-          <Route path="/tienda/checkout/resultado" element={<TiendaCheckoutResult />} />
-          <Route path="/tienda/sommelier" element={<TiendaSommelier />} />
-          <Route path="/tienda/club" element={<TiendaClub />} />
-          <Route path="/tienda/etiqueta" element={<TiendaEtiqueta />} />
-          <Route path="/tienda/mi-perfil" element={<TiendaPerfil />} />
-          <Route path="/tienda/mi-perfil/:token" element={<TiendaPerfil />} />
+          <Route path={`${B}`} element={<TiendaHome />} />
+          <Route path={`${B}/catalogo`} element={<TiendaCatalogo />} />
+          <Route path={`${B}/producto/:id`} element={<TiendaProducto />} />
+          <Route path={`${B}/carrito`} element={<TiendaCarrito />} />
+          <Route path={`${B}/checkout`} element={<TiendaCheckout />} />
+          <Route path={`${B}/checkout/resultado`} element={<TiendaCheckoutResult />} />
+          <Route path={`${B}/sommelier`} element={<TiendaSommelier />} />
+          <Route path={`${B}/club`} element={<TiendaClub />} />
+          <Route path={`${B}/etiqueta`} element={<TiendaEtiqueta />} />
+          <Route path={`${B}/mi-perfil`} element={<TiendaPerfil />} />
+          <Route path={`${B}/mi-perfil/:token`} element={<TiendaPerfil />} />
+          {/* Redirect legacy /tienda/* paths when on store domain */}
+          {B === '' && <Route path="/tienda/*" element={<Navigate to="/" replace />} />}
+          {/* Catch-all for store domain */}
+          {B === '' && <Route path="*" element={<Navigate to="/" replace />} />}
         </Route>
       </Routes>
     </CartProvider>

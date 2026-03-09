@@ -858,7 +858,7 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
 
   return (
     <div className={s.choiceSection}>
-      <h2 className={s.sectionLabel}>CLIENTE</h2>
+      <h2 className={s.sectionLabel}>CLIENTE <span className={s.optionalTag}>opcional</span></h2>
       <div className={s.clienteSearchWrap}>
         <input
           type="text"

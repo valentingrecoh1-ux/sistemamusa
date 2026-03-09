@@ -84,6 +84,13 @@ function Eventos({ usuario }) {
   const [infoOpenIdx, setInfoOpenIdx] = useState(null);
   const [infoPagoEdit, setInfoPagoEdit] = useState("");
 
+  // Vincular gasto modal
+  const [showVincularModal, setShowVincularModal] = useState(false);
+  const [vincularGastoIdx, setVincularGastoIdx] = useState(null);
+  const [vincularSearch, setVincularSearch] = useState("");
+  const [vincularGastos, setVincularGastos] = useState([]);
+  const [vincularLoading, setVincularLoading] = useState(false);
+
   // Stats
   const [totalPersonas, setTotalPersonas] = useState(0);
   const [totalIngreso, setTotalIngreso] = useState(0);
@@ -358,7 +365,16 @@ function Eventos({ usuario }) {
   };
 
   const concretarGasto = (idx) => {
+    setVincularGastoIdx(idx);
+    setShowVincularModal(true);
+    setVincularSearch("");
+    setVincularGastos([]);
+  };
+
+  const concretarGastoNuevo = () => {
+    const idx = vincularGastoIdx;
     const gasto = detailData.gastosEstimados[idx];
+    setShowVincularModal(false);
     navigate("/caja", {
       state: {
         prefill: {
@@ -370,6 +386,28 @@ function Eventos({ usuario }) {
         },
         gastoEvento: { eventoId: detailData._id, gastoIndex: idx },
       },
+    });
+  };
+
+  const buscarGastosParaVincular = (search) => {
+    setVincularSearch(search);
+    setVincularLoading(true);
+    socket.emit("buscar-gastos-para-vincular", { search }, (res) => {
+      setVincularGastos(res?.gastos || []);
+      setVincularLoading(false);
+    });
+  };
+
+  const vincularGastoExistente = (operacionId) => {
+    socket.emit("vincular-gasto-evento", {
+      eventoId: detailData._id,
+      gastoIndex: vincularGastoIdx,
+      operacionId,
+    }, (res) => {
+      if (res?.error) {
+        dialog.alert("Error: " + res.error);
+      }
+      setShowVincularModal(false);
     });
   };
 
@@ -1760,6 +1798,66 @@ function Eventos({ usuario }) {
           </div>
         );
       })()}
+      {/* Modal vincular gasto */}
+      {showVincularModal && (
+        <div className={s.vincularOverlay} onClick={() => setShowVincularModal(false)}>
+          <div className={s.vincularModal} onClick={(e) => e.stopPropagation()}>
+            <button className={s.vincularClose} onClick={() => setShowVincularModal(false)}>
+              <i className="bi bi-x-lg"></i>
+            </button>
+            <h3 className={s.vincularTitle}>Enviar a caja</h3>
+            <p className={s.vincularSub}>
+              {detailData?.gastosEstimados?.[vincularGastoIdx]?.descripcion} — {money(detailData?.gastosEstimados?.[vincularGastoIdx]?.monto)}
+            </p>
+            <div className={s.vincularOptions}>
+              <button className={s.vincularOptionBtn} onClick={concretarGastoNuevo}>
+                <i className="bi bi-plus-circle"></i>
+                <span>Crear nuevo gasto en caja</span>
+              </button>
+              <button className={`${s.vincularOptionBtn} ${s.vincularOptionBtnAlt}`} onClick={() => buscarGastosParaVincular("")}>
+                <i className="bi bi-link-45deg"></i>
+                <span>Vincular a gasto existente</span>
+              </button>
+            </div>
+            {vincularGastos.length > 0 || vincularLoading ? (
+              <div className={s.vincularListWrap}>
+                <div className={s.vincularSearchWrap}>
+                  <i className="bi bi-search"></i>
+                  <input
+                    className={s.vincularSearchInput}
+                    type="text"
+                    placeholder="Buscar gasto..."
+                    value={vincularSearch}
+                    onChange={(e) => buscarGastosParaVincular(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                {vincularLoading ? (
+                  <div className={s.vincularLoading}><i className="bi bi-hourglass-split"></i> Buscando...</div>
+                ) : (
+                  <div className={s.vincularList}>
+                    {vincularGastos.map((g) => (
+                      <button key={g._id} className={s.vincularItem} onClick={() => vincularGastoExistente(g._id)}>
+                        <div className={s.vincularItemTop}>
+                          <span className={s.vincularItemDesc}>{g.descripcion || g.nombre}</span>
+                          <span className={s.vincularItemMonto}>{money(g.monto)}</span>
+                        </div>
+                        <div className={s.vincularItemBottom}>
+                          <span>{g.nombre && g.descripcion ? g.nombre : ''}</span>
+                          <span>{g.fecha}</span>
+                        </div>
+                      </button>
+                    ))}
+                    {vincularGastos.length === 0 && (
+                      <div className={s.vincularEmpty}>No se encontraron gastos</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

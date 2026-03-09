@@ -645,7 +645,7 @@
 
 .modalImage img {
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 50vh;
   object-fit: contain;
   border-radius: var(--border-radius);
 }
@@ -653,11 +653,12 @@
 /* ── Modal gallery (thumbnails + add) ── */
 .modalGallery {
   display: flex;
-  gap: 6px;
-  padding: 8px 24px;
+  gap: 8px;
+  padding: 10px 24px;
   overflow-x: auto;
-  background: var(--page-bg);
+  background: var(--card-bg);
   flex-shrink: 0;
+  align-items: center;
 }
 
 .modalGalleryThumb {
@@ -737,8 +738,8 @@
 .modalFotoActions {
   display: flex;
   gap: 8px;
-  padding: 6px 24px;
-  background: var(--page-bg);
+  padding: 8px 24px 12px;
+  background: var(--card-bg);
   flex-shrink: 0;
 }
 

@@ -4961,9 +4961,9 @@ Reglas:
       const valoracionMap = {};
       valoraciones.forEach((val) => { valoracionMap[String(val.productoId)] = val; });
 
-      // Todos los vinos del catálogo para colección de cepas
+      // Todos los vinos del catálogo para colección de cepas (sin fotos base64 para no saturar el socket)
       const todosVinos = await Product.find({ tipo: "vino" })
-        .select("_id nombre cepa bodega foto fotos fotoPrincipalIdx").lean();
+        .select("_id nombre cepa bodega").lean();
 
       // Cepas únicas del catálogo
       const cepasSet = new Set();
@@ -5080,7 +5080,7 @@ Reglas:
         ratingMap,
         todosVinos: todosVinos.map((v) => ({
           _id: v._id, nombre: v.nombre, cepa: v.cepa, bodega: v.bodega,
-          foto: v.fotos?.length ? v.fotos[v.fotoPrincipalIdx || 0] || v.fotos[0] : v.foto || null,
+          fotoUrl: `/api/producto-foto/${v._id}`,
           probado: productoIdsSet.has(String(v._id)),
           rating: ratingMap[String(v._id)] || null,
           miValoracion: valoracionMap[String(v._id)] || null,

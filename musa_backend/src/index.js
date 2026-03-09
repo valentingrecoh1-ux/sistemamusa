@@ -836,12 +836,13 @@ app.post("/api/migrar-cloudinary", async (req, res) => {
   if (!isCloudinaryConfigured()) return res.status(400).json({ error: "Cloudinary no configurado" });
   const results = { productos: 0, usuarios: 0, mediaTV: 0, errors: [] };
   try {
-    // 1. Migrar productos
-    const productos = await Product.find({}).select("foto fotos fotoIA").lean();
-    for (const p of productos) {
+    // 1. Migrar productos — uno a uno con cursor para no cargar todo en RAM
+    const pIds = await Product.find({}).select("_id").lean();
+    for (const { _id } of pIds) {
       try {
+        const p = await Product.findById(_id).select("foto fotos fotoPrincipalIdx fotoIA").lean();
+        if (!p) continue;
         const updates = {};
-        // Migrar fotos array
         if (p.fotos && p.fotos.length > 0) {
           const newFotos = [];
           for (const f of p.fotos) {
@@ -858,44 +859,49 @@ app.post("/api/migrar-cloudinary", async (req, res) => {
           updates.foto = url;
           updates.fotos = [url];
         }
-        // Migrar fotoIA
         if (p.fotoIA && !isUrl(p.fotoIA) && p.fotoIA.startsWith("data:")) {
           updates.fotoIA = await uploadBase64(p.fotoIA, "musa/productos-ia");
         }
         if (Object.keys(updates).length > 0) {
-          await Product.findByIdAndUpdate(p._id, updates);
+          await Product.findByIdAndUpdate(_id, updates);
           results.productos++;
+          console.log(`Migrado producto ${_id} (${results.productos})`);
         }
       } catch (err) {
-        results.errors.push(`Producto ${p._id}: ${err.message}`);
+        results.errors.push(`Producto ${_id}: ${err.message}`);
       }
     }
-    // 2. Migrar fotos de usuarios
-    const usuarios = await Usuario.find({ foto: { $exists: true, $ne: "" } }).select("foto").lean();
-    for (const u of usuarios) {
+    // 2. Migrar fotos de usuarios — uno a uno
+    const uIds = await Usuario.find({ foto: { $exists: true, $ne: "" } }).select("_id").lean();
+    for (const { _id } of uIds) {
       try {
-        if (u.foto && !isUrl(u.foto) && u.foto.startsWith("data:")) {
+        const u = await Usuario.findById(_id).select("foto").lean();
+        if (u?.foto && !isUrl(u.foto) && u.foto.startsWith("data:")) {
           const url = await uploadBase64(u.foto, "musa/usuarios");
-          await Usuario.findByIdAndUpdate(u._id, { foto: url });
+          await Usuario.findByIdAndUpdate(_id, { foto: url });
           results.usuarios++;
+          console.log(`Migrado usuario ${_id}`);
         }
       } catch (err) {
-        results.errors.push(`Usuario ${u._id}: ${err.message}`);
+        results.errors.push(`Usuario ${_id}: ${err.message}`);
       }
     }
-    // 3. Migrar media TV
-    const medias = await MediaTV.find({}).select("archivo").lean();
-    for (const m of medias) {
+    // 3. Migrar media TV — uno a uno
+    const mIds = await MediaTV.find({}).select("_id").lean();
+    for (const { _id } of mIds) {
       try {
-        if (m.archivo && !isUrl(m.archivo) && m.archivo.startsWith("data:")) {
+        const m = await MediaTV.findById(_id).select("archivo").lean();
+        if (m?.archivo && !isUrl(m.archivo) && m.archivo.startsWith("data:")) {
           const url = await uploadBase64(m.archivo, "musa/tv");
-          await MediaTV.findByIdAndUpdate(m._id, { archivo: url });
+          await MediaTV.findByIdAndUpdate(_id, { archivo: url });
           results.mediaTV++;
+          console.log(`Migrado mediaTV ${_id}`);
         }
       } catch (err) {
-        results.errors.push(`MediaTV ${m._id}: ${err.message}`);
+        results.errors.push(`MediaTV ${_id}: ${err.message}`);
       }
     }
+    console.log("Migración Cloudinary completada:", results);
     res.json({ ok: true, migrados: results });
   } catch (err) {
     console.error("Error migración Cloudinary:", err);

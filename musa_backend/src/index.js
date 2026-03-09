@@ -486,11 +486,25 @@ app.get("/api/usuario-foto/:id", async (req, res) => {
 });
 
 // ── Servir foto de producto (base64 → imagen binaria, con cache) ──
-app.get("/api/producto-foto/:id", async (req, res) => {
+app.get("/api/producto-foto/:id/:index?", async (req, res) => {
   try {
-    const p = await Product.findById(req.params.id).select("foto fotoIA usarFotoIA").lean();
+    const p = await Product.findById(req.params.id).select("foto fotos fotoPrincipalIdx fotoIA usarFotoIA").lean();
     if (!p) return res.status(404).send("Not found");
-    const foto = (p.usarFotoIA && p.fotoIA) ? p.fotoIA : p.foto;
+
+    let foto;
+    const idx = req.params.index != null ? parseInt(req.params.index) : null;
+
+    if (idx !== null && p.fotos && p.fotos[idx]) {
+      // Servir foto por indice especifico
+      foto = p.fotos[idx];
+    } else if (p.usarFotoIA && p.fotoIA) {
+      foto = p.fotoIA;
+    } else if (p.fotos && p.fotos.length > 0) {
+      foto = p.fotos[p.fotoPrincipalIdx || 0] || p.fotos[0];
+    } else {
+      foto = p.foto;
+    }
+
     if (!foto) return res.status(404).send("No photo");
     const match = foto.match(/^data:(.+?);base64,(.+)$/);
     if (!match) return res.status(404).send("Bad format");
@@ -672,16 +686,19 @@ app.post(
   }
 );
 
-app.post("/upload", upload.single("foto"), async (req, res) => {
+app.post("/upload", upload.array("fotos", 10), async (req, res) => {
   const formData = req.body;
-  const file = req.file;
+  const files = req.files || [];
   try {
-    // Convertir foto a base64 para persistencia en MongoDB
-    let fotoBase64 = null;
-    if (file) {
+    // Convertir fotos nuevas a base64
+    const nuevasFotos = files.map((file) => {
       const mime = file.mimetype || "image/jpeg";
-      fotoBase64 = `data:${mime};base64,${file.buffer.toString("base64")}`;
-    }
+      return `data:${mime};base64,${file.buffer.toString("base64")}`;
+    });
+
+    // Indices de fotos existentes a mantener (enviados como JSON string)
+    const fotosKeepIdx = formData.fotosKeepIdx ? JSON.parse(formData.fotosKeepIdx) : null;
+    const fotoPrincipalIdx = formData.fotoPrincipalIdx != null ? parseInt(formData.fotoPrincipalIdx) : 0;
 
     if (formData._id) {
       // Buscar el producto existente
@@ -697,6 +714,20 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
         updateOps.$push = { historialPrecios: { precio: existingProduct.venta, fecha: new Date() } };
       }
 
+      // Construir array de fotos: existentes filtradas + nuevas
+      let fotosArray;
+      const existingFotos = existingProduct.fotos && existingProduct.fotos.length > 0
+        ? existingProduct.fotos
+        : (existingProduct.foto ? [existingProduct.foto] : []);
+
+      if (fotosKeepIdx !== null) {
+        // Solo mantener las fotos en los indices indicados
+        fotosArray = fotosKeepIdx.map((i) => existingFotos[i]).filter(Boolean);
+      } else {
+        fotosArray = [...existingFotos];
+      }
+      fotosArray.push(...nuevasFotos);
+
       const product = {
         codigo: formData.codigo,
         bodega: formData.bodega,
@@ -710,7 +741,9 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
         posicion: formData.posicion,
         descripcion: formData.descripcion,
         tipo: formData.tipo || "vino",
-        foto: fotoBase64 || existingProduct.foto,
+        fotos: fotosArray,
+        fotoPrincipalIdx: Math.min(fotoPrincipalIdx, Math.max(0, fotosArray.length - 1)),
+        foto: fotosArray[Math.min(fotoPrincipalIdx, Math.max(0, fotosArray.length - 1))] || existingProduct.foto || "",
         proveedorId: formData.proveedorId || existingProduct.proveedorId,
         proveedorNombre: formData.proveedorNombre || existingProduct.proveedorNombre,
         stockMinimo: formData.stockMinimo != null ? formData.stockMinimo : existingProduct.stockMinimo,
@@ -724,6 +757,7 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
       if (!formData.cantidad) {
         formData.cantidad = 0;
       }
+      const fotosArray = [...nuevasFotos];
       const newProduct = new Product({
         codigo: formData.codigo,
         bodega: formData.bodega,
@@ -737,7 +771,9 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
         posicion: formData.posicion,
         descripcion: formData.descripcion,
         tipo: formData.tipo || "vino",
-        foto: fotoBase64 || "",
+        fotos: fotosArray,
+        fotoPrincipalIdx: Math.min(fotoPrincipalIdx, Math.max(0, fotosArray.length - 1)),
+        foto: fotosArray[0] || "",
         proveedorId: formData.proveedorId || null,
         proveedorNombre: formData.proveedorNombre || "",
         stockMinimo: formData.stockMinimo || 3,
@@ -755,7 +791,6 @@ app.post("/upload", upload.single("foto"), async (req, res) => {
       message: "Producto guardado y notificado a los clientes",
     });
     io.emit("cambios");
-    // Emitir un evento a todos los clientes conectados con el nuevo producto
   } catch (error) {
     console.error("Error al guardar el producto:", error);
     res
@@ -1432,7 +1467,7 @@ io.on("connection", (socket) => {
 
         const [productos, totalProductos, stockTotal] = await Promise.all([
           Product.find(query)
-            .select("-foto -fotoIA -descripcionGenerada")
+            .select("-foto -fotos -fotoIA -descripcionGenerada")
             .sort(sortOption)
             .skip((page - 1) * pageSize)
             .limit(pageSize),
@@ -1725,6 +1760,57 @@ Origen: ${producto.origen || ""}`;
     }
   });
 
+  // ── Obtener fotos de un producto (para edicion) ──
+  socket.on("request-producto-fotos", async (id, cb) => {
+    try {
+      const p = await Product.findById(id).select("fotos fotoPrincipalIdx foto").lean();
+      if (!p) { if (cb) cb({ error: "Producto no encontrado" }); return; }
+      // Backward compat: si no tiene fotos array pero si foto, usarla
+      const fotos = (p.fotos && p.fotos.length > 0) ? p.fotos : (p.foto ? [p.foto] : []);
+      if (cb) cb({ fotos, fotoPrincipalIdx: p.fotoPrincipalIdx || 0 });
+    } catch (err) {
+      if (cb) cb({ error: err.message });
+    }
+  });
+
+  // ── Cambiar foto principal ──
+  socket.on("set-foto-principal", async (id, idx, cb) => {
+    try {
+      const p = await Product.findById(id);
+      if (!p) { if (cb) cb({ error: "Producto no encontrado" }); return; }
+      const fotos = (p.fotos && p.fotos.length > 0) ? p.fotos : (p.foto ? [p.foto] : []);
+      if (idx < 0 || idx >= fotos.length) { if (cb) cb({ error: "Indice invalido" }); return; }
+      p.fotoPrincipalIdx = idx;
+      p.foto = fotos[idx];
+      if (!p.fotos || p.fotos.length === 0) p.fotos = fotos;
+      await p.save();
+      io.emit("cambios");
+      if (cb) cb({ ok: true });
+    } catch (err) {
+      if (cb) cb({ error: err.message });
+    }
+  });
+
+  // ── Eliminar una foto por indice ──
+  socket.on("delete-foto-producto", async (id, idx, cb) => {
+    try {
+      const p = await Product.findById(id);
+      if (!p) { if (cb) cb({ error: "Producto no encontrado" }); return; }
+      const fotos = (p.fotos && p.fotos.length > 0) ? p.fotos : (p.foto ? [p.foto] : []);
+      if (idx < 0 || idx >= fotos.length) { if (cb) cb({ error: "Indice invalido" }); return; }
+      fotos.splice(idx, 1);
+      p.fotos = fotos;
+      // Ajustar indice principal
+      if (p.fotoPrincipalIdx >= fotos.length) p.fotoPrincipalIdx = Math.max(0, fotos.length - 1);
+      p.foto = fotos[p.fotoPrincipalIdx] || "";
+      await p.save();
+      io.emit("cambios");
+      if (cb) cb({ ok: true, fotos, fotoPrincipalIdx: p.fotoPrincipalIdx });
+    } catch (err) {
+      if (cb) cb({ error: err.message });
+    }
+  });
+
   socket.on("reset-fav-carrito", async () => {
     try {
       await Product.updateMany(
@@ -1736,7 +1822,7 @@ Origen: ${producto.origen || ""}`;
   });
   socket.on("productos-carrito", async () => {
     try {
-      const productosCarrito = await Product.find({ carrito: true }).select("-foto -fotoIA -descripcionGenerada");
+      const productosCarrito = await Product.find({ carrito: true }).select("-foto -fotos -fotoIA -descripcionGenerada");
       socket.emit("productos-carrito", productosCarrito);
     } catch (err) { console.error("Error productos-carrito:", err); }
   });

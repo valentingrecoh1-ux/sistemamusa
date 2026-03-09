@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { socket, IP, fotoSrc } from "../main";
 import { NumericFormat } from "react-number-format";
 import Pagination from "../components/shared/Pagination";
@@ -30,6 +30,11 @@ function Info() {
   const [inputBuffer, setInputBuffer] = useState("");
   const [generandoFotoIA, setGenerandoFotoIA] = useState(false);
   const [generandoDescIA, setGenerandoDescIA] = useState(false);
+  const [modalFotos, setModalFotos] = useState([]);
+  const [modalFotoPrincipalIdx, setModalFotoPrincipalIdx] = useState(0);
+  const [modalFotoSelected, setModalFotoSelected] = useState(0);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const fotoInputRef = useRef(null);
 
   const [isFavorito, setIsFavorito] = useState(false);
   const [isCarrito, setIsCarrito] = useState(false);
@@ -127,6 +132,7 @@ function Info() {
     } else {
       setProducto(prod);
       setShowModal(true);
+      fetchModalFotos(prod._id);
     }
   };
 
@@ -195,6 +201,51 @@ function Info() {
     });
   };
 
+  // ── Fotos en modal ──
+  const fetchModalFotos = (id) => {
+    socket.emit("request-producto-fotos", id, (res) => {
+      if (res && !res.error) {
+        setModalFotos(res.fotos || []);
+        setModalFotoPrincipalIdx(res.fotoPrincipalIdx || 0);
+        setModalFotoSelected(res.fotoPrincipalIdx || 0);
+      }
+    });
+  };
+
+  const agregarFotoDesdeModal = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length || !producto?._id) return;
+    setSubiendoFoto(true);
+    const formData = new FormData();
+    formData.append("_id", producto._id);
+    // Mantener todas las fotos existentes
+    const keepIdx = modalFotos.map((_, i) => i);
+    formData.append("fotosKeepIdx", JSON.stringify(keepIdx));
+    formData.append("fotoPrincipalIdx", modalFotoPrincipalIdx);
+    files.forEach((file) => formData.append("fotos", file));
+    try {
+      await fetch(`${IP()}/upload`, { method: "POST", body: formData });
+    } catch (err) {
+      console.error("Error subiendo foto:", err);
+    }
+    setSubiendoFoto(false);
+    if (fotoInputRef.current) fotoInputRef.current.value = "";
+  };
+
+  const cambiarPrincipalDesdeModal = (idx) => {
+    if (!producto?._id) return;
+    socket.emit("set-foto-principal", producto._id, idx, (res) => {
+      if (res?.error) dialog.alert("Error: " + res.error);
+    });
+  };
+
+  const eliminarFotoDesdeModal = (idx) => {
+    if (!producto?._id) return;
+    socket.emit("delete-foto-producto", producto._id, idx, (res) => {
+      if (res?.error) dialog.alert("Error: " + res.error);
+    });
+  };
+
   const stockColor = (cant) => {
     const n = parseInt(cant) || 0;
     if (n <= 0) return s.stockOut;
@@ -214,6 +265,7 @@ function Info() {
     socket.on("cambios", () => {
       if (showModal) {
         socket.emit("scan-code", producto.codigo);
+        if (producto._id) fetchModalFotos(producto._id);
       }
       fetchProductos();
       socket.emit("request-filtros-productos");
@@ -502,8 +554,60 @@ function Info() {
             </button>
             <div className={s.modalLeft}>
               <div className={s.modalImage}>
-                <img src={fotoSrc(producto.foto, producto._id)} alt={producto.nombre} onError={(e) => { e.target.style.display = 'none'; }} />
+                {modalFotos.length > 0 ? (
+                  <img src={modalFotos[modalFotoSelected] || modalFotos[0]} alt={producto.nombre} />
+                ) : (
+                  <img src={fotoSrc(producto.foto, producto._id)} alt={producto.nombre} onError={(e) => { e.target.style.display = 'none'; }} />
+                )}
               </div>
+              {/* Gallery thumbnails + add button */}
+              <div className={s.modalGallery}>
+                {modalFotos.map((foto, i) => (
+                  <button
+                    key={i}
+                    className={`${s.modalGalleryThumb} ${modalFotoSelected === i ? s.modalGalleryThumbActive : ''} ${modalFotoPrincipalIdx === i ? s.modalGalleryThumbPrincipal : ''}`}
+                    onClick={() => setModalFotoSelected(i)}
+                    title={modalFotoPrincipalIdx === i ? 'Foto principal' : 'Click para ver'}
+                  >
+                    <img src={foto} alt="" />
+                    {modalFotoPrincipalIdx === i && <span className={s.modalGalleryBadge}><i className="bi bi-star-fill"></i></span>}
+                  </button>
+                ))}
+                <button
+                  className={s.modalGalleryAdd}
+                  onClick={() => fotoInputRef.current?.click()}
+                  disabled={subiendoFoto}
+                  title="Agregar foto"
+                >
+                  {subiendoFoto ? <i className="bi bi-hourglass-split"></i> : <i className="bi bi-plus-lg"></i>}
+                </button>
+                <input
+                  ref={fotoInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={agregarFotoDesdeModal}
+                  style={{ display: 'none' }}
+                />
+              </div>
+              {/* Foto actions: set principal / delete */}
+              {modalFotos.length > 0 && (
+                <div className={s.modalFotoActions}>
+                  <button
+                    className={`${s.modalFotoActionBtn} ${modalFotoPrincipalIdx === modalFotoSelected ? s.modalFotoActionBtnActive : ''}`}
+                    onClick={() => cambiarPrincipalDesdeModal(modalFotoSelected)}
+                    disabled={modalFotoPrincipalIdx === modalFotoSelected}
+                  >
+                    <i className="bi bi-star-fill"></i> {modalFotoPrincipalIdx === modalFotoSelected ? 'Principal' : 'Hacer principal'}
+                  </button>
+                  <button
+                    className={`${s.modalFotoActionBtn} ${s.modalFotoActionBtnDel}`}
+                    onClick={() => eliminarFotoDesdeModal(modalFotoSelected)}
+                  >
+                    <i className="bi bi-trash"></i> Eliminar
+                  </button>
+                </div>
+              )}
 
               {/* ── Seccion IA ── */}
               <div className={s.iaPanel}>

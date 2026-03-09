@@ -42,6 +42,7 @@ export default function TiendaProducto() {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(0);
 
   // Reseñas
   const [resenasData, setResenasData] = useState({ resenas: [], stats: { total: 0, promedio: 0, distribucion: {} } });
@@ -58,6 +59,7 @@ export default function TiendaProducto() {
     setLoading(true);
     setQty(1);
     setAdded(false);
+    setSelectedPhoto(0);
     setShowReviewForm(false);
     setReviewMsg('');
     setAnalisis(null);
@@ -115,7 +117,28 @@ export default function TiendaProducto() {
 
       <div className={s.product}>
         <div className={s.imageCol}>
-          <img src={fotoSrc(p.foto, p._id)} alt={p.nombre} className={s.image} onError={(e) => { e.target.style.display = 'none'; }} />
+          {(() => {
+            const allFotos = (p.fotos && p.fotos.length > 0) ? p.fotos : (p.foto ? [p.foto] : []);
+            const mainSrc = allFotos[selectedPhoto] || fotoSrc(p.foto, p._id);
+            return (
+              <>
+                <img src={mainSrc} alt={p.nombre} className={s.image} onError={(e) => { e.target.style.display = 'none'; }} />
+                {allFotos.length > 1 && (
+                  <div className={s.galleryThumbs}>
+                    {allFotos.map((foto, i) => (
+                      <button
+                        key={i}
+                        className={`${s.galleryThumb} ${selectedPhoto === i ? s.galleryThumbActive : ''}`}
+                        onClick={() => setSelectedPhoto(i)}
+                      >
+                        <img src={foto} alt="" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <div className={s.infoCol}>

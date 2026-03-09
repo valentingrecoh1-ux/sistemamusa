@@ -59,7 +59,7 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
   router.get("/producto/:id", async (req, res) => {
     try {
       const p = await Product.findById(req.params.id)
-        .select("nombre bodega cepa year origen venta cantidad descripcion tipo foto codigo")
+        .select("nombre bodega cepa year origen venta cantidad descripcion tipo foto fotos fotoPrincipalIdx codigo")
         .lean();
       if (!p) return res.status(404).json({ error: "Producto no encontrado" });
 

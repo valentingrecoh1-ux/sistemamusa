@@ -37,6 +37,12 @@
   flex-shrink: 0;
 }
 
+.logoCol {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .logoText {
   font-family: var(--font-heading);
   font-size: 1.35rem;
@@ -45,9 +51,17 @@
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
+  line-height: 1.1;
 }
 
-.collapsed .logoText {
+.version {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+.collapsed .logoCol {
   display: none;
 }
 

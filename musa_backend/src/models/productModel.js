@@ -21,6 +21,8 @@ const productSchema = new mongoose.Schema({
     usarDescripcionIA: { type: Boolean, default: false },
     tipo: { type: String, enum: ["vino", "articulo", "servicio"], default: "vino" },
     foto: { type: String },
+    fotos: [{ type: String }],
+    fotoPrincipalIdx: { type: Number, default: 0 },
     fotoIA: { type: String },
     usarFotoIA: { type: Boolean, default: false },
     favorito: { type: Boolean },

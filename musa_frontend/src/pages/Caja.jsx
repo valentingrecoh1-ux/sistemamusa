@@ -369,12 +369,13 @@ function Caja({ usuario }) {
         return;
       }
 
-      // Si viene de un gasto estimado de Eventos, marcarlo como realizado
+      // Si viene de un gasto estimado de Eventos, marcarlo como realizado y vincular
       if (gastoEvento) {
         socket.emit("concretar-gasto-evento", {
           eventoId: gastoEvento.eventoId,
           gastoIndex: gastoEvento.gastoIndex,
           soloMarcar: true,
+          operacionId: result.operacionId,
         });
         setGastoEvento(null);
       }

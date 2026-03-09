@@ -673,13 +673,14 @@ app.post(
         operacionData.filePath = `data:${mime};base64,${file.buffer.toString("base64")}`;
       }
 
+      let op;
       if (operacionData._id) {
-        await Operacion.findByIdAndUpdate(operacionData._id, operacionData);
+        op = await Operacion.findByIdAndUpdate(operacionData._id, operacionData, { new: true });
       } else {
-        await Operacion.create(operacionData);
+        op = await Operacion.create(operacionData);
       }
       io.emit("cambios");
-      res.json({ status: "ok", message: "Operación guardada correctamente" });
+      res.json({ status: "ok", message: "Operación guardada correctamente", operacionId: op._id });
     } catch (error) {
       console.error("Error al guardar la operación:", error);
       res.status(500).json({ status: "error", message: "Error al guardar la operación" });
@@ -3378,7 +3379,7 @@ Origen: ${producto.origen || ""}`;
   });
 
   // ── Concretar gasto estimado de evento → crear operación en Caja ──
-  socket.on("concretar-gasto-evento", async ({ eventoId, gastoIndex, soloMarcar }) => {
+  socket.on("concretar-gasto-evento", async ({ eventoId, gastoIndex, soloMarcar, operacionId }) => {
     try {
       const evento = await Evento.findById(eventoId);
       if (!evento || !evento.gastosEstimados[gastoIndex]) return;
@@ -3395,6 +3396,8 @@ Origen: ${producto.origen || ""}`;
           fecha: moment(new Date()).tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD"),
         });
         evento.gastosEstimados[gastoIndex].operacionId = op._id;
+      } else if (operacionId) {
+        evento.gastosEstimados[gastoIndex].operacionId = operacionId;
       }
       evento.gastosEstimados[gastoIndex].realizado = true;
       await evento.save();
@@ -3439,7 +3442,8 @@ Origen: ${producto.origen || ""}`;
       }
       evento.gastosEstimados[gastoIndex].realizado = true;
       evento.gastosEstimados[gastoIndex].operacionId = op._id;
-      await evento.save();
+      op.eventoId = eventoId;
+      await Promise.all([evento.save(), op.save()]);
       io.emit("cambios");
       if (typeof callback === "function") callback({ ok: true });
     } catch (err) {

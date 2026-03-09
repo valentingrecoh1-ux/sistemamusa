@@ -10,6 +10,7 @@ import TiendaCheckoutResult from '../../pages/tienda/TiendaCheckoutResult';
 import TiendaSommelier from '../../pages/tienda/TiendaSommelier';
 import TiendaClub from '../../pages/tienda/TiendaClub';
 import TiendaEtiqueta from '../../pages/tienda/TiendaEtiqueta';
+import TiendaPerfil from '../../pages/tienda/TiendaPerfil';
 import '../../styles/tienda.css';
 
 export default function TiendaApp() {
@@ -26,6 +27,8 @@ export default function TiendaApp() {
           <Route path="/tienda/sommelier" element={<TiendaSommelier />} />
           <Route path="/tienda/club" element={<TiendaClub />} />
           <Route path="/tienda/etiqueta" element={<TiendaEtiqueta />} />
+          <Route path="/tienda/mi-perfil" element={<TiendaPerfil />} />
+          <Route path="/tienda/mi-perfil/:token" element={<TiendaPerfil />} />
         </Route>
       </Routes>
     </CartProvider>

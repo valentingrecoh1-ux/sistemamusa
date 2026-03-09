@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const moment = require("moment-timezone");
 
-module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, mpClient, io }) {
+module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, mpClient, io }) {
   let mpPreference = null;
   let mpPayment = null;
   if (mpClient) {
@@ -821,6 +821,226 @@ IMPORTANT RULES:
     } catch (err) {
       console.error("Error generar etiqueta:", err.message);
       res.status(500).json({ error: "Error al generar la etiqueta" });
+    }
+  });
+
+  // ── Perfil Publico del Cliente ──
+
+  // Helper: compute client profile data (reused by token and search endpoints)
+  async function computeClientProfile(cliente) {
+    const ventas = await Venta.find({ clienteId: cliente._id }).sort({ createdAt: -1 }).lean();
+    const productosComprados = [];
+    const productoIdsSet = new Set();
+    const cepasProbadas = new Set();
+    const bodegasProbadas = new Set();
+
+    ventas.forEach((v) => {
+      (v.productos || []).forEach((p) => {
+        productosComprados.push({ ...p, fecha: v.createdAt });
+        if (p.productoId) productoIdsSet.add(String(p.productoId));
+        if (p.cepa) cepasProbadas.add(p.cepa);
+        if (p.bodega) bodegasProbadas.add(p.bodega);
+      });
+    });
+
+    const totalGastado = ventas.reduce((s, v) => s + (v.monto || 0), 0);
+    const cantCompras = ventas.length;
+    const vinosUnicos = productoIdsSet.size;
+
+    let nivel, nivelNum;
+    if (cantCompras === 0) { nivel = "Nuevo"; nivelNum = 0; }
+    else if (cantCompras <= 3) { nivel = "Curioso"; nivelNum = 1; }
+    else if (cantCompras <= 10) { nivel = "Explorador"; nivelNum = 2; }
+    else if (cantCompras <= 25) { nivel = "Conocedor"; nivelNum = 3; }
+    else if (cantCompras <= 50) { nivel = "Sommelier"; nivelNum = 4; }
+    else { nivel = "Maestro"; nivelNum = 5; }
+
+    const cepaCount = {};
+    const bodegaCount = {};
+    productosComprados.forEach((p) => {
+      if (p.cepa) cepaCount[p.cepa] = (cepaCount[p.cepa] || 0) + (p.cantidad || 1);
+      if (p.bodega) bodegaCount[p.bodega] = (bodegaCount[p.bodega] || 0) + (p.cantidad || 1);
+    });
+    const cepaFav = Object.entries(cepaCount).sort((a, b) => b[1] - a[1])[0];
+    const bodegaFav = Object.entries(bodegaCount).sort((a, b) => b[1] - a[1])[0];
+
+    const todasCepas = await Product.distinct("cepa", { cantidad: { $gt: 0 }, cepa: { $ne: null, $ne: "" } });
+    const valoraciones = ValoracionVino ? await ValoracionVino.find({ clienteId: cliente._id }).lean() : [];
+
+    // Logros con premios
+    const logros = [];
+    if (cantCompras >= 1) logros.push({ id: "primera_compra", nombre: "Primera Compra", desc: "Realizaste tu primera compra", icono: "bi-bag-check", premio: { tipo: "descuento", valor: 5, descripcion: "5% de descuento en tu proxima compra" } });
+    if (cantCompras >= 5) logros.push({ id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras realizadas", icono: "bi-arrow-repeat", premio: { tipo: "descuento", valor: 10, descripcion: "10% de descuento en tu proxima compra" } });
+    if (cantCompras >= 10) logros.push({ id: "fiel", nombre: "Cliente Fiel", desc: "10 compras realizadas", icono: "bi-heart", premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } });
+    if (cantCompras >= 25) logros.push({ id: "vip", nombre: "VIP", desc: "25 compras realizadas", icono: "bi-star", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 2 personas" } });
+    if (vinosUnicos >= 5) logros.push({ id: "explorador_5", nombre: "Explorador", desc: "Probaste 5 vinos diferentes", icono: "bi-compass", premio: { tipo: "descuento", valor: 5, descripcion: "5% en vinos que no hayas probado" } });
+    if (vinosUnicos >= 15) logros.push({ id: "explorador_15", nombre: "Gran Explorador", desc: "Probaste 15 vinos diferentes", icono: "bi-binoculars", premio: { tipo: "vino_gratis", descripcion: "Un vino sorpresa de regalo" } });
+    if (vinosUnicos >= 30) logros.push({ id: "explorador_30", nombre: "Aventurero", desc: "Probaste 30 vinos diferentes", icono: "bi-globe", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion premium gratuita para 2 personas" } });
+    if (cepasProbadas.size >= 3) logros.push({ id: "cepas_3", nombre: "Multicepas", desc: "Probaste 3 cepas diferentes", icono: "bi-collection", premio: { tipo: "descuento", valor: 5, descripcion: "5% en cepas que no probaste" } });
+    if (cepasProbadas.size >= 5) logros.push({ id: "cepas_5", nombre: "Conocedor de Cepas", desc: "Probaste 5 cepas diferentes", icono: "bi-grid-3x3", premio: { tipo: "descuento", valor: 10, descripcion: "10% en cepas que no probaste" } });
+    if (cepasProbadas.size >= todasCepas.length && todasCepas.length > 0) logros.push({ id: "todas_cepas", nombre: "Coleccionista", desc: "Probaste todas las cepas!", icono: "bi-trophy", premio: { tipo: "vino_gratis", descripcion: "Botella premium de regalo" } });
+    if (bodegasProbadas.size >= 3) logros.push({ id: "bodegas_3", nombre: "Viajero", desc: "Probaste 3 bodegas diferentes", icono: "bi-geo-alt", premio: { tipo: "descuento", valor: 5, descripcion: "5% en bodegas que no probaste" } });
+    if (bodegasProbadas.size >= 8) logros.push({ id: "bodegas_8", nombre: "Trotamundos", desc: "Probaste 8 bodegas diferentes", icono: "bi-map", premio: { tipo: "vino_gratis", descripcion: "Vino de bodega sorpresa de regalo" } });
+    if (valoraciones.length >= 1) logros.push({ id: "primera_nota", nombre: "Critico Novato", desc: "Escribiste tu primera nota de cata", icono: "bi-pencil", premio: { tipo: "descuento", valor: 5, descripcion: "5% en tu proxima compra" } });
+    if (valoraciones.length >= 5) logros.push({ id: "critico", nombre: "Critico", desc: "5 vinos valorados", icono: "bi-journal-text", premio: { tipo: "descuento", valor: 10, descripcion: "10% en tu proxima compra" } });
+    if (valoraciones.length >= 10) logros.push({ id: "gran_critico", nombre: "Gran Critico", desc: "10 vinos valorados", icono: "bi-award", premio: { tipo: "vino_gratis", descripcion: "Un vino a eleccion de regalo" } });
+    if (totalGastado >= 50000) logros.push({ id: "gastador", nombre: "Gran Inversor", desc: "Invertiste mas de $50.000 en vinos", icono: "bi-cash-coin", premio: { tipo: "descuento", valor: 15, descripcion: "15% en tu proxima compra" } });
+    if (totalGastado >= 200000) logros.push({ id: "mecenas", nombre: "Mecenas", desc: "Invertiste mas de $200.000 en vinos", icono: "bi-gem", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } });
+
+    const todosLogros = [
+      { id: "primera_compra", nombre: "Primera Compra", desc: "Realiza tu primera compra", icono: "bi-bag-check", req: cantCompras >= 1, premio: { tipo: "descuento", valor: 5, descripcion: "5% de descuento en tu proxima compra" } },
+      { id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras", icono: "bi-arrow-repeat", req: cantCompras >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% de descuento en tu proxima compra" } },
+      { id: "fiel", nombre: "Cliente Fiel", desc: "10 compras", icono: "bi-heart", req: cantCompras >= 10, premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } },
+      { id: "vip", nombre: "VIP", desc: "25 compras", icono: "bi-star", req: cantCompras >= 25, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 2 personas" } },
+      { id: "explorador_5", nombre: "Explorador", desc: "5 vinos diferentes", icono: "bi-compass", req: vinosUnicos >= 5, premio: { tipo: "descuento", valor: 5, descripcion: "5% en vinos que no hayas probado" } },
+      { id: "explorador_15", nombre: "Gran Explorador", desc: "15 vinos diferentes", icono: "bi-binoculars", req: vinosUnicos >= 15, premio: { tipo: "vino_gratis", descripcion: "Un vino sorpresa de regalo" } },
+      { id: "explorador_30", nombre: "Aventurero", desc: "30 vinos diferentes", icono: "bi-globe", req: vinosUnicos >= 30, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion premium gratuita para 2 personas" } },
+      { id: "cepas_3", nombre: "Multicepas", desc: "3 cepas diferentes", icono: "bi-collection", req: cepasProbadas.size >= 3, premio: { tipo: "descuento", valor: 5, descripcion: "5% en cepas que no probaste" } },
+      { id: "cepas_5", nombre: "Conocedor de Cepas", desc: "5 cepas diferentes", icono: "bi-grid-3x3", req: cepasProbadas.size >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% en cepas que no probaste" } },
+      { id: "todas_cepas", nombre: "Coleccionista", desc: "Todas las cepas", icono: "bi-trophy", req: cepasProbadas.size >= todasCepas.length && todasCepas.length > 0, premio: { tipo: "vino_gratis", descripcion: "Botella premium de regalo" } },
+      { id: "bodegas_3", nombre: "Viajero", desc: "3 bodegas", icono: "bi-geo-alt", req: bodegasProbadas.size >= 3, premio: { tipo: "descuento", valor: 5, descripcion: "5% en bodegas que no probaste" } },
+      { id: "bodegas_8", nombre: "Trotamundos", desc: "8 bodegas", icono: "bi-map", req: bodegasProbadas.size >= 8, premio: { tipo: "vino_gratis", descripcion: "Vino de bodega sorpresa de regalo" } },
+      { id: "primera_nota", nombre: "Critico Novato", desc: "Primera nota de cata", icono: "bi-pencil", req: valoraciones.length >= 1, premio: { tipo: "descuento", valor: 5, descripcion: "5% en tu proxima compra" } },
+      { id: "critico", nombre: "Critico", desc: "5 valoraciones", icono: "bi-journal-text", req: valoraciones.length >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% en tu proxima compra" } },
+      { id: "gran_critico", nombre: "Gran Critico", desc: "10 valoraciones", icono: "bi-award", req: valoraciones.length >= 10, premio: { tipo: "vino_gratis", descripcion: "Un vino a eleccion de regalo" } },
+      { id: "gastador", nombre: "Gran Inversor", desc: "Mas de $50.000 invertidos", icono: "bi-cash-coin", req: totalGastado >= 50000, premio: { tipo: "descuento", valor: 15, descripcion: "15% en tu proxima compra" } },
+      { id: "mecenas", nombre: "Mecenas", desc: "Mas de $200.000 invertidos", icono: "bi-gem", req: totalGastado >= 200000, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } },
+    ];
+
+    // Coleccion de cepas
+    const coleccionCepas = todasCepas.filter(Boolean).map((cepa) => {
+      const probada = cepasProbadas.has(cepa);
+      return { cepa, probada };
+    });
+
+    return {
+      cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido },
+      metricas: { totalGastado, cantCompras, vinosUnicos },
+      nivel, nivelNum,
+      preferencias: {
+        cepaFavorita: cepaFav ? cepaFav[0] : null,
+        bodegaFavorita: bodegaFav ? bodegaFav[0] : null,
+        cepasProbadas: cepasProbadas.size,
+        totalCepas: todasCepas.length,
+      },
+      coleccionCepas,
+      logros,
+      todosLogros,
+    };
+  }
+
+  // GET /api/tienda/perfil/:token - Public profile by unique token (for QR)
+  router.get("/perfil/:token", async (req, res) => {
+    try {
+      const cliente = await Cliente.findOne({ tokenAcceso: req.params.token }).lean();
+      if (!cliente) return res.status(404).json({ error: "Perfil no encontrado" });
+      const profile = await computeClientProfile(cliente);
+      res.json(profile);
+    } catch (err) {
+      console.error("Error perfil publico:", err.message);
+      res.status(500).json({ error: "Error al obtener perfil" });
+    }
+  });
+
+  // POST /api/tienda/perfil/buscar - Search client by DNI or email
+  router.post("/perfil/buscar", async (req, res) => {
+    try {
+      const { busqueda } = req.body;
+      if (!busqueda || busqueda.trim().length < 3) return res.status(400).json({ error: "Ingresa al menos 3 caracteres" });
+
+      const q = busqueda.trim();
+      const cliente = await Cliente.findOne({
+        $or: [
+          { dni: q },
+          { email: new RegExp(`^${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+        ],
+      }).lean();
+
+      if (!cliente) return res.status(404).json({ error: "No encontramos un perfil con esos datos. Consulta en la vinoteca." });
+
+      const profile = await computeClientProfile(cliente);
+      res.json(profile);
+    } catch (err) {
+      console.error("Error buscar perfil:", err.message);
+      res.status(500).json({ error: "Error al buscar perfil" });
+    }
+  });
+
+  // POST /api/tienda/perfil/:token/sugerencia - Submit client suggestion
+  router.post("/perfil/:token/sugerencia", async (req, res) => {
+    try {
+      const cliente = await Cliente.findOne({ tokenAcceso: req.params.token }).lean();
+      if (!cliente) return res.status(404).json({ error: "Perfil no encontrado" });
+
+      const { tipo, mensaje } = req.body;
+      if (!mensaje || mensaje.trim().length < 5) return res.status(400).json({ error: "El mensaje debe tener al menos 5 caracteres" });
+
+      const sugerencia = new SugerenciaCliente({
+        clienteId: cliente._id,
+        clienteNombre: `${cliente.nombre}${cliente.apellido ? ' ' + cliente.apellido : ''}`,
+        tipo: tipo || "sugerencia",
+        mensaje: mensaje.trim(),
+      });
+      await sugerencia.save();
+      io.emit("cambios");
+
+      res.json({ ok: true, mensaje: "Gracias por tu comentario! Lo vamos a tener en cuenta." });
+    } catch (err) {
+      console.error("Error sugerencia:", err.message);
+      res.status(500).json({ error: "Error al enviar sugerencia" });
+    }
+  });
+
+  // POST /api/tienda/perfil/buscar/sugerencia - Submit suggestion via search (DNI/email)
+  router.post("/perfil/buscar/sugerencia", async (req, res) => {
+    try {
+      const { busqueda, tipo, mensaje } = req.body;
+      if (!mensaje || mensaje.trim().length < 5) return res.status(400).json({ error: "El mensaje debe tener al menos 5 caracteres" });
+
+      let cliente = null;
+      if (busqueda) {
+        const q = busqueda.trim();
+        cliente = await Cliente.findOne({
+          $or: [
+            { dni: q },
+            { email: new RegExp(`^${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+          ],
+        }).lean();
+      }
+
+      const sugerencia = new SugerenciaCliente({
+        clienteId: cliente?._id || null,
+        clienteNombre: cliente ? `${cliente.nombre}${cliente.apellido ? ' ' + cliente.apellido : ''}` : "Anonimo",
+        tipo: tipo || "sugerencia",
+        mensaje: mensaje.trim(),
+      });
+      await sugerencia.save();
+      io.emit("cambios");
+
+      res.json({ ok: true, mensaje: "Gracias por tu comentario! Lo vamos a tener en cuenta." });
+    } catch (err) {
+      console.error("Error sugerencia busqueda:", err.message);
+      res.status(500).json({ error: "Error al enviar sugerencia" });
+    }
+  });
+
+  // GET /api/tienda/perfil/:token/token-info - Get token for generating QR link
+  router.get("/perfil/token/:clienteId", async (req, res) => {
+    try {
+      let cliente = await Cliente.findById(req.params.clienteId);
+      if (!cliente) return res.status(404).json({ error: "Cliente no encontrado" });
+
+      // Generate token if not present
+      if (!cliente.tokenAcceso) {
+        const crypto = require("crypto");
+        cliente.tokenAcceso = crypto.randomBytes(16).toString("hex");
+        await cliente.save();
+      }
+
+      res.json({ token: cliente.tokenAcceso });
+    } catch (err) {
+      console.error("Error token cliente:", err.message);
+      res.status(500).json({ error: "Error al obtener token" });
     }
   });
 

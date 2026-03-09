@@ -85,3 +85,44 @@ export async function generarEtiqueta(data) {
   console.log('[generarEtiqueta] response', json);
   return json;
 }
+
+// ── Perfil Publico del Cliente ──
+
+export async function fetchPerfilByToken(token) {
+  const res = await fetch(`${BASE()}/perfil/${token}`);
+  if (!res.ok) throw new Error((await res.json()).error || 'Perfil no encontrado');
+  return res.json();
+}
+
+export async function buscarPerfil(busqueda) {
+  const res = await fetch(`${BASE()}/perfil/buscar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ busqueda }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error || 'No encontrado');
+  return res.json();
+}
+
+export async function enviarSugerenciaToken(token, data) {
+  const res = await fetch(`${BASE()}/perfil/${token}/sugerencia`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function enviarSugerenciaBusqueda(data) {
+  const res = await fetch(`${BASE()}/perfil/buscar/sugerencia`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function fetchClienteToken(clienteId) {
+  const res = await fetch(`${BASE()}/perfil/token/${clienteId}`);
+  return res.json();
+}

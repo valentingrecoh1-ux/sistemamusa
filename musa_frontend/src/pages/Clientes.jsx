@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { socket } from '../main';
+import { IP } from '../main';
 import Pagination from '../components/shared/Pagination';
 import Modal from '../components/shared/Modal';
 import { dialog } from '../components/shared/dialog';
+import { fetchClienteToken } from '../lib/tiendaApi';
 import s from './Clientes.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -43,6 +45,8 @@ export default function Clientes({ usuario }) {
   const [valoracionForm, setValoracionForm] = useState({ puntuacion: 0, notas: '', publica: false });
   const [cepaFilter, setCepaFilter] = useState('');
   const [resenasProducto, setResenasProducto] = useState([]);
+  const [qrLink, setQrLink] = useState('');
+  const [qrLoading, setQrLoading] = useState(false);
 
   useEffect(() => {
     const onClientes = (data) => {
@@ -113,6 +117,7 @@ export default function Clientes({ usuario }) {
   const openPerfil = useCallback((c) => {
     setPerfil({ loading: true, cliente: c });
     setPerfilTab('resumen');
+    setQrLink('');
     socket.emit('request-cliente-perfil', c._id);
     const handler = (data) => {
       setPerfil(data ? { ...data, loading: false } : null);
@@ -136,6 +141,28 @@ export default function Clientes({ usuario }) {
       socket.off('response-valoraciones-producto', handler);
     };
     socket.on('response-valoraciones-producto', handler);
+  };
+
+  const generarQrLink = async (clienteId) => {
+    setQrLoading(true);
+    setQrLink('');
+    try {
+      const res = await fetchClienteToken(clienteId);
+      if (res.token) {
+        const origin = window.location.origin;
+        setQrLink(`${origin}/tienda/mi-perfil/${res.token}`);
+      }
+    } catch {
+      // silent
+    }
+    setQrLoading(false);
+  };
+
+  const copiarQrLink = () => {
+    if (qrLink) {
+      navigator.clipboard.writeText(qrLink);
+      dialog.alert('Link copiado al portapapeles!');
+    }
   };
 
   const guardarValoracion = () => {
@@ -330,6 +357,24 @@ export default function Clientes({ usuario }) {
                   <div className={s.prefChips}>
                     <span className={s.prefChip}><i className="bi bi-heart-fill" /> {perfil.preferencias.cepaFavorita}</span>
                     {perfil.preferencias?.bodegaFavorita && <span className={s.prefChip}><i className="bi bi-building" /> {perfil.preferencias.bodegaFavorita}</span>}
+                  </div>
+                )}
+              </div>
+
+              {/* QR Link */}
+              <div className={s.qrSection}>
+                {!qrLink ? (
+                  <button className={s.qrBtn} onClick={() => generarQrLink(perfil.cliente?._id)} disabled={qrLoading}>
+                    <i className="bi bi-qr-code" /> {qrLoading ? 'Generando...' : 'Generar link de perfil publico'}
+                  </button>
+                ) : (
+                  <div className={s.qrResult}>
+                    <span className={s.qrLabel}><i className="bi bi-link-45deg" /> Link publico del cliente:</span>
+                    <div className={s.qrLinkRow}>
+                      <input className={s.qrLinkInput} value={qrLink} readOnly onClick={(e) => e.target.select()} />
+                      <button className={s.qrCopyBtn} onClick={copiarQrLink}><i className="bi bi-clipboard" /> Copiar</button>
+                    </div>
+                    <span className={s.qrHint}>El cliente puede acceder desde este link o escaneando un QR con esta URL</span>
                   </div>
                 )}
               </div>

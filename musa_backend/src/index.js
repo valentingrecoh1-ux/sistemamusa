@@ -31,6 +31,7 @@ const Cliente = require("./models/cliente");
 const ValoracionVino = require("./models/valoracionVino");
 const MediaTV = require("./models/mediaTV");
 const FeedbackEvento = require("./models/feedbackEvento");
+const SugerenciaCliente = require("./models/sugerenciaCliente");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const createTiendaRouter = require("./routes/tiendaApi");
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJSON, initAuthCreds } = require("@whiskeysockets/baileys");
@@ -610,7 +611,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
 
 app.post(
   "/upload_flujo",
@@ -5117,6 +5118,41 @@ Reglas:
       })));
     } catch (err) {
       socket.emit("response-valoraciones-producto", []);
+    }
+  });
+
+  // ── Sugerencias de clientes ──
+  socket.on("request-sugerencias-clientes", async (filtro) => {
+    try {
+      const query = {};
+      if (filtro?.estado) query.estado = filtro.estado;
+      const sugerencias = await SugerenciaCliente.find(query).sort({ createdAt: -1 }).limit(100).lean();
+      socket.emit("response-sugerencias-clientes", sugerencias);
+    } catch (err) {
+      console.error("Error request-sugerencias-clientes:", err);
+      socket.emit("response-sugerencias-clientes", []);
+    }
+  });
+
+  socket.on("responder-sugerencia", async (data) => {
+    try {
+      const { sugerenciaId, respuesta } = data;
+      await SugerenciaCliente.findByIdAndUpdate(sugerenciaId, {
+        respuesta,
+        estado: "respondido",
+        respondidoPor: socket.usuario?.nombre || "Admin",
+      });
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error responder-sugerencia:", err);
+    }
+  });
+
+  socket.on("marcar-sugerencia-leida", async (sugerenciaId) => {
+    try {
+      await SugerenciaCliente.findByIdAndUpdate(sugerenciaId, { estado: "leido" });
+    } catch (err) {
+      console.error("Error marcar-sugerencia-leida:", err);
     }
   });
 

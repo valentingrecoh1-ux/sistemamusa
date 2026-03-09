@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProductos, fetchConfig } from '../../lib/tiendaApi';
+import { tiendaPath } from '../../main';
 import ProductCard from '../../components/tienda/ProductCard';
 import s from './TiendaHome.module.css';
 
@@ -34,7 +35,7 @@ export default function TiendaHome() {
         <div className={s.heroContent}>
           <h1 className={s.heroTitle}>{config.bannerTexto || 'Bienvenido a MUSA Vinoteca'}</h1>
           <p className={s.heroSub}>{config.bannerSubtexto || 'Los mejores vinos seleccionados para vos'}</p>
-          <Link to="/tienda/catalogo" className={s.heroBtn}>
+          <Link to={tiendaPath('/catalogo')} className={s.heroBtn}>
             <i className="bi bi-grid" /> Ver Catalogo
           </Link>
         </div>
@@ -50,7 +51,7 @@ export default function TiendaHome() {
           {CATEGORIAS.map((cat) => (
             <Link
               key={cat.label}
-              to={`/tienda/catalogo?search=${encodeURIComponent(cat.search)}`}
+              to={`${tiendaPath('/catalogo')}?search=${encodeURIComponent(cat.search)}`}
               className={s.catCard}
               style={{ '--cat-color': cat.color }}
             >
@@ -65,7 +66,7 @@ export default function TiendaHome() {
       <section className={s.section}>
         <div className={s.sectionHeader}>
           <h2 className={s.sectionTitle}>Productos destacados</h2>
-          <Link to="/tienda/catalogo" className={s.sectionLink}>
+          <Link to={tiendaPath('/catalogo')} className={s.sectionLink}>
             Ver todos <i className="bi bi-arrow-right" />
           </Link>
         </div>

@@ -35,7 +35,7 @@ import Clientes from './pages/Clientes';
 import Usuarios from './pages/admin/Usuarios';
 import Setup from './pages/admin/Setup';
 
-import { socket } from './main';
+import { socket, isTiendaDomain } from './main';
 import { connectQZ, printPDF, listPrinters } from './utils/qzPrint';
 
 // Impresoras virtuales que no sirven para tickets
@@ -154,7 +154,9 @@ function AppRoutes({ firstRender, usuario, loginForm, setLoginForm, loginError, 
   }
 
   // Tienda publica - sin auth
-  if (pathname.startsWith('/tienda')) {
+  // En dominio de tienda (musavinos.com): toda ruta no-admin es tienda
+  // En dominio del sistema (sistema.musavinos.com / localhost): solo /tienda/*
+  if (isTiendaDomain || pathname.startsWith('/tienda')) {
     return <TiendaApp />;
   }
 

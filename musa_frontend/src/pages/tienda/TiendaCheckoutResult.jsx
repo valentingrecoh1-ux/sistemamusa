@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchEstadoPedido, fetchConfig } from '../../lib/tiendaApi';
+import { tiendaPath, TIENDA_BASE } from '../../main';
 import s from './TiendaCheckoutResult.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -87,7 +88,7 @@ export default function TiendaCheckoutResult() {
               <i className="bi bi-whatsapp" /> Contactar por WhatsApp
             </a>
           )}
-          <Link to="/tienda" className={s.homeBtn}>
+          <Link to={TIENDA_BASE || '/'} className={s.homeBtn}>
             <i className="bi bi-house" /> Volver a la tienda
           </Link>
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { crearPedido, fetchConfig } from '../../lib/tiendaApi';
+import { tiendaPath } from '../../main';
 import s from './TiendaCheckout.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -20,7 +21,7 @@ export default function TiendaCheckout() {
   }, []);
 
   useEffect(() => {
-    if (items.length === 0) navigate('/tienda/carrito');
+    if (items.length === 0) navigate(tiendaPath('/carrito'));
   }, [items, navigate]);
 
   const costoEnvio = entrega === 'envio' && config.envioHabilitado ? (config.costoEnvio || 0) : 0;
@@ -64,7 +65,7 @@ export default function TiendaCheckout() {
 
       // Sin MP, ir a resultado
       clearCart();
-      navigate(`/tienda/checkout/resultado?pedidoId=${result.pedidoId}&numeroPedido=${result.numeroPedido}&noMp=1`);
+      navigate(`${tiendaPath('/checkout/resultado')}?pedidoId=${result.pedidoId}&numeroPedido=${result.numeroPedido}&noMp=1`);
     } catch (err) {
       setError('Error al procesar el pedido. Intenta de nuevo.');
       setLoading(false);
@@ -75,7 +76,7 @@ export default function TiendaCheckout() {
 
   return (
     <div className={s.checkout}>
-      <Link to="/tienda/carrito" className={s.back}>
+      <Link to={tiendaPath('/carrito')} className={s.back}>
         <i className="bi bi-arrow-left" /> Volver al carrito
       </Link>
 

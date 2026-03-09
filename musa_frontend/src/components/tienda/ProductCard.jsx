@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { fotoSrc } from '../../main';
+import { fotoSrc, tiendaPath } from '../../main';
 import s from './ProductCard.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -10,11 +10,11 @@ export default function ProductCard({ product }) {
 
   return (
     <div className={s.card}>
-      <Link to={`/tienda/producto/${product._id}`} className={s.imageLink}>
+      <Link to={tiendaPath(`/producto/${product._id}`)} className={s.imageLink}>
         <img src={fotoSrc(product.foto, product._id)} alt={product.nombre} className={s.image} loading="lazy" onError={(e) => { e.target.style.display = 'none'; }} />
       </Link>
       <div className={s.info}>
-        <Link to={`/tienda/producto/${product._id}`} className={s.name}>{product.nombre}</Link>
+        <Link to={tiendaPath(`/producto/${product._id}`)} className={s.name}>{product.nombre}</Link>
         <div className={s.meta}>
           {product.bodega && <span>{product.bodega}</span>}
           {product.cepa && <span className={s.metaDot}>{product.cepa}</span>}

@@ -23,7 +23,6 @@ const NAV = [
     items: [
       { to: '/inventario', icon: 'bi-box-seam', label: 'Inventario' },
       { to: '/eventos', icon: 'bi-calendar-event', label: 'Eventos' },
-      { to: '/clientes', icon: 'bi-person-lines-fill', label: 'Clientes' },
       { to: '/chat', icon: 'bi-chat-square-text', label: 'Chat Interno' },
       { to: '/vidriera', icon: 'bi-tv', label: 'Vidriera' },
     ],
@@ -47,6 +46,7 @@ const NAV = [
       { to: '/web', icon: 'bi-globe', label: 'Web Dashboard' },
       { to: '/web/pedidos', icon: 'bi-bag-check', label: 'Pedidos Web' },
       { to: '/web/club', icon: 'bi-trophy', label: 'Club de Vinos' },
+      { to: '/clientes', icon: 'bi-person-lines-fill', label: 'Clientes' },
       { to: '/web/config', icon: 'bi-gear', label: 'Configuracion' },
     ],
   },

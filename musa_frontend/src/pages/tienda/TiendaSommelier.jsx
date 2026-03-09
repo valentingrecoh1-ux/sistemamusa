@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { IP, fotoSrc } from '../../main';
+import { IP, fotoSrc, tiendaPath } from '../../main';
 import { dialog } from '../../components/shared/dialog';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/tienda/ProductCard';
@@ -131,7 +131,7 @@ export default function TiendaSommelier() {
                 <div className={s.productsGrid}>
                   {msg.productos.map((p) => (
                     <div key={p._id} className={s.miniCard}>
-                      <Link to={`/tienda/producto/${p._id}`} className={s.miniCardLink}>
+                      <Link to={tiendaPath(`/producto/${p._id}`)} className={s.miniCardLink}>
                         <img src={fotoSrc(p.foto, p._id)} alt={p.nombre} className={s.miniCardImg} onError={(e) => { e.target.style.display = 'none'; }} />
                         <div className={s.miniCardInfo}>
                           <span className={s.miniCardName}>{p.nombre}</span>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente } from '../../lib/tiendaApi';
+import { tiendaPath } from '../../main';
 import s from './TiendaPerfil.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -68,7 +69,7 @@ export default function TiendaPerfil() {
       const res = await registrarCliente(regForm);
       if (res.ok && res.token) {
         setRegMsg(res.mensaje);
-        setTimeout(() => navigate(`/tienda/mi-perfil/${res.token}`), 1500);
+        setTimeout(() => navigate(tiendaPath(`/mi-perfil/${res.token}`)), 1500);
       } else if (res.error) {
         setRegMsg(res.error);
       }

@@ -7,6 +7,14 @@
   --tienda-grid-gap: 20px;
   --tienda-footer-bg: #0b1120;
   --tienda-footer-text: #94a3b8;
+
+  /* Tienda component theme (mapped from global theme vars) */
+  --tienda-card-bg: var(--card-bg);
+  --tienda-text: var(--text-primary);
+  --tienda-text-muted: var(--text-secondary);
+  --tienda-border: var(--card-border);
+  --tienda-surface: var(--surface-2, #f3f4f6);
+  --tienda-input-bg: var(--input-bg);
 }
 
 [data-theme="light"] {

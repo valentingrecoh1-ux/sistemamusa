@@ -28,6 +28,7 @@ const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
 const Notificacion = require("./models/notificacion");
 const Cliente = require("./models/cliente");
+const ValoracionVino = require("./models/valoracionVino");
 const MediaTV = require("./models/mediaTV");
 const FeedbackEvento = require("./models/feedbackEvento");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
@@ -4838,8 +4839,8 @@ Reglas:
       if (search) {
         const re = new RegExp(search, "i");
         query.$or = [
-          { nombre: re }, { email: re }, { cuit: re },
-          { razonSocial: re }, { telefono: re },
+          { nombre: re }, { apellido: re }, { email: re }, { cuit: re },
+          { razonSocial: re }, { telefono: re }, { whatsapp: re }, { dni: re },
         ];
       }
       const [clientes, total] = await Promise.all([
@@ -4910,11 +4911,208 @@ Reglas:
       if (!q || q.length < 2) return socket.emit("response-buscar-cliente", []);
       const re = new RegExp(q, "i");
       const clientes = await Cliente.find({
-        $or: [{ nombre: re }, { cuit: re }, { razonSocial: re }, { email: re }],
-      }, "_id nombre cuit razonSocial").limit(10).lean();
+        $or: [{ nombre: re }, { apellido: re }, { cuit: re }, { razonSocial: re }, { email: re }, { dni: re }, { whatsapp: re }],
+      }, "_id nombre apellido cuit razonSocial dni whatsapp").limit(10).lean();
       socket.emit("response-buscar-cliente", clientes);
     } catch (err) {
       socket.emit("response-buscar-cliente", []);
+    }
+  });
+
+  // ── Cliente perfil completo (fidelización) ──
+  socket.on("request-cliente-perfil", async (clienteId) => {
+    try {
+      const cliente = await Cliente.findById(clienteId).lean();
+      if (!cliente) return socket.emit("response-cliente-perfil", null);
+
+      // Ventas del cliente con productos
+      const ventas = await Venta.find({ clienteId })
+        .select("-facturaPdf -notaCreditoPdf")
+        .sort({ createdAt: -1 }).limit(200).lean();
+
+      // Extraer productos consumidos (de las ventas)
+      const productosComprados = [];
+      const productoIdsSet = new Set();
+      ventas.forEach((v) => {
+        (v.productos || []).forEach((p) => {
+          if (p._id) productoIdsSet.add(String(p._id));
+          productosComprados.push({
+            productoId: p._id || null,
+            nombre: p.nombre || "—",
+            cepa: p.cepa || null,
+            bodega: p.bodega || null,
+            cantidad: p.cantidad || p.carritoCantidad || 1,
+            fecha: v.fecha || v.createdAt,
+            ventaId: v._id,
+          });
+        });
+      });
+
+      // Valoraciones del cliente
+      const valoraciones = await ValoracionVino.find({ clienteId }).lean();
+      const valoracionMap = {};
+      valoraciones.forEach((val) => { valoracionMap[String(val.productoId)] = val; });
+
+      // Todos los vinos del catálogo para colección de cepas
+      const todosVinos = await Product.find({ tipo: "vino" })
+        .select("_id nombre cepa bodega foto fotos fotoPrincipalIdx").lean();
+
+      // Cepas únicas del catálogo
+      const cepasSet = new Set();
+      todosVinos.forEach((v) => { if (v.cepa) cepasSet.add(v.cepa); });
+      const todasCepas = [...cepasSet].sort();
+
+      // Cepas probadas por el cliente
+      const cepasProbadas = new Set();
+      const bodegasProbadas = new Set();
+      productosComprados.forEach((p) => {
+        if (p.cepa) cepasProbadas.add(p.cepa);
+        if (p.bodega) bodegasProbadas.add(p.bodega);
+      });
+
+      // Colección de cepas
+      const coleccionCepas = todasCepas.map((cepa) => ({
+        cepa,
+        probada: cepasProbadas.has(cepa),
+        vinosDisponibles: todosVinos.filter((v) => v.cepa === cepa).length,
+        vinosProbados: productosComprados.filter((p) => p.cepa === cepa).length,
+      }));
+
+      // Métricas
+      const totalGastado = ventas.reduce((s, v) => s + (v.monto || 0), 0);
+      const cantCompras = ventas.length;
+      const vinosUnicos = productoIdsSet.size;
+      const ticketPromedio = cantCompras > 0 ? totalGastado / cantCompras : 0;
+      const ultimaCompra = ventas[0]?.createdAt || null;
+
+      // Nivel del cliente
+      let nivel, nivelNum;
+      if (cantCompras === 0) { nivel = "Nuevo"; nivelNum = 0; }
+      else if (cantCompras <= 3) { nivel = "Curioso"; nivelNum = 1; }
+      else if (cantCompras <= 10) { nivel = "Explorador"; nivelNum = 2; }
+      else if (cantCompras <= 25) { nivel = "Conocedor"; nivelNum = 3; }
+      else if (cantCompras <= 50) { nivel = "Sommelier"; nivelNum = 4; }
+      else { nivel = "Maestro"; nivelNum = 5; }
+
+      // Preferencias (cepa y bodega más compradas)
+      const cepaCount = {};
+      const bodegaCount = {};
+      productosComprados.forEach((p) => {
+        if (p.cepa) cepaCount[p.cepa] = (cepaCount[p.cepa] || 0) + (p.cantidad || 1);
+        if (p.bodega) bodegaCount[p.bodega] = (bodegaCount[p.bodega] || 0) + (p.cantidad || 1);
+      });
+      const cepaFav = Object.entries(cepaCount).sort((a, b) => b[1] - a[1])[0];
+      const bodegaFav = Object.entries(bodegaCount).sort((a, b) => b[1] - a[1])[0];
+
+      // Logros
+      const logros = [];
+      if (cantCompras >= 1) logros.push({ id: "primera_compra", nombre: "Primera Compra", desc: "Realizaste tu primera compra", icono: "bi-bag-check" });
+      if (cantCompras >= 5) logros.push({ id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras realizadas", icono: "bi-arrow-repeat" });
+      if (cantCompras >= 10) logros.push({ id: "fiel", nombre: "Cliente Fiel", desc: "10 compras realizadas", icono: "bi-heart" });
+      if (cantCompras >= 25) logros.push({ id: "vip", nombre: "VIP", desc: "25 compras realizadas", icono: "bi-star" });
+      if (vinosUnicos >= 5) logros.push({ id: "explorador_5", nombre: "Explorador", desc: "Probaste 5 vinos diferentes", icono: "bi-compass" });
+      if (vinosUnicos >= 15) logros.push({ id: "explorador_15", nombre: "Gran Explorador", desc: "Probaste 15 vinos diferentes", icono: "bi-binoculars" });
+      if (vinosUnicos >= 30) logros.push({ id: "explorador_30", nombre: "Aventurero", desc: "Probaste 30 vinos diferentes", icono: "bi-globe" });
+      if (cepasProbadas.size >= 3) logros.push({ id: "cepas_3", nombre: "Multicepas", desc: "Probaste 3 cepas diferentes", icono: "bi-collection" });
+      if (cepasProbadas.size >= 5) logros.push({ id: "cepas_5", nombre: "Conocedor de Cepas", desc: "Probaste 5 cepas diferentes", icono: "bi-grid-3x3" });
+      if (cepasProbadas.size >= todasCepas.length && todasCepas.length > 0) logros.push({ id: "todas_cepas", nombre: "Coleccionista", desc: "Probaste todas las cepas!", icono: "bi-trophy" });
+      if (bodegasProbadas.size >= 3) logros.push({ id: "bodegas_3", nombre: "Viajero", desc: "Probaste 3 bodegas diferentes", icono: "bi-geo-alt" });
+      if (bodegasProbadas.size >= 8) logros.push({ id: "bodegas_8", nombre: "Trotamundos", desc: "Probaste 8 bodegas diferentes", icono: "bi-map" });
+      if (valoraciones.length >= 1) logros.push({ id: "primera_nota", nombre: "Critico Novato", desc: "Escribiste tu primera nota de cata", icono: "bi-pencil" });
+      if (valoraciones.length >= 5) logros.push({ id: "critico", nombre: "Critico", desc: "5 vinos valorados", icono: "bi-journal-text" });
+      if (valoraciones.length >= 10) logros.push({ id: "gran_critico", nombre: "Gran Critico", desc: "10 vinos valorados", icono: "bi-award" });
+      if (totalGastado >= 50000) logros.push({ id: "gastador", nombre: "Gran Inversor", desc: "Invertiste mas de $50.000 en vinos", icono: "bi-cash-coin" });
+      if (totalGastado >= 200000) logros.push({ id: "mecenas", nombre: "Mecenas", desc: "Invertiste mas de $200.000 en vinos", icono: "bi-gem" });
+
+      // Logros posibles (no desbloqueados aún) para mostrar progreso
+      const todosLogros = [
+        { id: "primera_compra", nombre: "Primera Compra", desc: "Realiza tu primera compra", icono: "bi-bag-check", req: cantCompras >= 1 },
+        { id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras", icono: "bi-arrow-repeat", req: cantCompras >= 5 },
+        { id: "fiel", nombre: "Cliente Fiel", desc: "10 compras", icono: "bi-heart", req: cantCompras >= 10 },
+        { id: "vip", nombre: "VIP", desc: "25 compras", icono: "bi-star", req: cantCompras >= 25 },
+        { id: "explorador_5", nombre: "Explorador", desc: "5 vinos diferentes", icono: "bi-compass", req: vinosUnicos >= 5 },
+        { id: "explorador_15", nombre: "Gran Explorador", desc: "15 vinos diferentes", icono: "bi-binoculars", req: vinosUnicos >= 15 },
+        { id: "cepas_3", nombre: "Multicepas", desc: "3 cepas diferentes", icono: "bi-collection", req: cepasProbadas.size >= 3 },
+        { id: "cepas_5", nombre: "Conocedor de Cepas", desc: "5 cepas diferentes", icono: "bi-grid-3x3", req: cepasProbadas.size >= 5 },
+        { id: "todas_cepas", nombre: "Coleccionista", desc: "Todas las cepas", icono: "bi-trophy", req: cepasProbadas.size >= todasCepas.length && todasCepas.length > 0 },
+        { id: "bodegas_3", nombre: "Viajero", desc: "3 bodegas", icono: "bi-geo-alt", req: bodegasProbadas.size >= 3 },
+        { id: "bodegas_8", nombre: "Trotamundos", desc: "8 bodegas", icono: "bi-map", req: bodegasProbadas.size >= 8 },
+        { id: "primera_nota", nombre: "Critico Novato", desc: "Primera nota de cata", icono: "bi-pencil", req: valoraciones.length >= 1 },
+        { id: "critico", nombre: "Critico", desc: "5 valoraciones", icono: "bi-journal-text", req: valoraciones.length >= 5 },
+      ];
+
+      // Vinos con valoraciones públicas de otros clientes (para los vinos que el cliente aún no probó)
+      const valoracionesPublicas = await ValoracionVino.aggregate([
+        { $match: { publica: true } },
+        { $group: { _id: "$productoId", promedio: { $avg: "$puntuacion" }, cantidad: { $sum: 1 } } },
+      ]);
+      const ratingMap = {};
+      valoracionesPublicas.forEach((v) => { ratingMap[String(v._id)] = { promedio: Math.round(v.promedio * 10) / 10, cantidad: v.cantidad }; });
+
+      socket.emit("response-cliente-perfil", {
+        cliente,
+        metricas: { totalGastado, cantCompras, vinosUnicos, ticketPromedio, ultimaCompra },
+        nivel, nivelNum,
+        preferencias: {
+          cepaFavorita: cepaFav ? cepaFav[0] : null,
+          bodegaFavorita: bodegaFav ? bodegaFav[0] : null,
+          cepasProbadas: cepasProbadas.size,
+          totalCepas: todasCepas.length,
+        },
+        historial: productosComprados.slice(0, 100),
+        coleccionCepas,
+        logros,
+        todosLogros,
+        valoraciones,
+        valoracionMap,
+        ratingMap,
+        todosVinos: todosVinos.map((v) => ({
+          _id: v._id, nombre: v.nombre, cepa: v.cepa, bodega: v.bodega,
+          foto: v.fotos?.length ? v.fotos[v.fotoPrincipalIdx || 0] || v.fotos[0] : v.foto || null,
+          probado: productoIdsSet.has(String(v._id)),
+          rating: ratingMap[String(v._id)] || null,
+          miValoracion: valoracionMap[String(v._id)] || null,
+        })),
+      });
+    } catch (err) {
+      console.error("Error request-cliente-perfil:", err);
+      socket.emit("response-cliente-perfil", null);
+    }
+  });
+
+  // Guardar/actualizar valoración de vino de un cliente
+  socket.on("guardar-valoracion-vino", async (data, cb) => {
+    try {
+      const { clienteId, productoId, puntuacion, notas, publica } = data;
+      if (!clienteId || !productoId) return;
+      const val = await ValoracionVino.findOneAndUpdate(
+        { clienteId, productoId },
+        { puntuacion, notas, publica: publica || false },
+        { upsert: true, new: true }
+      );
+      if (typeof cb === "function") cb({ ok: true, valoracion: val });
+    } catch (err) {
+      console.error("Error guardar-valoracion-vino:", err);
+      if (typeof cb === "function") cb({ error: err.message });
+    }
+  });
+
+  // Obtener valoraciones públicas de un producto
+  socket.on("request-valoraciones-producto", async (productoId) => {
+    try {
+      const vals = await ValoracionVino.find({ productoId, publica: true })
+        .sort({ createdAt: -1 }).limit(50).lean();
+      // Enriquecer con nombre de cliente
+      const clienteIds = [...new Set(vals.map((v) => String(v.clienteId)))];
+      const clientes = await Cliente.find({ _id: { $in: clienteIds } }).select("nombre apellido").lean();
+      const clienteMap = {};
+      clientes.forEach((c) => { clienteMap[String(c._id)] = `${c.nombre}${c.apellido ? " " + c.apellido : ""}`; });
+      socket.emit("response-valoraciones-producto", vals.map((v) => ({
+        ...v,
+        clienteNombre: clienteMap[String(v.clienteId)] || "Anonimo",
+      })));
+    } catch (err) {
+      socket.emit("response-valoraciones-producto", []);
     }
   });
 

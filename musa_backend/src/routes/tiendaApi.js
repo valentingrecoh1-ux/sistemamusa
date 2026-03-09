@@ -296,7 +296,7 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
 
       // Obtener catalogo disponible
       const productos = await Product.find({ cantidad: { $gt: 0 }, venta: { $ne: null }, tipo: "vino" })
-        .select("nombre bodega cepa year origen venta cantidad descripcion foto _id")
+        .select("nombre bodega cepa year origen venta cantidad descripcion _id")
         .lean();
 
       if (productos.length === 0) {
@@ -828,7 +828,7 @@ IMPORTANT RULES:
 
   // Helper: compute client profile data (reused by token and search endpoints)
   async function computeClientProfile(cliente) {
-    const ventas = await Venta.find({ clienteId: cliente._id }).sort({ createdAt: -1 }).lean();
+    const ventas = await Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean();
     const productosComprados = [];
     const productoIdsSet = new Set();
     const cepasProbadas = new Set();

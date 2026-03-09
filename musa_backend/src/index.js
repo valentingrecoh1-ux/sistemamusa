@@ -2442,7 +2442,7 @@ Origen: ${producto.origen || ""}`;
         const mes = typeof filtro === "string" ? filtro : "";
         fechaQ = mes ? { $regex: `^${mes}` } : {};
       }
-      const ventas = await Venta.find({ fecha: fechaQ }).select("-facturaPdf -notaCreditoPdf");
+      const ventas = await Venta.find({ fecha: fechaQ }).select("-facturaPdf -notaCreditoPdf").lean();
 
       let totalFacturado = 0;
       let totalNoFacturado = 0;
@@ -5726,6 +5726,11 @@ Reglas:
     } catch (err) {
       console.error("Error cambiar-clave-usuario:", err);
     }
+  });
+
+  // ── Cleanup al desconectar ──
+  socket.on("disconnect", () => {
+    socket.removeAllListeners();
   });
 
 });

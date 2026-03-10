@@ -16,6 +16,10 @@ const ESTADO_LABELS = {
   cancelado: 'Cancelado',
 };
 
+const TIPO_ICONS = { sugerencia: 'bi-lightbulb', mejora: 'bi-arrow-up-circle', reclamo: 'bi-exclamation-circle', otro: 'bi-chat' };
+const TIPO_COLORS = { sugerencia: '#a78bfa', mejora: '#34d399', reclamo: '#f87171', otro: '#94a3b8' };
+const ESTADO_SUG_LABELS = { pendiente: 'Pendiente', leido: 'Leido', respondido: 'Respondido' };
+
 export default function WebDashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState({
@@ -26,17 +30,41 @@ export default function WebDashboard() {
     ingresosHoy: 0,
     ultimos: [],
   });
+  const [sugerencias, setSugerencias] = useState([]);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [respuestaTexto, setRespuestaTexto] = useState({});
+  const [expandedSug, setExpandedSug] = useState(null);
 
   useEffect(() => {
     const handler = (d) => setData(d);
+    const sugHandler = (d) => setSugerencias(d || []);
     socket.on('response-web-dashboard', handler);
+    socket.on('response-sugerencias-clientes', sugHandler);
     socket.on('cambios-web', () => socket.emit('request-web-dashboard'));
+    socket.on('cambios', () => socket.emit('request-sugerencias-clientes', {}));
     socket.emit('request-web-dashboard');
+    socket.emit('request-sugerencias-clientes', {});
     return () => {
       socket.off('response-web-dashboard', handler);
+      socket.off('response-sugerencias-clientes', sugHandler);
       socket.off('cambios-web');
+      socket.off('cambios');
     };
   }, []);
+
+  const handleResponder = (sugId) => {
+    const texto = respuestaTexto[sugId]?.trim();
+    if (!texto) return;
+    socket.emit('responder-sugerencia', { sugerenciaId: sugId, respuesta: texto });
+    setRespuestaTexto((prev) => ({ ...prev, [sugId]: '' }));
+    setExpandedSug(null);
+    socket.emit('request-sugerencias-clientes', {});
+  };
+
+  const handleMarcarLeida = (sugId) => {
+    socket.emit('marcar-sugerencia-leida', sugId);
+    socket.emit('request-sugerencias-clientes', {});
+  };
 
   return (
     <div>
@@ -84,6 +112,71 @@ export default function WebDashboard() {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Feedback de clientes */}
+      <div className={s.section}>
+        <div className={s.sectionHeader} style={{ cursor: 'pointer' }} onClick={() => setShowFeedback(!showFeedback)}>
+          <h2 className={s.sectionTitle}>
+            <i className="bi bi-chat-dots" /> Feedback de clientes
+            {sugerencias.filter((sg) => sg.estado === 'pendiente').length > 0 && (
+              <span className={s.feedbackBadge}>{sugerencias.filter((sg) => sg.estado === 'pendiente').length}</span>
+            )}
+          </h2>
+          <i className={`bi ${showFeedback ? 'bi-chevron-up' : 'bi-chevron-down'}`} style={{ fontSize: 18, color: '#94a3b8' }} />
+        </div>
+
+        {showFeedback && (
+          sugerencias.length === 0 ? (
+            <div className={s.empty}>No hay feedback aun</div>
+          ) : (
+            <div className={s.feedbackList}>
+              {sugerencias.map((sg) => (
+                <div key={sg._id} className={`${s.feedbackItem} ${sg.estado === 'pendiente' ? s.feedbackPendiente : ''}`}>
+                  <div className={s.feedbackTop} onClick={() => setExpandedSug(expandedSug === sg._id ? null : sg._id)}>
+                    <div className={s.feedbackMeta}>
+                      <i className={`bi ${TIPO_ICONS[sg.tipo] || 'bi-chat'}`} style={{ color: TIPO_COLORS[sg.tipo] }} />
+                      <span className={s.feedbackCliente}>{sg.clienteNombre || 'Anonimo'}</span>
+                      <span className={`${s.feedbackEstado} ${s[`feedbackEstado_${sg.estado}`]}`}>
+                        {ESTADO_SUG_LABELS[sg.estado] || sg.estado}
+                      </span>
+                    </div>
+                    <span className={s.feedbackDate}>{new Date(sg.createdAt).toLocaleDateString('es-AR')}</span>
+                  </div>
+                  <p className={s.feedbackMsg}>{sg.mensaje}</p>
+
+                  {sg.respuesta && (
+                    <div className={s.feedbackRespuesta}>
+                      <i className="bi bi-reply" /> <strong>{sg.respondidoPor || 'Admin'}:</strong> {sg.respuesta}
+                    </div>
+                  )}
+
+                  {expandedSug === sg._id && !sg.respuesta && (
+                    <div className={s.feedbackActions}>
+                      {sg.estado === 'pendiente' && (
+                        <button className={s.feedbackBtnLeido} onClick={() => handleMarcarLeida(sg._id)}>
+                          <i className="bi bi-eye" /> Marcar leido
+                        </button>
+                      )}
+                      <div className={s.feedbackResponder}>
+                        <input
+                          className={s.feedbackInput}
+                          placeholder="Escribi una respuesta..."
+                          value={respuestaTexto[sg._id] || ''}
+                          onChange={(e) => setRespuestaTexto((prev) => ({ ...prev, [sg._id]: e.target.value }))}
+                          onKeyDown={(e) => e.key === 'Enter' && handleResponder(sg._id)}
+                        />
+                        <button className={s.feedbackBtnResponder} onClick={() => handleResponder(sg._id)} disabled={!(respuestaTexto[sg._id]?.trim())}>
+                          <i className="bi bi-send" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>

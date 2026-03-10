@@ -269,9 +269,7 @@ export function MusitoProvider({ children }) {
   const [throwDir, setThrowDir] = useState(0); // velocity for throw
   const timers = useRef([]);
   const idleTimer = useRef(null);
-  const scrollTimer = useRef(null);
   const lastScrollY = useRef(0);
-  const rapidScrollCount = useRef(0);
   const runStopTimer = useRef(null);
 
   const outfit = LEVEL_OUTFITS[userLevel] || LEVEL_OUTFITS[0];
@@ -321,7 +319,6 @@ export function MusitoProvider({ children }) {
   }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Scroll following: Musito runs when user scrolls ──
-  const dizzyTimer = useRef(null);
   const poseRef = useRef(pose);
   poseRef.current = pose;
   useEffect(() => {
@@ -332,27 +329,8 @@ export function MusitoProvider({ children }) {
       const absDelta = Math.abs(delta);
       lastScrollY.current = currentY;
 
-      // Rapid scroll = dizzy easter egg
-      if (absDelta > 80) {
-        rapidScrollCount.current++;
-        if (rapidScrollCount.current >= 4 && poseRef.current !== 'dizzy') {
-          setPose('dizzy');
-          setMessage('Uy... para un poco que me mareo!');
-          setBubbleVisible(true);
-          sfxDizzy();
-          rapidScrollCount.current = 0;
-          setIsRunning(false);
-          clearTimeout(dizzyTimer.current);
-          dizzyTimer.current = setTimeout(() => {
-            setPose('idle');
-            setBubbleVisible(false);
-          }, 3000);
-          return;
-        }
-      }
-
       // Normal scroll: Musito shuffles subtly at the edge
-      if (absDelta > 20 && poseRef.current !== 'dizzy' && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
+      if (absDelta > 20 && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
         const scrollDown = delta > 0;
         setFacing(scrollDown ? 'left' : 'right');
         setIsRunning(true);
@@ -372,14 +350,10 @@ export function MusitoProvider({ children }) {
         }, 400);
       }
 
-      // Reset rapid scroll count
-      clearTimeout(scrollTimer.current);
-      scrollTimer.current = setTimeout(() => { rapidScrollCount.current = 0; }, 1000);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      clearTimeout(dizzyTimer.current);
       clearTimeout(runStopTimer.current);
     };
   }, [dismissed]);

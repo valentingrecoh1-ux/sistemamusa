@@ -1,225 +1,182 @@
 /**
- * PixelMusito - SVG pixel art character sprite
- * Renders a retro RPG-style character using SVG rects
- * Each "pixel" is a rect in a 16x20 viewBox, scaled up with crisp edges
+ * PixelMusito – Grid-based pixel art character sprite
+ * Each character in a row maps to a palette color, rendered as merged SVG rects.
+ * 14 px wide × 20 px tall base sprite, scaled via viewBox.
+ *
+ * Grid legend (14 chars per row):
+ *   .  = transparent
+ *   H/h/I = hat (dynamic per accessory)
+ *   P/p   = hair (dynamic per outfit)
+ *   T/t   = body (dynamic per outfit)
+ *   S/s   = skin / skin shadow
+ *   E/W   = eye / eye shine
+ *   k/n   = cheek blush / nose
+ *   M     = mouth
+ *   C     = collar
+ *   D     = pants
+ *   R/r   = shoe / sole
+ *   j     = jewel (corona)
  */
 
-const SKIN = '#fbbf24';
-const SKIN_DARK = '#e5a800';
-const EYE = '#1e1e1e';
-const SHINE = '#ffffff';
-const MOUTH = '#92400e';
-const COLLAR = '#f0f0f0';
-const PANTS = '#1e3a5f';
-const SHOE = '#dc2626';
-const SOLE = '#991b1b';
+// ── Static palette ──────────────────────────────────────
+const STATIC = {
+  S: '#fbbf24', s: '#e5a800', n: '#d4a017', k: '#ff9966',
+  E: '#1e1e1e', W: '#ffffff', M: '#92400e',
+  C: '#e8e8e8', D: '#1e3a5f',
+  R: '#dc2626', r: '#991b1b', j: '#ef4444',
+};
 
-// Rect helper: [x, y, w, h]
-function R(x, y, w, h, fill) {
-  return <rect key={`${x}-${y}`} x={x} y={y} width={w} height={h} fill={fill} />;
+// ── Grid parts (each row is exactly 14 chars) ──────────
+
+const HATS = {
+  default: ['...HHHHHH.....','..HHIHHHHH....','..HHHHHHHHh...','.HHHHHHHHHHh..'],
+  boina:   ['..............','....HHHHHH....','...HIHHHHH....','..HHHHHHHHHh..'],
+  chef:    ['...HHHHHHH....','....HIHHH.....','...HHHHHHH....','..HHHHHHHHHh..'],
+  corona:  ['..H.HH.HH....','..HHHHHHHH....','..HjHHHHjH....','.HHHHHHHHHh...'],
+};
+const CHEF_TOP = ['.....HHHH.....', '....HIHHHH....'];
+
+const FACE = ['.PpSSSSSSpP...', '.PSSSSSSSP....'];
+
+const EYES = {
+  open: ['.PSEWSSEWSP...', '.PSEESSEESP...'],
+  shut: ['.PSSSSSSSP....', '.PSEESSEESP...'],
+};
+
+const CHEEK = '.PSkSnnSkSP...';
+
+const MOUTHS = {
+  normal: '..SSsMMsSS....',
+  wide:   '..SsMMMMsS....',
+  o:      '..SSSMMSSS....',
+  none:   '..SSSSSSSS....',
+};
+
+const CHIN  = ['..SSSSSSSS....', '...SCCCCS.....'];
+const TORSO = ['...TTTTTT.....', '..STTTTTTS....', '..STTTTTTS....', '...tTTTTt.....'];
+
+const LEGS = {
+  idle: ['...DDDDDD.....', '...DD..DD.....', '..RRR..RRR....', '..rrr..rrr....'],
+  run1: ['...DDDDDD.....', '....DDDD......', '...RRRRRR.....', '...rrrrrr.....'],
+  run2: ['...DDDDDD.....', '..DD....DD....', '.RRR....RRR...', '.rrr....rrr...'],
+};
+
+// ── Helpers ─────────────────────────────────────────────
+
+function darken(hex, a = 0.2) {
+  return '#' + [1, 3, 5].map(i =>
+    Math.max(0, Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - a)))
+      .toString(16).padStart(2, '0')
+  ).join('');
 }
 
-function IdleLegs() {
-  return (
-    <g>
-      {R(5, 14, 2, 3, PANTS)}{R(9, 14, 2, 3, PANTS)}
-      {R(4, 17, 3, 1, SHOE)}{R(9, 17, 3, 1, SHOE)}
-      {R(4, 18, 3, 1, SOLE)}{R(9, 18, 1, 1, SOLE)}{R(9, 18, 3, 1, SOLE)}
-    </g>
-  );
+function lighten(hex, a = 0.3) {
+  return '#' + [1, 3, 5].map(i => {
+    const v = parseInt(hex.slice(i, i + 2), 16);
+    return Math.min(255, Math.round(v + (255 - v) * a))
+      .toString(16).padStart(2, '0');
+  }).join('');
 }
 
-function RunFrame1() {
-  return (
-    <g>
-      {/* Left leg forward, right leg back */}
-      {R(4, 14, 2, 2, PANTS)}{R(3, 16, 2, 1, PANTS)}
-      {R(9, 14, 2, 2, PANTS)}{R(10, 16, 2, 1, PANTS)}
-      {R(2, 17, 3, 1, SHOE)}{R(10, 17, 3, 1, SHOE)}
-      {R(2, 18, 3, 1, SOLE)}{R(10, 18, 3, 1, SOLE)}
-    </g>
-  );
+function build(hat, eyes, mouth, legs) {
+  return [...hat, ...FACE, ...eyes, CHEEK, mouth, ...CHIN, ...TORSO, ...legs];
 }
 
-function RunFrame2() {
-  return (
-    <g>
-      {/* Right leg forward, left leg back */}
-      {R(5, 14, 2, 2, PANTS)}{R(6, 16, 2, 1, PANTS)}
-      {R(9, 14, 2, 2, PANTS)}{R(8, 16, 2, 1, PANTS)}
-      {R(6, 17, 3, 1, SHOE)}{R(7, 17, 3, 1, SHOE)}
-      {R(6, 18, 3, 1, SOLE)}{R(7, 18, 3, 1, SOLE)}
-    </g>
-  );
+/** Convert grid rows → <rect> elements with horizontal run-length merging */
+function toRects(grid, pal, pfx, yOff = 0) {
+  const out = [];
+  for (let y = 0; y < grid.length; y++) {
+    const row = grid[y];
+    let x = 0;
+    while (x < row.length) {
+      const ch = row[x];
+      if (ch === '.' || !pal[ch]) { x++; continue; }
+      let w = 1;
+      while (x + w < row.length && row[x + w] === ch) w++;
+      out.push(
+        <rect key={`${pfx}${x},${y}`} x={x} y={y + yOff} width={w} height={1} fill={pal[ch]} />
+      );
+      x += w;
+    }
+  }
+  return out;
 }
 
-function Eyes({ pose }) {
-  if (pose === 'sleep') {
-    // Closed eyes (horizontal lines)
-    return (
-      <g>
-        {R(5, 5, 2, 1, EYE)}{R(9, 5, 2, 1, EYE)}
-      </g>
-    );
-  }
-  if (pose === 'dizzy') {
-    // X eyes
-    return (
-      <g>
-        {R(5, 4, 1, 1, EYE)}{R(6, 5, 1, 1, EYE)}{R(5, 5, 1, 1, EYE)}{R(6, 4, 1, 1, EYE)}
-        {R(9, 4, 1, 1, EYE)}{R(10, 5, 1, 1, EYE)}{R(9, 5, 1, 1, EYE)}{R(10, 4, 1, 1, EYE)}
-      </g>
-    );
-  }
-  // Normal eyes with shine
-  return (
-    <g>
-      {R(5, 4, 2, 2, EYE)}{R(9, 4, 2, 2, EYE)}
-      {R(6, 4, 1, 1, SHINE)}{R(10, 4, 1, 1, SHINE)}
-    </g>
-  );
-}
+// ── Component ───────────────────────────────────────────
 
-function MouthShape({ pose }) {
-  if (pose === 'dance' || pose === 'celebrar') {
-    // Big smile
-    return <>{R(6, 7, 4, 1, MOUTH)}{R(5, 7, 1, 1, SKIN_DARK)}{R(10, 7, 1, 1, SKIN_DARK)}</>;
-  }
-  if (pose === 'dizzy') {
-    // O mouth
-    return R(7, 7, 2, 1, MOUTH);
-  }
-  if (pose === 'sleep') {
-    return null; // no visible mouth
-  }
-  // Normal mouth
-  return R(6, 7, 4, 1, MOUTH);
-}
+export default function PixelMusito({
+  pose = 'idle', outfit = {}, facing = 'right', isRunning = false, size = 36,
+}) {
+  const hair = outfit.hair || '#7c3aed';
+  const body = outfit.body || '#7c3aed';
+  const acc  = outfit.accessory || null;
 
-function Accessory({ accessory, hairColor }) {
-  if (accessory === 'boina') {
-    return (
-      <g>
-        {R(4, 0, 8, 1, '#dc2626')}
-        {R(3, 1, 10, 2, '#dc2626')}
-        {R(5, 0, 2, 1, '#ef4444')} {/* highlight */}
-      </g>
-    );
-  }
-  if (accessory === 'lentes') {
-    return (
-      <g>
-        {/* Glasses over eyes */}
-        {R(4, 4, 3, 2, 'none')}
-        <rect x="4" y="3.5" width="3" height="3" rx="0.5" fill="none" stroke="#374151" strokeWidth="0.8" />
-        <rect x="9" y="3.5" width="3" height="3" rx="0.5" fill="none" stroke="#374151" strokeWidth="0.8" />
-        <line x1="7" y1="4.5" x2="9" y2="4.5" stroke="#374151" strokeWidth="0.6" />
-      </g>
-    );
-  }
-  if (accessory === 'chef') {
-    return (
-      <g>
-        {R(4, 0, 8, 1, '#f5f5f5')}
-        {R(3, 1, 10, 1, '#f5f5f5')}
-        {R(4, 0, 2, 1, '#e5e5e5')} {/* fold */}
-        {R(3, 2, 10, 1, '#f5f5f5')}
-        {R(5, -1, 6, 1, '#f5f5f5')} {/* poofy top */}
-        {R(6, -2, 4, 1, '#f5f5f5')}
-      </g>
-    );
-  }
-  if (accessory === 'corona') {
-    return (
-      <g>
-        {R(4, 1, 8, 2, '#fbbf24')}
-        {R(4, 0, 2, 1, '#fbbf24')}{R(7, 0, 2, 1, '#fbbf24')}{R(10, 0, 2, 1, '#fbbf24')}
-        {R(5, -1, 1, 1, '#fbbf24')}{R(8, -1, 1, 1, '#fbbf24')}{R(11, -1, 1, 1, '#fbbf24')}
-        {R(6, 1, 1, 1, '#f59e0b')} {/* gem */}
-        {R(9, 1, 1, 1, '#ef4444')} {/* gem */}
-      </g>
-    );
-  }
-  // Default hat
-  return (
-    <g>
-      {R(5, 0, 6, 1, hairColor)}
-      {R(4, 1, 8, 1, hairColor)}
-      {R(4, 2, 9, 1, hairColor)} {/* brim extends right */}
-    </g>
-  );
-}
+  // Build dynamic palette
+  const hatBase = acc === 'boina' ? '#dc2626'
+    : acc === 'chef' ? '#f5f5f5'
+    : acc === 'corona' ? '#fbbf24'
+    : hair;
 
-export default function PixelMusito({ pose = 'idle', outfit = {}, facing = 'right', isRunning = false, size = 36 }) {
-  const hairColor = outfit.hair || '#7c3aed';
-  const bodyColor = outfit.body || '#7c3aed';
-  const bodyDark = outfit.body ? `color-mix(in srgb, ${outfit.body} 80%, black)` : '#5b21b6';
-  const accessory = outfit.accessory || null;
+  const pal = {
+    ...STATIC,
+    P: hair,    p: darken(hair),
+    H: hatBase, h: darken(hatBase), I: lighten(hatBase),
+    T: body,    t: darken(body),
+  };
 
-  const pixelH = 20; // increased if chef hat
-  const viewH = accessory === 'chef' ? 22 : 20;
-  const viewY = accessory === 'chef' ? -2 : 0;
-  const height = (size / 16) * viewH;
+  // Select parts by state
+  const hat   = HATS[acc] || HATS.default;
+  const eyes  = pose === 'sleep' ? EYES.shut : EYES.open;
+  const mouth = (pose === 'dance' || pose === 'celebrar') ? MOUTHS.wide
+    : pose === 'dizzy' ? MOUTHS.o
+    : pose === 'sleep' ? MOUTHS.none
+    : MOUTHS.normal;
 
-  const scaleX = facing === 'left' ? -1 : 1;
+  // ViewBox adjusts for chef hat extra height
+  const W = 14;
+  const isChef = acc === 'chef';
+  const viewH  = isChef ? 22 : 20;
+  const viewY  = isChef ? -2 : 0;
+  const h      = (size / W) * viewH;
 
   return (
     <svg
       width={size}
-      height={height}
-      viewBox={`0 ${viewY} 16 ${viewH}`}
+      height={h}
+      viewBox={`0 ${viewY} ${W} ${viewH}`}
       style={{
         imageRendering: 'pixelated',
-        transform: `scaleX(${scaleX})`,
+        transform: facing === 'left' ? 'scaleX(-1)' : undefined,
         overflow: 'visible',
       }}
     >
-      {/* Hat / Accessory */}
-      <Accessory accessory={accessory} hairColor={hairColor} />
+      {/* Chef hat puffy top (extra rows above y=0) */}
+      {isChef && toRects(CHEF_TOP, pal, 'c', -2)}
 
-      {/* Hair sides */}
-      {R(3, 3, 2, 4, hairColor)}{R(11, 3, 2, 4, hairColor)}
-      {/* Hair top peek under hat */}
-      {R(4, 3, 1, 1, hairColor)}{R(11, 3, 1, 1, hairColor)}
-
-      {/* Head / Face */}
-      {R(4, 3, 8, 5, SKIN)}
-
-      {/* Eyes */}
-      <Eyes pose={pose} />
-
-      {/* Nose */}
-      {R(7, 6, 2, 1, SKIN_DARK)}
-
-      {/* Mouth */}
-      <MouthShape pose={pose} />
-
-      {/* Collar */}
-      {R(6, 8, 4, 1, COLLAR)}
-
-      {/* Torso */}
-      {R(5, 9, 6, 4, bodyColor)}
-
-      {/* Arms */}
-      <g className="arms">
-        {R(3, 9, 2, 3, bodyColor)}
-        {R(11, 9, 2, 3, bodyColor)}
-        {/* Hands */}
-        {R(3, 12, 2, 1, SKIN)}
-        {R(11, 12, 2, 1, SKIN)}
-      </g>
-
-      {/* Pants top */}
-      {R(5, 13, 6, 1, PANTS)}
-
-      {/* Legs + Shoes - different based on running */}
+      {/* Main sprite – idle or two alternating run frames */}
       {isRunning ? (
         <>
-          <g className="runFrame1"><RunFrame1 /></g>
-          <g className="runFrame2"><RunFrame2 /></g>
+          <g className="runFrame1">
+            {toRects(build(hat, eyes, mouth, LEGS.run1), pal, 'a')}
+          </g>
+          <g className="runFrame2">
+            {toRects(build(hat, eyes, mouth, LEGS.run2), pal, 'b')}
+          </g>
         </>
       ) : (
-        <IdleLegs />
+        toRects(build(hat, eyes, mouth, LEGS.idle), pal, 'i')
+      )}
+
+      {/* Glasses overlay for lentes accessory */}
+      {acc === 'lentes' && (
+        <g>
+          <rect x="2.5" y="5.5" width="3" height="3" rx=".4"
+            fill="none" stroke="#374151" strokeWidth=".5" />
+          <rect x="6.5" y="5.5" width="3" height="3" rx=".4"
+            fill="none" stroke="#374151" strokeWidth=".5" />
+          <line x1="5.5" y1="7" x2="6.5" y2="7"
+            stroke="#374151" strokeWidth=".4" />
+        </g>
       )}
     </svg>
   );

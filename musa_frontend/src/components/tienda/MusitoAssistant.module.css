@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════
-   Musito Assistant - RPG pixel art + scroll follow
+   Musito Assistant - SVG pixel art + subtle movement
    ══════════════════════════════════════════════ */
 
-/* ── Container: follows user along bottom ── */
+/* ── Container: fixed at bottom edge ── */
 .container {
   position: fixed;
   bottom: 72px;
@@ -13,25 +13,21 @@
   align-items: center;
   gap: 4px;
   pointer-events: none;
-  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .container > * { pointer-events: auto; }
 
-/* Facing */
-.facingLeft .sprite { transform: scaleX(-1); }
-.facingLeft .bubble { transform: none; }
-
 /* ── Speech Bubble ── */
 .bubble {
-  max-width: 230px;
+  max-width: 210px;
   background: #fff;
   color: #1e1e1e;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1.4;
-  padding: 8px 12px;
-  border-radius: 14px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  padding: 6px 10px;
+  border-radius: 12px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.3);
   animation: bubbleIn 0.3s ease-out;
   position: relative;
   text-align: center;
@@ -39,14 +35,14 @@
 .bubble::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
-  border: 6px solid transparent;
+  border: 5px solid transparent;
   border-top-color: #fff;
 }
 @keyframes bubbleIn {
-  0% { opacity: 0; transform: translateY(6px) scale(0.9); }
+  0% { opacity: 0; transform: translateY(4px) scale(0.9); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -54,29 +50,29 @@
 .quickMenu {
   background: #1e1e2e;
   border: 1px solid rgba(124,58,237,0.3);
-  border-radius: 12px;
-  padding: 10px;
+  border-radius: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  gap: 3px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
   animation: bubbleIn 0.25s ease-out;
-  min-width: 180px;
+  min-width: 170px;
 }
 .quickMenuTitle {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #c084fc;
-  padding: 2px 6px 6px;
+  padding: 2px 6px 5px;
   border-bottom: 1px solid rgba(124,58,237,0.15);
   margin-bottom: 2px;
 }
 .quickMenuItem {
   background: rgba(124,58,237,0.08);
   border: 1px solid rgba(124,58,237,0.15);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 11px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 10px;
   font-weight: 600;
   color: #e2e8f0;
   cursor: pointer;
@@ -99,399 +95,70 @@
 }
 .character:hover { transform: scale(1.05); }
 
-/* ══════════════════════════════════
-   PIXEL ART SPRITE (Ash/RPG style)
-   ~48x64 effective px
-   ══════════════════════════════════ */
-.sprite {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  position: relative;
-}
-
-/* ── Hat (beret/cap) ── */
-.hat {
-  width: 32px;
-  height: 10px;
-  background: #7c3aed;
-  border-radius: 8px 8px 2px 2px;
-  position: relative;
-  z-index: 2;
-}
-.hat::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: -2px;
-  right: -2px;
-  height: 4px;
-  background: rgba(0,0,0,0.15);
-  border-radius: 2px;
-}
-/* Brim/visor */
-.hat::after {
-  content: '';
-  position: absolute;
-  top: 4px;
-  right: -6px;
-  width: 10px;
-  height: 6px;
-  background: inherit;
-  border-radius: 0 6px 6px 0;
-  filter: brightness(0.85);
-}
-
-/* ── Head ── */
-.head {
-  width: 30px;
-  height: 26px;
-  background: #fbbf24;
-  border-radius: 4px 4px 6px 6px;
-  position: relative;
-  margin-top: -2px;
-  z-index: 1;
-}
-
-/* Hair on sides */
-.hairSide {
-  position: absolute;
-  top: 0;
-  left: -3px;
-  right: -3px;
-  height: 8px;
-  background: #7c3aed;
-  border-radius: 3px 3px 0 0;
-  z-index: 0;
-}
-.hairSide::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 0;
-  width: 4px;
-  height: 12px;
-  background: inherit;
-  border-radius: 0 0 0 3px;
-}
-.hairSide::after {
-  content: '';
-  position: absolute;
-  top: 4px;
-  right: 0;
-  width: 4px;
-  height: 12px;
-  background: inherit;
-  border-radius: 0 0 3px 0;
-}
-
-/* Face area */
-.face {
-  position: absolute;
-  top: 8px;
-  left: 4px;
-  right: 4px;
-  bottom: 2px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 2;
-}
-
-.eyeRow {
-  display: flex;
-  gap: 8px;
-  margin-top: 2px;
-}
-
-.eye {
-  width: 5px;
-  height: 6px;
-  background: #1e1e1e;
-  border-radius: 50%;
-  position: relative;
-}
-/* Eye shine */
-.eye::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  right: 1px;
-  width: 2px;
-  height: 2px;
-  background: #fff;
-  border-radius: 50%;
-}
-
-/* Blink */
-.head::before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 6px;
-  right: 6px;
-  height: 6px;
-  background: #fbbf24;
-  opacity: 0;
-  z-index: 3;
-  animation: blink 5s infinite;
-}
-@keyframes blink {
-  0%, 93%, 100% { opacity: 0; }
-  95%, 97% { opacity: 1; }
-}
-
-.nose {
-  width: 3px;
-  height: 2px;
-  background: #e5a800;
-  border-radius: 1px;
-  margin-top: 2px;
-}
-
-.mouth {
-  width: 8px;
-  height: 4px;
-  background: #92400e;
-  border-radius: 0 0 4px 4px;
-  margin-top: 1px;
-}
-
-/* ── Torso ── */
-.torso {
-  width: 28px;
-  height: 20px;
-  background: #7c3aed;
-  border-radius: 3px 3px 2px 2px;
-  margin-top: -2px;
-  position: relative;
-}
-
-.collar {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 5px;
-  background: #f5f5f5;
-  border-radius: 0 0 4px 4px;
-}
-
-/* Arms */
-.armL, .armR {
-  position: absolute;
-  width: 8px;
-  height: 18px;
-  background: inherit;
-  filter: brightness(0.85);
-  border-radius: 3px;
-  top: 2px;
-  transition: transform 0.2s;
-  transform-origin: top center;
-}
-.armL { left: -9px; }
-.armR { right: -9px; }
-
-/* Hands */
-.armL::after, .armR::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 7px;
-  height: 6px;
-  background: #fbbf24;
-  border-radius: 3px;
-}
-
-/* ── Legs ── */
-.legs {
-  display: flex;
-  gap: 4px;
-  margin-top: -1px;
-  position: relative;
-}
-
-.legL, .legR {
-  width: 10px;
-  height: 14px;
-  background: #1e3a5f;
-  border-radius: 0 0 2px 2px;
-  position: relative;
-  transition: transform 0.1s;
-}
-
-/* Shoes */
-.shoeL, .shoeR {
-  position: absolute;
-  bottom: -4px;
-  width: 13px;
-  height: 6px;
-  background: #dc2626;
-  border-radius: 3px;
-}
-.shoeL { left: -2px; }
-.shoeR { left: -1px; }
-/* Shoe sole */
-.shoeL::after, .shoeR::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #991b1b;
-  border-radius: 0 0 3px 3px;
-}
-
 /* ── Shadow ── */
 .shadow {
-  width: 36px;
-  height: 8px;
+  width: 24px;
+  height: 5px;
   background: rgba(0,0,0,0.2);
   border-radius: 50%;
-  margin-top: 4px;
+  margin-top: 1px;
 }
 
 /* ── Name tag ── */
 .nameTag {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   color: #c084fc;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
   letter-spacing: 0.5px;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* ══════════════════════════════════
    ANIMATIONS & POSES
    ══════════════════════════════════ */
 
-/* ── Idle: breathing + slight sway ── */
-.pose_idle .sprite {
-  animation: idleBreathe 3s ease-in-out infinite;
+/* ── Idle: gentle float ── */
+.pose_idle .character {
+  animation: idleFloat 3s ease-in-out infinite;
 }
-.pose_idle .armL { animation: idleArmL 3s ease-in-out infinite; }
-.pose_idle .armR { animation: idleArmR 3s ease-in-out infinite; }
-
-@keyframes idleBreathe {
+@keyframes idleFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
 }
-@keyframes idleArmL {
-  0%, 100% { transform: rotate(0); }
-  50% { transform: rotate(-3deg); }
-}
-@keyframes idleArmR {
-  0%, 100% { transform: rotate(0); }
-  50% { transform: rotate(3deg); }
-}
 
-/* ── Running: triggered by scroll ── */
-.running .sprite {
-  animation: runBounce 0.22s steps(2) infinite;
-}
-.running .legL { animation: runLegL 0.22s steps(2) infinite; }
-.running .legR { animation: runLegR 0.22s steps(2) infinite; }
-.running .armL { animation: runArmL 0.22s ease-in-out infinite; }
-.running .armR { animation: runArmR 0.22s ease-in-out infinite; }
-.running .shadow { animation: runShadow 0.22s steps(2) infinite; }
-
-@keyframes runBounce {
-  0%,100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-@keyframes runLegL {
-  0% { transform: rotate(-25deg) translateY(0); }
-  50% { transform: rotate(25deg) translateY(-3px); }
-  100% { transform: rotate(-25deg) translateY(0); }
-}
-@keyframes runLegR {
-  0% { transform: rotate(25deg) translateY(-3px); }
-  50% { transform: rotate(-25deg) translateY(0); }
-  100% { transform: rotate(25deg) translateY(-3px); }
-}
-@keyframes runArmL {
-  0%, 100% { transform: rotate(30deg); }
-  50% { transform: rotate(-30deg); }
-}
-@keyframes runArmR {
-  0%, 100% { transform: rotate(-30deg); }
-  50% { transform: rotate(30deg); }
-}
-@keyframes runShadow {
-  0%, 100% { transform: scaleX(1); opacity: 0.2; }
-  50% { transform: scaleX(0.7); opacity: 0.1; }
-}
-
-/* ── Walk: entrance ── */
+/* ── Walk entrance ── */
 .pose_walk .character {
-  animation: walkSlideIn 0.8s ease-out;
+  animation: walkSlideIn 0.6s ease-out;
 }
-.pose_walk .legL { animation: runLegL 0.35s steps(2) infinite; }
-.pose_walk .legR { animation: runLegR 0.35s steps(2) infinite; }
-.pose_walk .armL { animation: runArmL 0.35s ease-in-out infinite; }
-.pose_walk .armR { animation: runArmR 0.35s ease-in-out infinite; }
-
 @keyframes walkSlideIn {
-  0% { transform: translateX(80px); opacity: 0; }
+  0% { transform: translateX(30px); opacity: 0; }
   100% { transform: translateX(0); opacity: 1; }
 }
 
 /* ── Wave ── */
-.pose_wave .sprite { animation: idleBreathe 3s ease-in-out infinite; }
-.pose_wave .armR {
-  animation: waveHand 0.4s ease-in-out infinite alternate !important;
-}
-@keyframes waveHand {
-  0% { transform: rotate(-20deg); }
-  100% { transform: rotate(-70deg); }
+.pose_wave .character {
+  animation: idleFloat 3s ease-in-out infinite;
 }
 
 /* ── Dizzy ── */
-.pose_dizzy .sprite {
+.pose_dizzy .character {
   animation: dizzyWobble 0.5s ease-in-out infinite;
 }
-.pose_dizzy .eye {
-  background: transparent;
-  border: 2px solid #1e1e1e;
-  animation: dizzyEye 0.6s linear infinite;
-}
-.pose_dizzy .eye::after { display: none; }
-.pose_dizzy .mouth {
-  width: 10px;
-  height: 6px;
-  border-radius: 50%;
-  background: transparent;
-  border: 2px solid #92400e;
-}
 @keyframes dizzyWobble {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(6deg); }
-}
-@keyframes dizzyEye {
-  to { transform: rotate(360deg); }
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
 }
 
 /* ── Sleep ── */
-.pose_sleep .sprite { animation: sleepBob 4s ease-in-out infinite; }
-.pose_sleep .eye {
-  height: 2px;
-  border-radius: 2px;
+.pose_sleep .character {
+  animation: sleepBob 4s ease-in-out infinite;
 }
-.pose_sleep .eye::after { display: none; }
-.pose_sleep .mouth { display: none; }
-.pose_sleep .head { animation: sleepNod 4s ease-in-out infinite; }
-
 .sleepZzz {
   position: absolute;
-  top: -12px;
-  right: -8px;
-  font-size: 14px;
+  top: -8px;
+  right: -6px;
+  font-size: 11px;
   font-weight: 900;
   color: #a78bfa;
   animation: zzz 2s ease-in-out infinite;
@@ -500,118 +167,72 @@
 .sleepZzz::before {
   content: 'z';
   position: absolute;
-  top: -10px;
-  right: 10px;
-  font-size: 10px;
+  top: -8px;
+  right: 8px;
+  font-size: 8px;
   opacity: 0.6;
   animation: zzz 2s ease-in-out infinite 0.5s;
 }
 .sleepZzz::after {
   content: 'Z';
   position: absolute;
-  top: -24px;
-  right: 4px;
-  font-size: 16px;
+  top: -18px;
+  right: 3px;
+  font-size: 13px;
   opacity: 0.4;
   animation: zzz 2s ease-in-out infinite 1s;
 }
 @keyframes sleepBob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
-}
-@keyframes sleepNod {
-  0%, 100% { transform: rotate(0); }
-  30%, 70% { transform: rotate(10deg); }
+  50% { transform: translateY(1px); }
 }
 @keyframes zzz {
   0% { transform: translateY(0); opacity: 0; }
   50% { opacity: 1; }
-  100% { transform: translateY(-14px); opacity: 0; }
+  100% { transform: translateY(-10px); opacity: 0; }
 }
 
 /* ── Dance ── */
-.pose_dance .sprite { animation: danceBounce 0.3s ease-in-out infinite; }
-.pose_dance .armL { animation: danceArmL 0.3s ease-in-out infinite !important; }
-.pose_dance .armR { animation: danceArmR 0.3s ease-in-out infinite !important; }
-.pose_dance .legL { animation: danceLegL 0.3s ease-in-out infinite !important; }
-.pose_dance .legR { animation: danceLegR 0.3s ease-in-out infinite !important; }
-.pose_dance .head { animation: danceHead 0.6s ease-in-out infinite; }
-
+.pose_dance .character {
+  animation: danceBounce 0.3s ease-in-out infinite;
+}
 @keyframes danceBounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-@keyframes danceArmL {
-  0%, 100% { transform: rotate(-70deg); }
-  50% { transform: rotate(20deg); }
-}
-@keyframes danceArmR {
-  0%, 100% { transform: rotate(20deg); }
-  50% { transform: rotate(-70deg); }
-}
-@keyframes danceLegL {
-  0%, 100% { transform: translateX(-3px) rotate(-15deg); }
-  50% { transform: translateX(3px) rotate(15deg); }
-}
-@keyframes danceLegR {
-  0%, 100% { transform: translateX(3px) rotate(15deg); }
-  50% { transform: translateX(-3px) rotate(-15deg); }
-}
-@keyframes danceHead {
-  0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
+  0%, 100% { transform: translateY(0) rotate(0); }
+  25% { transform: translateY(-4px) rotate(-5deg); }
+  75% { transform: translateY(-4px) rotate(5deg); }
 }
 
 /* ── Celebrar ── */
-.pose_celebrar .sprite { animation: danceBounce 0.5s ease-in-out infinite; }
-.pose_celebrar .armL { animation: danceArmL 0.5s ease-in-out infinite !important; }
-.pose_celebrar .armR { animation: danceArmR 0.5s ease-in-out infinite !important; }
-
+.pose_celebrar .character {
+  animation: danceBounce 0.4s ease-in-out infinite;
+}
 .confetti {
   position: absolute;
-  top: -20px;
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  width: 50px;
-  height: 40px;
+  width: 40px;
+  height: 30px;
   pointer-events: none;
   overflow: visible;
 }
 .confetti::before, .confetti::after {
   content: '';
   position: absolute;
-  width: 6px; height: 6px;
+  width: 4px; height: 4px;
   border-radius: 1px;
-  animation: confettiFall 1.2s ease-in infinite;
+  animation: confettiFall 1s ease-in infinite;
 }
-.confetti::before { background: #fbbf24; left: 8px; }
-.confetti::after { background: #ec4899; right: 8px; animation-delay: 0.4s; }
-
+.confetti::before { background: #fbbf24; left: 6px; }
+.confetti::after { background: #ec4899; right: 6px; animation-delay: 0.3s; }
 @keyframes confettiFall {
-  0% { transform: translateY(-15px) rotate(0); opacity: 1; }
-  100% { transform: translateY(60px) rotate(400deg); opacity: 0; }
+  0% { transform: translateY(-10px) rotate(0); opacity: 1; }
+  100% { transform: translateY(40px) rotate(360deg); opacity: 0; }
 }
 
 /* ── Moto ── */
-.pose_moto .sprite { animation: motoVib 0.12s infinite alternate; }
-.pose_moto .legs { display: none; }
-.motoOverlay {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 52px;
-  height: 22px;
-  background: #dc2626;
-  border-radius: 6px 16px 4px 4px;
-  z-index: -1;
-  box-shadow:
-    -14px 16px 0 5px #374151,
-    14px 16px 0 5px #374151,
-    -14px 16px 0 2px #9ca3af,
-    14px 16px 0 2px #9ca3af,
-    26px -2px 0 3px #fbbf24;
+.pose_moto .character {
+  animation: motoVib 0.12s infinite alternate;
 }
 @keyframes motoVib {
   0% { transform: translateY(0) rotate(-1deg); }
@@ -619,132 +240,58 @@
 }
 
 /* ── Paquete ── */
-.pose_paquete .armL { transform: rotate(25deg) !important; }
-.pose_paquete .armR { transform: rotate(-25deg) !important; }
-.pose_paquete .sprite { animation: idleBreathe 3s ease-in-out infinite; }
-.paqueteOverlay {
-  position: absolute;
-  bottom: 38px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 22px;
-  height: 18px;
-  background: #92400e;
-  border: 2px solid #78350f;
-  border-radius: 2px;
-  z-index: 1;
-}
-.paqueteOverlay::before {
-  content: '';
-  position: absolute;
-  top: 50%; left: 0; right: 0;
-  height: 2px;
-  background: #fbbf24;
-  transform: translateY(-50%);
-}
-.paqueteOverlay::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: 0; bottom: 0;
-  width: 2px;
-  background: #fbbf24;
-  transform: translateX(-50%);
+.pose_paquete .character {
+  animation: idleFloat 3s ease-in-out infinite;
 }
 
-/* ══════════════════════════════════
-   LEVEL ACCESSORIES
-   ══════════════════════════════════ */
-
-/* Boina (Catador) */
-.acc_boina .hat {
-  background: #dc2626 !important;
-  border-radius: 50% 50% 2px 2px;
-  height: 12px;
+/* ── Running sprite frame toggle ── */
+.character :global(.runFrame1) {
+  animation: frameToggle 0.25s steps(1) infinite;
 }
-.acc_boina .hat::after { display: none; }
-
-/* Lentes (Conocedor) */
-.acc_lentes .face::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: -1px;
-  right: -1px;
-  height: 8px;
-  border: 2px solid #374151;
-  border-radius: 4px;
-  background: rgba(59,130,246,0.1);
-  z-index: 10;
+.character :global(.runFrame2) {
+  animation: frameToggle 0.25s steps(1) infinite reverse;
 }
-
-/* Chef (Sommelier) */
-.acc_chef .hat {
-  background: #f5f5f5 !important;
-  height: 18px;
-  border-radius: 4px 4px 2px 2px;
+@keyframes frameToggle {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }
-.acc_chef .hat::after {
-  display: none;
-}
-.acc_chef .hat::before {
-  height: 3px;
-  background: #e5e5e5;
-}
-
-/* Corona (Maestro) */
-.acc_corona .hat {
-  background: #fbbf24 !important;
-  height: 14px;
-  clip-path: polygon(0% 100%, 5% 20%, 20% 60%, 35% 0%, 50% 60%, 65% 0%, 80% 60%, 95% 20%, 100% 100%);
-  border-radius: 0;
-}
-.acc_corona .hat::before, .acc_corona .hat::after { display: none; }
 
 /* ── Dust particles when running ── */
 .dustParticles {
   position: absolute;
-  bottom: 6px;
+  bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
-  width: 40px;
-  height: 16px;
+  width: 30px;
+  height: 12px;
 }
 .dustParticles span {
   position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(180, 160, 140, 0.6);
+  width: 3px;
+  height: 3px;
+  background: rgba(180, 160, 140, 0.5);
   border-radius: 50%;
-  animation: dustPuff 0.5s ease-out forwards;
+  animation: dustPuff 0.4s ease-out forwards;
 }
-.dustParticles span:nth-child(1) {
-  left: 8px; bottom: 0;
-  animation-delay: 0s;
-}
-.dustParticles span:nth-child(2) {
-  left: 18px; bottom: 2px;
-  animation-delay: 0.08s;
-}
-.dustParticles span:nth-child(3) {
-  left: 28px; bottom: 0;
-  animation-delay: 0.15s;
-}
+.dustParticles span:nth-child(1) { left: 5px; bottom: 0; }
+.dustParticles span:nth-child(2) { left: 13px; bottom: 2px; animation-delay: 0.06s; }
+.dustParticles span:nth-child(3) { left: 22px; bottom: 0; animation-delay: 0.12s; }
 @keyframes dustPuff {
-  0% { transform: scale(1) translateY(0); opacity: 0.7; }
-  100% { transform: scale(2.5) translateY(-10px); opacity: 0; }
+  0% { transform: scale(1) translateY(0); opacity: 0.6; }
+  100% { transform: scale(2) translateY(-6px); opacity: 0; }
 }
 
-/* ── Dragging: remove container transition for instant follow ── */
+/* ── Dragging ── */
 .draggingContainer {
   transition: none !important;
 }
 .dragging {
   cursor: grabbing !important;
-  transform: scale(1.1) !important;
+  transform: scale(1.08) !important;
 }
 .dragging .shadow {
-  transform: scaleX(1.4);
+  transform: scaleX(1.3);
   opacity: 0.1;
 }
 
@@ -752,16 +299,8 @@
 .thrown {
   pointer-events: none;
 }
-.thrown .sprite {
+.thrown svg {
   animation: thrownSpin 0.4s linear infinite !important;
-}
-.thrown .armL, .thrown .armR {
-  animation: none !important;
-  transform: rotate(90deg) !important;
-}
-.thrown .legL, .thrown .legR {
-  animation: none !important;
-  transform: rotate(45deg) !important;
 }
 @keyframes thrownSpin {
   0% { transform: rotate(0deg); }
@@ -774,10 +313,10 @@
 
 .actionBtns {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   position: absolute;
-  top: -4px;
-  right: -20px;
+  top: -2px;
+  right: -16px;
   opacity: 0;
   transition: opacity 0.2s;
   flex-direction: column;
@@ -788,12 +327,12 @@
 }
 
 .actionBtn, .dismissBtn {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -807,10 +346,10 @@
 .minimizedBtn {
   position: fixed;
   bottom: 80px;
-  right: 18px;
+  right: 14px;
   z-index: 9998;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #7c3aed;
   border: 2px solid #a78bfa;
@@ -818,35 +357,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(124,58,237,0.4);
+  box-shadow: 0 3px 10px rgba(124,58,237,0.4);
   animation: pulse 2s ease-in-out infinite;
 }
 .minimizedBtn:hover { transform: scale(1.1); }
 
 .miniHead {
-  width: 18px;
-  height: 16px;
+  width: 14px;
+  height: 12px;
   background: #fbbf24;
-  border-radius: 3px;
+  border-radius: 2px;
   box-shadow:
-    inset 4px 5px 0 0 #1e1e1e,
-    inset -4px 5px 0 0 #1e1e1e,
-    inset 0 -3px 0 0 #92400e;
+    inset 3px 4px 0 0 #1e1e1e,
+    inset -3px 4px 0 0 #1e1e1e,
+    inset 0 -2px 0 0 #92400e;
 }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 4px 12px rgba(124,58,237,0.4); }
-  50% { box-shadow: 0 4px 22px rgba(124,58,237,0.7); }
+  0%, 100% { box-shadow: 0 3px 10px rgba(124,58,237,0.4); }
+  50% { box-shadow: 0 3px 18px rgba(124,58,237,0.7); }
 }
 
 /* ── Reactivate ── */
 .reactivateBtn {
   position: fixed;
   bottom: 80px;
-  right: 18px;
+  right: 14px;
   z-index: 9998;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: rgba(124,58,237,0.15);
   border: 1px solid rgba(124,58,237,0.3);
@@ -858,14 +397,14 @@
   transition: all 0.2s;
 }
 .reactivateBtn:hover { opacity: 1; transform: scale(1.1); }
-.reactivateEmoji { font-size: 16px; }
+.reactivateEmoji { font-size: 14px; }
 
 /* ══════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════ */
 @media (max-width: 640px) {
   .container { bottom: 68px; }
-  .bubble { max-width: 190px; font-size: 10px; }
-  .minimizedBtn { bottom: 75px; right: 12px; }
-  .reactivateBtn { bottom: 75px; right: 12px; }
+  .bubble { max-width: 170px; font-size: 9px; }
+  .minimizedBtn { bottom: 72px; right: 10px; }
+  .reactivateBtn { bottom: 72px; right: 10px; }
 }

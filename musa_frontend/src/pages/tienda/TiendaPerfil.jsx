@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos } from '../../lib/tiendaApi';
 import { useMusito } from '../../context/MusitoContext';
@@ -54,11 +54,6 @@ const MAP_DECORATIONS = [
   { type: 'vine', top: 50, left: 32, flip: false },
 ];
 
-// Musito speech bubbles while walking
-const MUSITO_WALK_BUBBLES = [
-  '¡Vamos!', '🍇 ¡Qué lindo viñedo!', '¿Llegamos?', '🍷 ¡Salud!',
-  '¡Qué camino!', '🌿 ¡Qué verde!', '¡A explorar!', '🏔️ ¡Qué vista!',
-];
 
 function getCharacterBubble(perfil) {
   const nivel = perfil.nivelNum || 0;
@@ -150,7 +145,7 @@ export default function TiendaPerfil() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { updateLevel, updateUserName } = useMusito();
+  const { updateLevel, updateUserName, onMapProvinceClick } = useMusito();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -171,46 +166,12 @@ export default function TiendaPerfil() {
   // Map interaction
   const [expandedProv, setExpandedProv] = useState(null);
 
-  // Musito state
-  const [musitoPos, setMusitoPos] = useState({ top: 25, left: 38 }); // starts at Mendoza
-  const [musitoTarget, setMusitoTarget] = useState(null);
-  const [musitoRunning, setMusitoRunning] = useState(false);
-  const [musitoFacing, setMusitoFacing] = useState('right');
-  const [musitoBubble, setMusitoBubble] = useState('');
-  const musitoTimer = useRef(null);
-  const bubbleTimer = useRef(null);
-
-  const moveMusito = useCallback((targetProv) => {
-    if (musitoRunning) return;
-    const prov = WINE_PROVINCES.find((p) => p.id === targetProv);
-    if (!prov) return;
-
-    const targetTop = prov.top;
-    const targetLeft = prov.left;
-    setMusitoFacing(targetLeft >= musitoPos.left ? 'right' : 'left');
-    setMusitoRunning(true);
-    setMusitoTarget({ top: targetTop, left: targetLeft });
-
-    // Show a random bubble while walking
-    const bubble = MUSITO_WALK_BUBBLES[Math.floor(Math.random() * MUSITO_WALK_BUBBLES.length)];
-    setMusitoBubble(bubble);
-    clearTimeout(bubbleTimer.current);
-    bubbleTimer.current = setTimeout(() => setMusitoBubble(''), 2000);
-
-    // After transition ends, update position
-    clearTimeout(musitoTimer.current);
-    musitoTimer.current = setTimeout(() => {
-      setMusitoPos({ top: targetTop, left: targetLeft });
-      setMusitoRunning(false);
-      setMusitoTarget(null);
-    }, 1200); // matches CSS transition duration
-  }, [musitoPos, musitoRunning]);
-
-  // Move Musito when a province is clicked
+  // Province click: toggle detail + global Musito reacts
   const handleProvClick = useCallback((provId) => {
-    setExpandedProv(expandedProv === provId ? null : provId);
-    moveMusito(provId);
-  }, [expandedProv, moveMusito]);
+    setExpandedProv((prev) => prev === provId ? null : provId);
+    const prov = WINE_PROVINCES.find((p) => p.id === provId);
+    if (prov) onMapProvinceClick(prov.name);
+  }, [onMapProvinceClick]);
 
   // Sync Musito outfit with user level
   useEffect(() => {
@@ -218,13 +179,6 @@ export default function TiendaPerfil() {
     if (perfil?.nombre) updateUserName(perfil.nombre);
   }, [perfil?.nivelNum, perfil?.nombre, updateLevel, updateUserName]);
 
-  // Cleanup timers
-  useEffect(() => {
-    return () => {
-      clearTimeout(musitoTimer.current);
-      clearTimeout(bubbleTimer.current);
-    };
-  }, []);
 
   // Suggestion form
   const [sugTipo, setSugTipo] = useState('sugerencia');
@@ -729,33 +683,6 @@ export default function TiendaPerfil() {
                       </button>
                     ))}
 
-                    {/* Musito character */}
-                    <div
-                      className={`${s.musito} ${musitoRunning ? s.musitoRunning : ''} ${musitoFacing === 'left' ? s.musitoLeft : ''}`}
-                      style={{
-                        top: `${(musitoTarget || musitoPos).top}%`,
-                        left: `${(musitoTarget || musitoPos).left}%`,
-                      }}
-                    >
-                      {musitoBubble && <span className={s.musitoBubble}>{musitoBubble}</span>}
-                      <div className={s.musitoSprite}>
-                        <div className={s.musitoHair} />
-                        <div className={s.musitoHead}>
-                          <span className={s.musitoEyeL} />
-                          <span className={s.musitoEyeR} />
-                          <span className={s.musitoMouth} />
-                        </div>
-                        <div className={s.musitoBody}>
-                          <span className={s.musitoArmL} />
-                          <span className={s.musitoArmR} />
-                        </div>
-                        <div className={s.musitoLegs}>
-                          <span className={s.musitoLegL} />
-                          <span className={s.musitoLegR} />
-                        </div>
-                      </div>
-                      <span className={s.musitoName}>Musito</span>
-                    </div>
                   </div>
 
                   {/* Expanded province detail */}

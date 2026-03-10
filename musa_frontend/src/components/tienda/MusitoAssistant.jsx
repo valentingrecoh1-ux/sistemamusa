@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMusito } from '../../context/MusitoContext';
 import { tiendaPath } from '../../tiendaConfig';
+import PixelMusito from './PixelMusito';
 import s from './MusitoAssistant.module.css';
 
 export default function MusitoAssistant() {
@@ -34,9 +35,6 @@ export default function MusitoAssistant() {
   }
 
   const poseClass = s[`pose_${pose}`] || '';
-  const accessoryClass = outfit.accessory ? s[`acc_${outfit.accessory}`] : '';
-  const runClass = isRunning ? s.running : '';
-  const facingClass = facing === 'left' ? s.facingLeft : '';
 
   // Drag & long press logic
   const pressTimer = useRef(null);
@@ -84,7 +82,7 @@ export default function MusitoAssistant() {
 
   return (
     <div
-      className={`${s.container} ${poseClass} ${accessoryClass} ${runClass} ${facingClass} ${isDragging ? s.draggingContainer : ''}`}
+      className={`${s.container} ${poseClass} ${isDragging ? s.draggingContainer : ''}`}
       style={{ left: `${musitoX}%` }}
     >
       {/* Speech bubble */}
@@ -116,45 +114,11 @@ export default function MusitoAssistant() {
         style={{ touchAction: 'none' }}
       >
         {/* Pose overlays */}
-        {pose === 'moto' && <div className={s.motoOverlay} />}
-        {pose === 'paquete' && <div className={s.paqueteOverlay} />}
         {pose === 'celebrar' && <div className={s.confetti} />}
         {pose === 'sleep' && <div className={s.sleepZzz}>Z</div>}
 
-        <div className={s.sprite}>
-          {/* Hat */}
-          <div className={s.hat} style={outfit.accessory ? undefined : { background: outfit.hair }} />
-
-          {/* Head */}
-          <div className={s.head}>
-            <div className={s.hairSide} style={{ background: outfit.hair }} />
-            <div className={s.face}>
-              <div className={s.eyeRow}>
-                <span className={s.eye} />
-                <span className={s.eye} />
-              </div>
-              <span className={s.nose} />
-              <span className={s.mouth} />
-            </div>
-          </div>
-
-          {/* Body */}
-          <div className={s.torso} style={{ background: outfit.body }}>
-            <div className={s.collar} />
-            <div className={s.armL} />
-            <div className={s.armR} />
-          </div>
-
-          {/* Legs */}
-          <div className={s.legs}>
-            <div className={s.legL}>
-              <span className={s.shoeL} />
-            </div>
-            <div className={s.legR}>
-              <span className={s.shoeR} />
-            </div>
-          </div>
-        </div>
+        {/* SVG Pixel Art Sprite */}
+        <PixelMusito pose={pose} outfit={outfit} facing={facing} isRunning={isRunning} size={36} />
 
         {/* Dust particles when running */}
         {isRunning && <div className={s.dustParticles}><span /><span /><span /></div>}

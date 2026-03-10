@@ -261,7 +261,7 @@ export function MusitoProvider({ children }) {
   });
   const [userName, setUserName] = useState(() => localStorage.getItem(USERNAME_KEY) || '');
   // Musito position on screen (follows scroll + drag)
-  const [musitoX, setMusitoX] = useState(80); // % from left
+  const [musitoX, setMusitoX] = useState(88); // % from left — stays near right edge
   const [facing, setFacing] = useState('left'); // left or right
   const [isRunning, setIsRunning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -351,28 +351,25 @@ export function MusitoProvider({ children }) {
         }
       }
 
-      // Normal scroll: Musito runs to follow
-      if (absDelta > 15 && poseRef.current !== 'dizzy' && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
-        // Move horizontally based on scroll direction
+      // Normal scroll: Musito shuffles subtly at the edge
+      if (absDelta > 20 && poseRef.current !== 'dizzy' && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
         const scrollDown = delta > 0;
-        setFacing(scrollDown ? 'right' : 'left');
+        setFacing(scrollDown ? 'left' : 'right');
         setIsRunning(true);
 
-        // Move Musito across the screen as user scrolls
+        // Small shuffle within edge zone (82-94%)
         setMusitoX((prev) => {
-          const step = scrollDown ? -3 : 3;
+          const step = scrollDown ? 1.5 : -1.5;
           const next = prev + step;
-          // Bounce between 10% and 90%
-          if (next <= 10) return 10;
-          if (next >= 90) return 90;
+          if (next < 82) return 82;
+          if (next > 94) return 94;
           return next;
         });
 
-        // Stop running after scroll stops
         clearTimeout(runStopTimer.current);
         runStopTimer.current = setTimeout(() => {
           setIsRunning(false);
-        }, 300);
+        }, 400);
       }
 
       // Reset rapid scroll count
@@ -474,17 +471,22 @@ export function MusitoProvider({ children }) {
       sfxThrow();
 
       // Animate the throw
-      const targetX = velocity > 0 ? Math.min(95, musitoX + 40) : Math.max(5, musitoX - 40);
+      const targetX = velocity > 0 ? Math.min(94, musitoX + 30) : Math.max(6, musitoX - 30);
       setMusitoX(targetX);
 
       const t = setTimeout(() => {
         setIsThrown(false);
         setPose('idle');
         setMessage('Eso dolio... pero aca sigo!');
+        // Drift back to right edge
+        setMusitoX(88);
         const t2 = setTimeout(() => setBubbleVisible(false), 2500);
         timers.current.push(t2);
       }, 1200);
       timers.current.push(t);
+    } else {
+      // Gentle release — snap back to edge zone
+      setMusitoX(88);
     }
   }, [isDragging, musitoX]);
 
@@ -605,6 +607,23 @@ export function MusitoProvider({ children }) {
     else localStorage.removeItem(USERNAME_KEY);
   }, []);
 
+  // ── Map province click reaction (global Musito responds) ──
+  const onMapProvinceClick = useCallback((provName) => {
+    const msgs = [
+      `${provName}! Gran zona de vinos!`,
+      `Vamos a explorar ${provName}!`,
+      `Los vinos de ${provName} son increibles!`,
+      `${provName}... ya quiero probar todo!`,
+    ];
+    setMessage(msgs[Math.floor(Math.random() * msgs.length)]);
+    setBubbleVisible(true);
+    setPose('walk');
+    sfxBubble();
+    const t1 = setTimeout(() => setPose('idle'), 800);
+    const t2 = setTimeout(() => setBubbleVisible(false), 3500);
+    timers.current.push(t1, t2);
+  }, []);
+
   // ── Contextual quick suggestions based on section ──
   const quickSuggestions = SECTION_SUGGESTIONS[section] || QUICK_SUGGESTIONS_DEFAULT;
 
@@ -627,7 +646,7 @@ export function MusitoProvider({ children }) {
       musitoX, facing, isRunning, isDragging, isThrown, throwDir,
       dismiss, reactivate, setMessage, setBubbleVisible, setPose,
       handleMusitoClick, toggleQuickMenu, setShowQuickMenu,
-      updateLevel, updateUserName,
+      updateLevel, updateUserName, onMapProvinceClick,
       startDrag, onDrag, endDrag,
     }}>
       {children}

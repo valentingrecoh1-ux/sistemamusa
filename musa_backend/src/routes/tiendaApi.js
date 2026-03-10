@@ -916,7 +916,7 @@ IMPORTANT RULES:
     });
 
     return {
-      cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido, estadoPerfil: cliente.estadoPerfil || "aprobado" },
+      cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido, estadoPerfil: cliente.estadoPerfil || "aprobado", tokenAcceso: cliente.tokenAcceso },
       metricas: { totalGastado, cantCompras, vinosUnicos },
       nivel, nivelNum,
       preferencias: {
@@ -934,16 +934,12 @@ IMPORTANT RULES:
   // POST /api/tienda/perfil/registrar - Self-registration
   router.post("/perfil/registrar", async (req, res) => {
     try {
-      const { nombre, apellido, dni, email, whatsapp } = req.body;
+      const { nombre, apellido, dni, whatsapp } = req.body;
       if (!nombre || !nombre.trim()) return res.status(400).json({ error: "El nombre es obligatorio" });
-      if (!dni && !email) return res.status(400).json({ error: "Ingresa tu DNI o email" });
+      if (!dni || !dni.trim()) return res.status(400).json({ error: "Ingresa tu DNI" });
 
-      // Check if already exists
-      const orQuery = [];
-      if (dni) orQuery.push({ dni: dni.trim() });
-      if (email) orQuery.push({ email: new RegExp(`^${email.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") });
-
-      const existente = await Cliente.findOne({ $or: orQuery }).lean();
+      // Check if already exists by DNI
+      const existente = await Cliente.findOne({ dni: dni.trim() }).lean();
       if (existente) {
         // If already registered, return their token so they can access their profile
         if (existente.tokenAcceso) {
@@ -961,8 +957,7 @@ IMPORTANT RULES:
       const nuevoCliente = new Cliente({
         nombre: nombre.trim(),
         apellido: apellido?.trim() || "",
-        dni: dni?.trim() || "",
-        email: email?.trim() || "",
+        dni: dni.trim(),
         whatsapp: whatsapp?.trim() || "",
         estadoPerfil: "aprobado",
         autoRegistro: true,
@@ -1012,6 +1007,61 @@ IMPORTANT RULES:
     } catch (err) {
       console.error("Error buscar perfil:", err.message);
       res.status(500).json({ error: "Error al buscar perfil" });
+    }
+  });
+
+  // POST /api/tienda/perfil/login-dni - Login or register by DNI
+  router.post("/perfil/login-dni", async (req, res) => {
+    try {
+      const { dni } = req.body;
+      if (!dni || dni.trim().length < 3) return res.status(400).json({ error: "Ingresa tu DNI" });
+
+      const cliente = await Cliente.findOne({ dni: dni.trim() });
+      if (cliente) {
+        // Existing client - ensure they have a token
+        if (!cliente.tokenAcceso) {
+          const crypto = require("crypto");
+          cliente.tokenAcceso = crypto.randomBytes(16).toString("hex");
+          await cliente.save();
+        }
+        return res.json({
+          ok: true,
+          yaExiste: true,
+          token: cliente.tokenAcceso,
+          cliente: {
+            nombre: cliente.nombre || "",
+            apellido: cliente.apellido || "",
+            whatsapp: cliente.whatsapp || "",
+            dni: cliente.dni,
+          },
+        });
+      }
+
+      // Not found - client needs to register
+      return res.json({ ok: true, yaExiste: false });
+    } catch (err) {
+      console.error("Error login-dni:", err.message);
+      res.status(500).json({ error: "Error al buscar cliente" });
+    }
+  });
+
+  // PUT /api/tienda/perfil/:token/datos - Update client profile data
+  router.put("/perfil/:token/datos", async (req, res) => {
+    try {
+      const cliente = await Cliente.findOne({ tokenAcceso: req.params.token });
+      if (!cliente) return res.status(404).json({ error: "Perfil no encontrado" });
+
+      const { nombre, apellido, whatsapp } = req.body;
+      if (nombre && nombre.trim()) cliente.nombre = nombre.trim();
+      if (apellido !== undefined) cliente.apellido = apellido.trim();
+      if (whatsapp !== undefined) cliente.whatsapp = whatsapp.trim();
+      await cliente.save();
+      io.emit("cambios-clientes");
+
+      res.json({ ok: true, mensaje: "Datos actualizados" });
+    } catch (err) {
+      console.error("Error actualizar datos:", err.message);
+      res.status(500).json({ error: "Error al actualizar datos" });
     }
   });
 

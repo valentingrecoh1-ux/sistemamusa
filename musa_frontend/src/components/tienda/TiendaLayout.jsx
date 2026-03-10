@@ -123,7 +123,7 @@ export default function TiendaLayout() {
           <div className={s.navRight}>
             {canShowInstall && (
               <button className={s.installBtn} onClick={handleInstallClick} title="Instalar app">
-                <i className="bi bi-download" />
+                <i className="bi bi-phone" />
               </button>
             )}
             <Link to={tiendaPath('/carrito')} className={s.cartBtn}>

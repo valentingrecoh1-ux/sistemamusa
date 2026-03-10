@@ -633,6 +633,39 @@
   gap: 4px;
 }
 
+/* ── Coleccion sub-tabs ── */
+.colSubTabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.colSubTab {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid var(--tienda-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tienda-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.colSubTab:hover {
+  background: var(--tienda-surface);
+}
+
+.colSubTabActive {
+  background: #7c3aed;
+  color: #fff;
+  border-color: #7c3aed;
+}
+
 /* ── Coleccion ── */
 .coleccionHeader {
   display: flex;

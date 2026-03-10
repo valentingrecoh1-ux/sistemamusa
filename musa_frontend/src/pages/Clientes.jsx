@@ -40,6 +40,7 @@ export default function Clientes({ usuario }) {
   const [totalPages, setTotalPages] = useState(1);
   const [perfil, setPerfil] = useState(null);
   const [perfilTab, setPerfilTab] = useState('resumen');
+  const [colTab, setColTab] = useState('cepas');
   const [tagInput, setTagInput] = useState('');
   const [showMoreFields, setShowMoreFields] = useState(false);
   const [vinoDetalle, setVinoDetalle] = useState(null);
@@ -500,33 +501,86 @@ export default function Clientes({ usuario }) {
                 </div>
               )}
 
-              {/* Tab: Coleccion de cepas */}
+              {/* Tab: Coleccion */}
               {perfilTab === 'coleccion' && (
                 <div className={s.tabContent}>
-                  <div className={s.coleccionHeader}>
-                    <h4>Coleccion de Cepas</h4>
-                    <span className={s.coleccionProgress}>
-                      {perfil.coleccionCepas?.filter((c) => c.probada).length || 0} / {perfil.coleccionCepas?.length || 0} probadas
-                    </span>
-                  </div>
-                  <div className={s.cepaGrid}>
-                    {(perfil.coleccionCepas || []).map((c) => (
-                      <div key={c.cepa} className={`${s.cepaCard} ${c.probada ? s.cepaProbada : s.cepaNoProbada}`}>
-                        <div className={s.cepaIcon}>
-                          <i className={`bi ${c.probada ? 'bi-check-circle-fill' : 'bi-circle'}`} />
-                        </div>
-                        <div className={s.cepaInfo}>
-                          <span className={s.cepaNombre}>{c.cepa}</span>
-                          <span className={s.cepaCount}>
-                            {c.probada ? `${c.vinosProbados} probado${c.vinosProbados !== 1 ? 's' : ''}` : `${c.vinosDisponibles} disponible${c.vinosDisponibles !== 1 ? 's' : ''}`}
-                          </span>
-                        </div>
-                      </div>
+                  <div className={s.colSubTabs}>
+                    {[
+                      { key: 'cepas', label: 'Cepas', icon: 'bi-grid-3x3' },
+                      { key: 'bodegas', label: 'Bodegas', icon: 'bi-building' },
+                      { key: 'regiones', label: 'Regiones', icon: 'bi-geo-alt' },
+                    ].map((t) => (
+                      <button key={t.key} className={`${s.colSubTab} ${colTab === t.key ? s.colSubTabActive : ''}`} onClick={() => setColTab(t.key)}>
+                        <i className={`bi ${t.icon}`} /> {t.label}
+                      </button>
                     ))}
                   </div>
-                  {(perfil.coleccionCepas || []).length === 0 && (
-                    <div className={s.emptyDetalle}>No hay cepas en el catalogo aun.</div>
-                  )}
+
+                  {colTab === 'cepas' && (<>
+                    <div className={s.coleccionHeader}>
+                      <h4>Coleccion de Cepas</h4>
+                      <span className={s.coleccionProgress}>
+                        {perfil.coleccionCepas?.filter((c) => c.probada).length || 0} / {perfil.coleccionCepas?.length || 0} probadas
+                      </span>
+                    </div>
+                    <div className={s.cepaGrid}>
+                      {(perfil.coleccionCepas || []).map((c) => (
+                        <div key={c.cepa} className={`${s.cepaCard} ${c.probada ? s.cepaProbada : s.cepaNoProbada}`}>
+                          <div className={s.cepaIcon}>
+                            <i className={`bi ${c.probada ? 'bi-check-circle-fill' : 'bi-circle'}`} />
+                          </div>
+                          <div className={s.cepaInfo}>
+                            <span className={s.cepaNombre}>{c.cepa}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {(perfil.coleccionCepas || []).length === 0 && <div className={s.emptyDetalle}>No hay cepas en el catalogo aun.</div>}
+                  </>)}
+
+                  {colTab === 'bodegas' && (<>
+                    <div className={s.coleccionHeader}>
+                      <h4>Coleccion de Bodegas</h4>
+                      <span className={s.coleccionProgress}>
+                        {perfil.coleccionBodegas?.filter((b) => b.probada).length || 0} / {perfil.coleccionBodegas?.length || 0} probadas
+                      </span>
+                    </div>
+                    <div className={s.cepaGrid}>
+                      {(perfil.coleccionBodegas || []).map((b) => (
+                        <div key={b.bodega} className={`${s.cepaCard} ${b.probada ? s.cepaProbada : s.cepaNoProbada}`}>
+                          <div className={s.cepaIcon}>
+                            <i className={`bi ${b.probada ? 'bi-check-circle-fill' : 'bi-circle'}`} />
+                          </div>
+                          <div className={s.cepaInfo}>
+                            <span className={s.cepaNombre}>{b.bodega}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {(perfil.coleccionBodegas || []).length === 0 && <div className={s.emptyDetalle}>No hay bodegas en el catalogo aun.</div>}
+                  </>)}
+
+                  {colTab === 'regiones' && (<>
+                    <div className={s.coleccionHeader}>
+                      <h4>Coleccion de Regiones</h4>
+                      <span className={s.coleccionProgress}>
+                        {perfil.coleccionRegiones?.filter((r) => r.probada).length || 0} / {perfil.coleccionRegiones?.length || 0} probadas
+                      </span>
+                    </div>
+                    <div className={s.cepaGrid}>
+                      {(perfil.coleccionRegiones || []).map((r) => (
+                        <div key={r.region} className={`${s.cepaCard} ${r.probada ? s.cepaProbada : s.cepaNoProbada}`}>
+                          <div className={s.cepaIcon}>
+                            <i className={`bi ${r.probada ? 'bi-check-circle-fill' : 'bi-circle'}`} />
+                          </div>
+                          <div className={s.cepaInfo}>
+                            <span className={s.cepaNombre}>{r.region}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {(perfil.coleccionRegiones || []).length === 0 && <div className={s.emptyDetalle}>No hay regiones en el catalogo aun.</div>}
+                  </>)}
                 </div>
               )}
 

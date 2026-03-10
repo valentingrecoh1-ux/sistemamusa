@@ -883,7 +883,7 @@
 /* ── Map Pins ── */
 .mapPin {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -891,19 +891,20 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
   z-index: 2;
   transition: transform 0.2s;
 }
 
 .mapPin:hover {
-  transform: translate(-50%, -50%) scale(1.1);
+  transform: translateX(-50%) scale(1.1);
   z-index: 3;
 }
 
 .mapPinDot {
   width: 28px;
   height: 28px;
+  margin-top: -14px;
   border-radius: 50%;
   display: flex;
   align-items: center;

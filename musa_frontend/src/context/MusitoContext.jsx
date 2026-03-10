@@ -217,6 +217,7 @@ export function MusitoProvider({ children }) {
   }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Easter egg: rapid scroll = dizzy ──
+  const dizzyTimer = useRef(null);
   useEffect(() => {
     if (dismissed) return;
     const handleScroll = () => {
@@ -228,19 +229,24 @@ export function MusitoProvider({ children }) {
           setPose('dizzy');
           setMessage('Uy... para un poco que me mareo!');
           setBubbleVisible(true);
-          clearTimeout(scrollTimer.current);
-          scrollTimer.current = setTimeout(() => {
+          rapidScrollCount.current = 0;
+          clearTimeout(dizzyTimer.current);
+          dizzyTimer.current = setTimeout(() => {
             setPose('idle');
             setBubbleVisible(false);
-            rapidScrollCount.current = 0;
           }, 3000);
+          return; // don't reset scroll count while dizzy
         }
       }
+      // Reset rapid scroll count if no rapid scrolls for 1s
       clearTimeout(scrollTimer.current);
       scrollTimer.current = setTimeout(() => { rapidScrollCount.current = 0; }, 1000);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(dizzyTimer.current);
+    };
   }, [dismissed, pose]);
 
   // ── Easter egg: idle too long = sleep ──
@@ -276,21 +282,24 @@ export function MusitoProvider({ children }) {
   }, [dismissed, pose]);
 
   // ── Easter egg: multiple clicks = dance ──
+  const clickResetTimer = useRef(null);
   const handleMusitoClick = useCallback(() => {
-    const newCount = clickCount + 1;
-    setClickCount(newCount);
-    if (newCount >= 5) {
-      setPose('dance');
-      setMessage('Dale que suena el ritmo!');
-      setBubbleVisible(true);
-      setClickCount(0);
-      const t = setTimeout(() => { setPose('idle'); setBubbleVisible(false); }, 4000);
-      timers.current.push(t);
-    }
-    // Reset click count after 2 seconds
-    const t = setTimeout(() => setClickCount(0), 2000);
-    timers.current.push(t);
-  }, [clickCount]);
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount >= 5) {
+        setPose('dance');
+        setMessage('Dale que suena el ritmo!');
+        setBubbleVisible(true);
+        const t = setTimeout(() => { setPose('idle'); setBubbleVisible(false); }, 4000);
+        timers.current.push(t);
+        return 0;
+      }
+      // Reset click count after 2 seconds of no clicks
+      clearTimeout(clickResetTimer.current);
+      clickResetTimer.current = setTimeout(() => setClickCount(0), 2000);
+      return newCount;
+    });
+  }, []);
 
   // ── Toggle quick sommelier menu ──
   const toggleQuickMenu = useCallback(() => {

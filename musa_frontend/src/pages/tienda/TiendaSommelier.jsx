@@ -20,22 +20,21 @@ export default function TiendaSommelier() {
   const chatEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
-  const autoSentRef = useRef(false);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   // Auto-send query from Musito quick menu (?q=...)
+  const lastAutoQuery = useRef('');
   useEffect(() => {
     const q = searchParams.get('q');
-    if (q && !autoSentRef.current && !loading) {
-      autoSentRef.current = true;
-      // Small delay to let component mount
-      const t = setTimeout(() => handleSend(q), 500);
+    if (q && q !== lastAutoQuery.current && !loading) {
+      lastAutoQuery.current = q;
+      const t = setTimeout(() => handleSend(q), 300);
       return () => clearTimeout(t);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // MediaRecorder + Whisper API
   const startRecording = async () => {

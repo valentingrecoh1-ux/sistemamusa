@@ -612,6 +612,9 @@
   transition: opacity 0.2s;
 }
 .container:hover .actionBtns { opacity: 1; }
+@media (hover: none) {
+  .actionBtns { opacity: 0.7; }
+}
 
 .actionBtn, .dismissBtn {
   width: 20px;

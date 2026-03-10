@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMusito } from '../../context/MusitoContext';
 import { tiendaPath } from '../../tiendaConfig';
@@ -37,8 +37,23 @@ export default function MusitoAssistant() {
   const poseClass = s[`pose_${pose}`] || '';
   const accessoryClass = outfit.accessory ? s[`acc_${outfit.accessory}`] : '';
 
-  const handleCharClick = () => {
-    handleMusitoClick();
+  // Short click = easter egg count, long press = minimize
+  const pressTimer = useRef(null);
+  const wasLongPress = useRef(false);
+
+  const handlePointerDown = () => {
+    wasLongPress.current = false;
+    pressTimer.current = setTimeout(() => {
+      wasLongPress.current = true;
+      setMinimized(true);
+    }, 600);
+  };
+
+  const handlePointerUp = () => {
+    clearTimeout(pressTimer.current);
+    if (!wasLongPress.current) {
+      handleMusitoClick();
+    }
   };
 
   const handleQuickSuggestion = (query) => {
@@ -72,7 +87,13 @@ export default function MusitoAssistant() {
       )}
 
       {/* Character */}
-      <div className={s.character} onClick={handleCharClick} title="Click para interactuar">
+      <div
+        className={s.character}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={() => clearTimeout(pressTimer.current)}
+        title="Click para interactuar, manten presionado para minimizar"
+      >
         {/* Pose-specific overlays */}
         {pose === 'moto' && <div className={s.motoOverlay} />}
         {pose === 'paquete' && <div className={s.paqueteOverlay} />}

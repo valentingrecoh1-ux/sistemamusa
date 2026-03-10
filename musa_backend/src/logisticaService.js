@@ -82,20 +82,30 @@ async function shipnowCrearEnvio(token, { referencia, destino, items, opcionEleg
 // ── Moova ──
 const MOOVA_BASE = "https://api.moova.io/b2b";
 
+function parseAddress(obj) {
+  // Si tiene calle y numero separados, usar esos
+  if (obj.calle) return { street: obj.calle, number: obj.numero || "" };
+  // Sino parsear de direccion completa
+  const dir = obj.direccion || "";
+  return { street: dir.replace(/\s+\d.*$/, "") || dir, number: dir.match(/\d+/)?.[0] || "" };
+}
+
 async function moovaCotizar(appId, apiKey, { origen, destino }) {
+  const fromAddr = parseAddress(origen);
+  const toAddr = parseAddress(destino);
   const body = {
     from: {
-      street: origen.direccion?.split(/\s+\d/)?.[0] || origen.direccion,
-      number: origen.direccion?.match(/\d+/)?.[0] || "",
-      city: origen.ciudad || "CABA",
+      street: fromAddr.street,
+      number: fromAddr.number,
+      city: origen.ciudad || origen.localidad || "CABA",
       state: origen.provincia || "CABA",
       postalCode: origen.codigoPostal || "",
       country: "AR",
     },
     to: {
-      street: destino.direccion?.split(/\s+\d/)?.[0] || destino.direccion,
-      number: destino.direccion?.match(/\d+/)?.[0] || "",
-      city: destino.ciudad || "CABA",
+      street: toAddr.street,
+      number: toAddr.number,
+      city: destino.ciudad || destino.localidad || "CABA",
       state: destino.provincia || "CABA",
       postalCode: destino.codigoPostal || "",
       country: "AR",
@@ -131,15 +141,18 @@ async function moovaCotizar(appId, apiKey, { origen, destino }) {
 }
 
 async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referencia }) {
+  const fromAddr = parseAddress(origen);
+  const toAddr = parseAddress(destino);
   const body = {
     scheduledDate: null,
     currency: "ARS",
     type: "regular",
     flow: "manual",
     from: {
-      street: origen.direccion?.split(/\s+\d/)?.[0] || origen.direccion,
-      number: origen.direccion?.match(/\d+/)?.[0] || "",
-      city: origen.ciudad || "CABA",
+      street: fromAddr.street,
+      number: fromAddr.number,
+      floor: origen.pisoDepto || "",
+      city: origen.ciudad || origen.localidad || "CABA",
       state: origen.provincia || "CABA",
       postalCode: origen.codigoPostal || "",
       country: "AR",
@@ -149,9 +162,10 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
       },
     },
     to: {
-      street: destino.direccion?.split(/\s+\d/)?.[0] || destino.direccion,
-      number: destino.direccion?.match(/\d+/)?.[0] || "",
-      city: destino.ciudad || "CABA",
+      street: toAddr.street,
+      number: toAddr.number,
+      floor: destino.pisoDepto || "",
+      city: destino.ciudad || destino.localidad || "CABA",
       state: destino.provincia || "CABA",
       postalCode: destino.codigoPostal || "",
       country: "AR",

@@ -176,6 +176,9 @@ export default function WebPedidos() {
                   <div><label>Email</label><span>{selected.cliente?.email}</span></div>
                   <div><label>Telefono</label><span>{selected.cliente?.telefono}</span></div>
                   {selected.cliente?.direccion && <div><label>Direccion</label><span>{selected.cliente.direccion}</span></div>}
+                  {selected.cliente?.pisoDepto && <div><label>Piso/Depto</label><span>{selected.cliente.pisoDepto}</span></div>}
+                  {selected.cliente?.localidad && <div><label>Localidad</label><span>{selected.cliente.localidad}</span></div>}
+                  {selected.cliente?.codigoPostal && <div><label>CP</label><span>{selected.cliente.codigoPostal}</span></div>}
                 </div>
                 {selected.cliente?.telefono && (
                   <a

@@ -41,7 +41,7 @@ export default function TiendaPerfil() {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [tab, setTab] = useState('resumen');
+  const [tab, setTab] = useState('coleccion');
   const [colTab, setColTab] = useState('cepas');
   const [busqueda, setBusqueda] = useState('');
   const [mode, setMode] = useState(token ? 'token' : 'search'); // 'token' or 'search'
@@ -344,9 +344,9 @@ export default function TiendaPerfil() {
           {/* Tabs */}
           <div className={s.tabs}>
             {[
+              { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
               { key: 'resumen', label: 'Logros', icon: 'bi-trophy' },
               { key: 'premios', label: 'Premios', icon: 'bi-gift' },
-              { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
               { key: 'sugerencias', label: 'Comentarios', icon: 'bi-chat-dots' },
             ].map((t) => (
               <button key={t.key} className={`${s.tab} ${tab === t.key ? s.tabActive : ''}`} onClick={() => setTab(t.key)}>

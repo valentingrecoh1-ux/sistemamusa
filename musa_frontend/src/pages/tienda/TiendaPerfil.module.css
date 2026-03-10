@@ -449,11 +449,13 @@
 
 .tab {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 4px;
+  padding: 10px 8px;
+  white-space: nowrap;
   border: none;
   background: none;
   box-shadow: none;
@@ -863,7 +865,8 @@
     padding: 3px;
   }
   .tab {
-    font-size: 12px;
-    padding: 8px 10px;
+    font-size: 11px;
+    padding: 8px 6px;
+    gap: 3px;
   }
 }

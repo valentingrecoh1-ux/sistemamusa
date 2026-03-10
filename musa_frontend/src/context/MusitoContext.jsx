@@ -118,12 +118,23 @@ const SECTION_MESSAGES = {
 // ── Tutorial tips for unvisited sections ──
 const SECTION_TUTORIALS = {
   catalogo: 'Todavia no visitaste el catalogo. Hay mas de 100 vinos esperandote!',
-  sommelier: 'Conoces a nuestro Sommelier IA? Te recomienda vinos con tu voz!',
-  club: 'Sabias que tenemos un Club del Vino? Recibi vinos cada mes!',
-  etiqueta: 'Podes crear etiquetas personalizadas con IA! Ideal para regalos.',
-  eventos: 'Hacemos degustaciones y eventos. Pasa a ver!',
-  perfil: 'Crea tu perfil y lleva un registro de tus vinos favoritos.',
+  sommelier: 'Conoces a nuestro Sommelier IA? Te recomienda vinos con tu voz! Podes hablarle por microfono.',
+  club: 'Sabias que tenemos un Club del Vino? Recibi vinos seleccionados cada mes en tu casa!',
+  etiqueta: 'Podes crear etiquetas personalizadas con IA! Ideal para regalos. Elegi la ocasion y listo.',
+  eventos: 'Hacemos degustaciones y eventos especiales! Reserva tu lugar.',
+  perfil: 'Crea tu perfil para llevar un registro de tus vinos, cepas y regiones exploradas.',
+  carrito: 'Tu carrito esta vacio todavia! Explora el catalogo y agrega vinos que te gusten.',
 };
+
+// ── Feature tips (not section-dependent, shown occasionally) ──
+const FEATURE_TIPS = [
+  { text: 'Podes instalar MUSA como app! Toca el icono del celular arriba a la derecha.', condition: 'pwa' },
+  { text: 'Cada compra te suma puntos para subir de nivel! Mira tu progreso en Mi Perfil.', condition: 'always' },
+  { text: 'Podes buscar vinos por nombre, bodega o cepa desde el catalogo.', condition: 'always' },
+  { text: 'En Mi Perfil tenes un mapa de Argentina con todas las regiones vinicolas que probaste!', condition: 'always' },
+  { text: 'El Sommelier entiende audio! Podes hablarle por microfono.', condition: 'always' },
+  { text: 'Las etiquetas personalizadas se generan con IA. Podes descargarlas o pedir que las impriman!', condition: 'always' },
+];
 
 // ── Cart count messages ──
 function getCartMessage(totalItems) {
@@ -338,18 +349,43 @@ export function MusitoProvider({ children }) {
     }
 
     // Tutorial tip for unvisited sections
-    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((sec) => !visited.includes(sec) && sec !== section);
+    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((sec) => {
+      if (sec === 'carrito' && totalItems > 0) return false; // skip if cart has items
+      return !visited.includes(sec) && sec !== section;
+    });
+    let lastTipDelay = messages.length > 0 ? messages[messages.length - 1].delay + 12000 : 10000;
+
     if (unvisitedSections.length > 0) {
       const randomSection = unvisitedSections[Math.floor(Math.random() * unvisitedSections.length)];
       const tip = SECTION_TUTORIALS[randomSection];
-      const tipDelay = messages.length > 0 ? messages[messages.length - 1].delay + 12000 : 10000;
       const t = setTimeout(() => {
         setMessage(tip);
         setBubbleVisible(true);
         setPose('wave');
         const hideT = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 5000);
         timers.current.push(hideT);
-      }, tipDelay);
+      }, lastTipDelay);
+      timers.current.push(t);
+      lastTipDelay += 8000;
+    }
+
+    // Feature tip (PWA install, general tips)
+    const isMobile = window.innerWidth <= 640;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const pwaInstalled = localStorage.getItem('musa_pwa_installed') === '1';
+    const applicableTips = FEATURE_TIPS.filter((ft) => {
+      if (ft.condition === 'pwa') return isMobile && !isStandalone && !pwaInstalled;
+      return true;
+    });
+    if (applicableTips.length > 0) {
+      const featureTip = applicableTips[Math.floor(Math.random() * applicableTips.length)];
+      const t = setTimeout(() => {
+        setMessage(featureTip.text);
+        setBubbleVisible(true);
+        setPose('wave');
+        const hideT = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 5500);
+        timers.current.push(hideT);
+      }, lastTipDelay);
       timers.current.push(t);
     }
   }, [section, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps

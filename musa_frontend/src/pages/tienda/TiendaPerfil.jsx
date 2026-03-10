@@ -14,6 +14,26 @@ const PREMIO_LABELS = { descuento: 'Descuento', vino_gratis: 'Vino gratis', degu
 
 const PERFIL_TOKEN_KEY = 'musa_perfil_token';
 
+// Format phone: strips non-digits, normalizes to 10-digit AR mobile, displays formatted
+const formatWhatsapp = (raw) => {
+  let d = raw.replace(/\D/g, '');
+  // Remove leading country code 54
+  if (d.startsWith('54')) d = d.slice(2);
+  // Remove leading 0
+  if (d.startsWith('0')) d = d.slice(1);
+  // Remove 15 after area code (2-4 digits)
+  if (d.length >= 6 && d.match(/^\d{2,4}15/)) {
+    const m = d.match(/^(\d{2,4})15(\d+)$/);
+    if (m) d = m[1] + m[2];
+  }
+  // Limit to 10 digits
+  d = d.slice(0, 10);
+  // Display format: 291 431-3657
+  if (d.length > 6) return `${d.slice(0, d.length - 7)} ${d.slice(d.length - 7, d.length - 4)}-${d.slice(d.length - 4)}`;
+  return d;
+};
+const cleanWhatsapp = (raw) => raw.replace(/\D/g, '').replace(/^54/, '').replace(/^0/, '').slice(0, 10);
+
 export default function TiendaPerfil() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
@@ -217,7 +237,7 @@ export default function TiendaPerfil() {
                 </div>
                 <div className={s.regField}>
                   <label>WhatsApp</label>
-                  <input type="text" placeholder="1155667788" value={regForm.whatsapp} onChange={(e) => setRegForm({ ...regForm, whatsapp: e.target.value })} />
+                  <input type="tel" placeholder="291 431-3657" value={formatWhatsapp(regForm.whatsapp)} onChange={(e) => setRegForm({ ...regForm, whatsapp: cleanWhatsapp(e.target.value) })} />
                 </div>
               </div>
               <div className={s.regBtns}>
@@ -258,7 +278,7 @@ export default function TiendaPerfil() {
               </div>
               <div className={s.regField}>
                 <label>WhatsApp</label>
-                <input type="text" placeholder="1155667788" value={completeForm.whatsapp} onChange={(e) => setCompleteForm({ ...completeForm, whatsapp: e.target.value })} />
+                <input type="tel" placeholder="291 431-3657" value={formatWhatsapp(completeForm.whatsapp)} onChange={(e) => setCompleteForm({ ...completeForm, whatsapp: cleanWhatsapp(e.target.value) })} />
               </div>
               <div className={s.regBtns}>
                 <button type="submit" className={s.searchBtn} disabled={completeLoading || !completeForm.nombre.trim()}>

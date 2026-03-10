@@ -41,6 +41,7 @@ const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJS
 const pino = require("pino");
 const QRCode = require("qrcode");
 
+const cron = require("node-cron");
 const AfipService = require("./AfipService");
 const afipService = new AfipService({ CUIT: 20418588897 });
 
@@ -6009,6 +6010,124 @@ const PORT = process.env.PORT || 5000;
     if (r4.modifiedCount) console.log(`Migración PagoMp: ${r4.modifiedCount} rechazados/cancelados → comisiones y retenciones = 0`);
   } catch (err) { console.error("Error migración PagoMp:", err); }
 })();
+
+// ── Sync rendimientos MP (settlement report) ──
+async function syncRendimientosMp(fecha) {
+  // fecha = "YYYY-MM-DD" del día a consultar
+  const token = process.env.MP_ACCESS_TOKEN;
+  if (!token) return;
+
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const baseUrl = "https://api.mercadopago.com/v1/account/settlement_report";
+
+  try {
+    // 1. Generar reporte para el día
+    const beginDate = `${fecha}T00:00:00Z`;
+    const endDate = `${fecha}T23:59:59Z`;
+    const genRes = await fetch(`${baseUrl}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ begin_date: beginDate, end_date: endDate }),
+    });
+    if (!genRes.ok) {
+      const errText = await genRes.text();
+      console.log(`[Rendimientos MP] Error generando reporte para ${fecha}: ${genRes.status} ${errText}`);
+      return;
+    }
+    const genData = await genRes.json();
+    const fileName = genData.file_name;
+    if (!fileName) {
+      console.log(`[Rendimientos MP] No se obtuvo file_name para ${fecha}:`, genData);
+      return;
+    }
+    console.log(`[Rendimientos MP] Reporte solicitado: ${fileName}`);
+
+    // 2. Esperar a que esté listo (poll cada 10s, max 5 min)
+    let csvText = null;
+    for (let i = 0; i < 30; i++) {
+      await new Promise((r) => setTimeout(r, 10000));
+      const dlRes = await fetch(`${baseUrl}/${fileName}`, { headers });
+      if (dlRes.ok) {
+        csvText = await dlRes.text();
+        break;
+      }
+      if (dlRes.status !== 404 && dlRes.status !== 202) {
+        console.log(`[Rendimientos MP] Error descargando ${fileName}: ${dlRes.status}`);
+        return;
+      }
+    }
+    if (!csvText) {
+      console.log(`[Rendimientos MP] Timeout esperando reporte ${fileName}`);
+      return;
+    }
+
+    // 3. Parsear CSV y buscar rendimientos
+    const lines = csvText.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) return;
+    const headerRow = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
+    const colIdx = (name) => headerRow.indexOf(name);
+
+    const iDesc = colIdx("DESCRIPTION");
+    const iCredit = colIdx("NET_CREDIT_AMOUNT");
+    const iDebit = colIdx("NET_DEBIT_AMOUNT");
+    const iDate = colIdx("DATE");
+    const iSourceId = colIdx("SOURCE_ID");
+    const iTxType = colIdx("TRANSACTION_TYPE");
+
+    let rendimientosTotal = 0;
+    let rendimientosCount = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+      // Parseo simple de CSV (los valores de MP no tienen comas internas)
+      const cols = lines[i].split(",").map((c) => c.trim().replace(/"/g, ""));
+      const desc = (cols[iDesc] || "").toLowerCase();
+      const credit = parseFloat(cols[iCredit]) || 0;
+
+      // Detectar rendimientos: pueden venir como "rendimiento", "yield", o similar
+      if (desc.includes("rendimiento") || desc.includes("yield") || desc.includes("interest")) {
+        rendimientosTotal += credit;
+        rendimientosCount++;
+      }
+    }
+
+    if (rendimientosTotal <= 0) {
+      console.log(`[Rendimientos MP] No se encontraron rendimientos para ${fecha}`);
+      return;
+    }
+
+    // 4. Verificar que no exista ya una operación de rendimientos para esta fecha
+    const yaExiste = await Operacion.findOne({
+      fecha,
+      nombre: "Rendimientos MercadoPago",
+      tipoOperacion: "INGRESO",
+    });
+    if (yaExiste) {
+      console.log(`[Rendimientos MP] Ya existe operación de rendimientos para ${fecha} ($${yaExiste.monto})`);
+      return;
+    }
+
+    // 5. Crear operación de ingreso en Caja
+    await Operacion.create({
+      tipoOperacion: "INGRESO",
+      formaPago: "DIGITAL",
+      nombre: "Rendimientos MercadoPago",
+      descripcion: `Rendimientos diarios MP (${rendimientosCount} movimiento${rendimientosCount > 1 ? "s" : ""})`,
+      monto: Math.round(rendimientosTotal * 100) / 100,
+      fecha,
+    });
+    console.log(`[Rendimientos MP] Creada operación: $${rendimientosTotal} para ${fecha}`);
+    io.emit("cambios");
+  } catch (err) {
+    console.error(`[Rendimientos MP] Error sync ${fecha}:`, err.message);
+  }
+}
+
+// Cron: todos los días a las 8:00 AM (Argentina), sync rendimientos del día anterior
+cron.schedule("0 8 * * *", async () => {
+  const ayer = moment().tz("America/Argentina/Buenos_Aires").subtract(1, "day").format("YYYY-MM-DD");
+  console.log(`[Rendimientos MP] Cron ejecutado, syncing ${ayer}`);
+  await syncRendimientosMp(ayer);
+}, { timezone: "America/Argentina/Buenos_Aires" });
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);

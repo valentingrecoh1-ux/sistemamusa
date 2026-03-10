@@ -5694,6 +5694,31 @@ Reglas:
     }
   });
 
+  socket.on("upload-foto-evento-galeria", async (base64, cb) => {
+    try {
+      if (!base64) return cb?.({ error: "Sin imagen" });
+      const url = await uploadBase64(base64, "musa/eventos-galeria");
+      await ConfigTienda.findByIdAndUpdate("main", { $push: { fotosEventos: url } }, { upsert: true });
+      const config = await ConfigTienda.findById("main").lean();
+      cb?.({ ok: true, fotosEventos: config.fotosEventos });
+    } catch (err) {
+      console.error("Error upload-foto-evento-galeria:", err);
+      cb?.({ error: "Error al subir foto" });
+    }
+  });
+
+  socket.on("borrar-foto-evento-galeria", async (url, cb) => {
+    try {
+      await deleteByUrl(url);
+      await ConfigTienda.findByIdAndUpdate("main", { $pull: { fotosEventos: url } });
+      const config = await ConfigTienda.findById("main").lean();
+      cb?.({ ok: true, fotosEventos: config.fotosEventos });
+    } catch (err) {
+      console.error("Error borrar-foto-evento-galeria:", err);
+      cb?.({ error: "Error al borrar foto" });
+    }
+  });
+
   socket.on("request-web-dashboard", async () => {
     try {
       const hoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");

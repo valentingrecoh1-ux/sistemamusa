@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchConfig, fetchEventos } from '../../lib/tiendaApi';
 import s from './TiendaEventos.module.css';
 
@@ -10,6 +10,66 @@ const formatFecha = (f) => {
   if (isNaN(d)) return f;
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 };
+
+// Posiciones predefinidas para las fotos flotantes (distribuidas para no solaparse)
+const FLOAT_POSITIONS = [
+  { left: '5%', top: '8%', rotate: -8, delay: 0, speed: 6 },
+  { left: '60%', top: '5%', rotate: 5, delay: 1.5, speed: 7 },
+  { left: '30%', top: '55%', rotate: -4, delay: 3, speed: 5.5 },
+  { left: '75%', top: '50%', rotate: 7, delay: 0.8, speed: 8 },
+  { left: '10%', top: '40%', rotate: -6, delay: 2.2, speed: 6.5 },
+  { left: '50%', top: '30%', rotate: 3, delay: 4, speed: 7.5 },
+];
+
+function FloatingGallery({ fotos }) {
+  const containerRef = useRef(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const scrollEl = document.querySelector('[class*="tiendaContent"]') || document.querySelector('[class*="content"]') || window;
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewH = window.innerHeight;
+      // Valor de 0 a 1 basado en cuanto se ve la seccion
+      const progress = 1 - (rect.top / viewH);
+      setScrollY(progress);
+    };
+
+    const target = scrollEl === window ? window : scrollEl;
+    target.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => target.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!fotos || fotos.length === 0) return null;
+
+  return (
+    <div className={s.floatingGallery} ref={containerRef}>
+      {fotos.slice(0, 6).map((url, i) => {
+        const pos = FLOAT_POSITIONS[i % FLOAT_POSITIONS.length];
+        const parallaxY = scrollY * (30 + i * 12);
+        const parallaxRotate = pos.rotate + scrollY * (i % 2 === 0 ? 3 : -3);
+
+        return (
+          <div
+            key={i}
+            className={s.floatingPhoto}
+            style={{
+              left: pos.left,
+              top: pos.top,
+              transform: `translateY(${-parallaxY}px) rotate(${parallaxRotate}deg)`,
+              animationDelay: `${pos.delay}s`,
+              animationDuration: `${pos.speed}s`,
+            }}
+          >
+            <img src={url} alt="" draggable={false} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function TiendaEventos() {
   const [config, setConfig] = useState({});
@@ -28,6 +88,8 @@ export default function TiendaEventos() {
     ? `https://wa.me/${config.whatsappNumero.replace(/\D/g, '')}?text=Hola! Quiero reservar para el evento "${evento.nombre}"${evento.fecha ? ` del ${formatFecha(evento.fecha)}` : ''}`
     : null;
 
+  const fotos = config.fotosEventos || [];
+
   return (
     <div className={s.page}>
       {/* Hero */}
@@ -36,6 +98,13 @@ export default function TiendaEventos() {
         <h1 className={s.heroTitle}>Eventos & Degustaciones</h1>
         <p className={s.heroSub}>Vivi experiencias unicas con los mejores vinos</p>
       </section>
+
+      {/* Galeria flotante */}
+      {fotos.length > 0 && (
+        <section className={s.gallerySection}>
+          <FloatingGallery fotos={fotos} />
+        </section>
+      )}
 
       {/* Proximos Eventos */}
       <section className={s.section}>

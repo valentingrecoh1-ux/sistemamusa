@@ -12,6 +12,7 @@ import TiendaSommelier from '../../pages/tienda/TiendaSommelier';
 import TiendaClub from '../../pages/tienda/TiendaClub';
 import TiendaEtiqueta from '../../pages/tienda/TiendaEtiqueta';
 import TiendaPerfil from '../../pages/tienda/TiendaPerfil';
+import TiendaEventos from '../../pages/tienda/TiendaEventos';
 import '../../styles/tienda.css';
 
 const B = TIENDA_BASE; // "" on store domain, "/tienda" on system domain
@@ -30,6 +31,7 @@ export default function TiendaApp() {
           <Route path={`${B}/sommelier`} element={<TiendaSommelier />} />
           <Route path={`${B}/club`} element={<TiendaClub />} />
           <Route path={`${B}/etiqueta`} element={<TiendaEtiqueta />} />
+          <Route path={`${B}/eventos`} element={<TiendaEventos />} />
           <Route path={`${B}/mi-perfil`} element={<TiendaPerfil />} />
           <Route path={`${B}/mi-perfil/:token`} element={<TiendaPerfil />} />
           {/* Redirect legacy /tienda/* paths when on store domain */}

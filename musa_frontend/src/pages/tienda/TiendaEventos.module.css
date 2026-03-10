@@ -1,0 +1,107 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 48px 24px;
+  border-radius: var(--border-radius-lg);
+  background: linear-gradient(135deg, #7c3aed, #a78bfa, #ec4899);
+  color: #fff;
+}
+
+.heroIcon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.heroTitle {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.heroSub {
+  font-size: 1rem;
+  opacity: 0.85;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ── Coming Soon ── */
+.coming {
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+}
+
+.comingIcon {
+  font-size: 3rem;
+  color: var(--primary-light);
+  margin-bottom: 16px;
+}
+
+.comingTitle {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.comingDesc {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 24px;
+  border-radius: var(--border-radius);
+  background: var(--surface-2);
+  min-width: 160px;
+}
+
+.feature i {
+  font-size: 1.5rem;
+  color: var(--primary-light);
+}
+
+.feature span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: 1.5rem;
+  }
+  .features {
+    gap: 12px;
+  }
+  .feature {
+    min-width: 140px;
+    padding: 16px;
+  }
+}

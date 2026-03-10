@@ -104,7 +104,7 @@ export default function TiendaSommelier() {
     <div className={s.sommelier}>
       <div className={s.header}>
         <div className={s.headerIcon}>
-          <i className="bi bi-cup-straw" />
+          <i className="bi bi-chat-dots" />
         </div>
         <div>
           <h1 className={s.title}>Sommelier Virtual</h1>
@@ -124,7 +124,7 @@ export default function TiendaSommelier() {
         {messages.map((msg, i) => (
           <div key={i} className={`${s.message} ${s[msg.role]}`}>
             {msg.role === 'assistant' && (
-              <div className={s.avatar}><i className="bi bi-cup-straw" /></div>
+              <div className={s.avatar}><i className="bi bi-chat-dots" /></div>
             )}
             <div className={s.bubble}>
               <div className={s.bubbleText}>{msg.text}</div>
@@ -152,7 +152,7 @@ export default function TiendaSommelier() {
         ))}
         {loading && (
           <div className={`${s.message} ${s.assistant}`}>
-            <div className={s.avatar}><i className="bi bi-cup-straw" /></div>
+            <div className={s.avatar}><i className="bi bi-chat-dots" /></div>
             <div className={s.bubble}>
               <div className={s.typing}>
                 <span /><span /><span />

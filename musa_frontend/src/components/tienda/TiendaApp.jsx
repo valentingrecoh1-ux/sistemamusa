@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from '../../context/CartContext';
+import { MusitoProvider } from '../../context/MusitoContext';
 import { TIENDA_BASE } from '../../tiendaConfig';
 import TiendaLayout from './TiendaLayout';
 import TiendaHome from '../../pages/tienda/TiendaHome';
@@ -20,6 +21,7 @@ const B = TIENDA_BASE; // "" on store domain, "/tienda" on system domain
 export default function TiendaApp() {
   return (
     <CartProvider>
+      <MusitoProvider>
       <Routes>
         <Route element={<TiendaLayout />}>
           <Route path={`${B}`} element={<TiendaHome />} />
@@ -40,6 +42,7 @@ export default function TiendaApp() {
           {B === '' && <Route path="*" element={<Navigate to="/" replace />} />}
         </Route>
       </Routes>
+      </MusitoProvider>
     </CartProvider>
   );
 }

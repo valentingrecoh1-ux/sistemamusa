@@ -4,6 +4,7 @@ import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import { fetchConfig } from '../../lib/tiendaApi';
 import { tiendaPath, TIENDA_BASE } from '../../tiendaConfig';
+import MusitoAssistant from './MusitoAssistant';
 import logo from '../../assets/musa.jpg';
 import s from './TiendaLayout.module.css';
 
@@ -168,6 +169,9 @@ export default function TiendaLayout() {
           <div className={s.footerCopy}>&copy; {new Date().getFullYear()} MUSA Vinoteca</div>
         </div>
       </footer>
+
+      {/* Musito floating assistant */}
+      <MusitoAssistant />
 
       {config.whatsappNumero && (
         <a

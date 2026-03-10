@@ -87,16 +87,20 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
   // GET /api/tienda/filtros
   router.get("/filtros", async (req, res) => {
     try {
-      const baseQuery = { cantidad: { $gt: 0 }, venta: { $ne: null } };
+      const baseQuery = {
+        cantidad: { $gt: 0 },
+        venta: { $ne: null },
+        $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }],
+      };
       const [bodegas, cepas, origenes] = await Promise.all([
         Product.distinct("bodega", { ...baseQuery, bodega: { $ne: null, $ne: "" } }),
         Product.distinct("cepa", { ...baseQuery, cepa: { $ne: null, $ne: "" } }),
         Product.distinct("origen", { ...baseQuery, origen: { $ne: null, $ne: "" } }),
       ]);
       res.json({
-        bodegas: bodegas.filter(Boolean).sort(),
-        cepas: cepas.filter(Boolean).sort(),
-        origenes: origenes.filter(Boolean).sort(),
+        bodegas: bodegas.filter(Boolean).sort((a, b) => a.localeCompare(b, "es")),
+        cepas: cepas.filter(Boolean).sort((a, b) => a.localeCompare(b, "es")),
+        origenes: origenes.filter(Boolean).sort((a, b) => a.localeCompare(b, "es")),
       });
     } catch (err) {
       res.status(500).json({ error: "Error al obtener filtros" });

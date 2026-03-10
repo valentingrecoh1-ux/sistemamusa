@@ -555,6 +555,32 @@
   text-align: center;
 }
 
+.clienteRegisterBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-top: 1px solid var(--card-border);
+  background: none;
+  color: #7c3aed;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.clienteRegisterBtn:hover {
+  background: rgba(124, 58, 237, 0.06);
+}
+
+.clienteRegisterBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .clienteSelected {
   display: flex;
   align-items: center;

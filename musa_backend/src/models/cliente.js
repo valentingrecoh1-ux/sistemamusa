@@ -3,7 +3,7 @@ const crypto = require("crypto");
 
 const clienteSchema = new mongoose.Schema(
   {
-    nombre: { type: String, required: true },
+    nombre: { type: String, default: "" },
     apellido: { type: String },
     dni: { type: String },
     whatsapp: { type: String },

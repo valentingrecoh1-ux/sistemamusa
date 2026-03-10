@@ -813,6 +813,7 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
   const [resultados, setResultados] = useState([]);
   const [buscando, setBuscando] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [registrando, setRegistrando] = useState(false);
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -836,7 +837,24 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
     return () => socket.off("resultado-buscar-clientes", handler);
   }, []);
 
+  const handleRegistrarDni = () => {
+    const dni = query.trim();
+    if (!dni) return;
+    setRegistrando(true);
+    socket.emit("registrar-cliente-dni", dni, (res) => {
+      setRegistrando(false);
+      if (res?.ok && res.cliente) {
+        setClienteSeleccionado(res.cliente);
+        setQuery("");
+        setShowResults(false);
+      }
+    });
+  };
+
   if (clienteSeleccionado) {
+    const displayName = clienteSeleccionado.nombre
+      ? `${clienteSeleccionado.nombre}${clienteSeleccionado.apellido ? ` ${clienteSeleccionado.apellido}` : ''}`
+      : `Cliente DNI ${clienteSeleccionado.dni}`;
     return (
       <div className={s.choiceSection}>
         <h2 className={s.sectionLabel}>CLIENTE <span className={s.optionalTag}>opcional</span></h2>
@@ -844,7 +862,7 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
           <div className={s.clienteSelectedInfo}>
             <i className="bi bi-person-check" />
             <div>
-              <strong>{clienteSeleccionado.nombre}{clienteSeleccionado.apellido ? ` ${clienteSeleccionado.apellido}` : ''}</strong>
+              <strong>{displayName}</strong>
               {clienteSeleccionado.dni && <span className={s.clienteSelectedMeta}>DNI {clienteSeleccionado.dni}</span>}
             </div>
           </div>
@@ -883,7 +901,7 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
                   setShowResults(false);
                 }}
               >
-                <span className={s.clienteOptName}>{c.nombre}{c.apellido ? ` ${c.apellido}` : ''}</span>
+                <span className={s.clienteOptName}>{c.nombre ? `${c.nombre}${c.apellido ? ` ${c.apellido}` : ''}` : `Cliente DNI ${c.dni}`}</span>
                 <span className={s.clienteOptMeta}>
                   {c.dni && `DNI ${c.dni}`}
                   {c.dni && c.whatsapp && ' · '}
@@ -895,7 +913,15 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
         )}
         {showResults && !buscando && query.trim().length >= 2 && resultados.length === 0 && (
           <div className={s.clienteDropdown}>
-            <div className={s.clienteNoResult}>Sin resultados</div>
+            <div className={s.clienteNoResult}>No se encontro cliente</div>
+            <button
+              className={s.clienteRegisterBtn}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleRegistrarDni}
+              disabled={registrando}
+            >
+              <i className="bi bi-person-plus" /> {registrando ? 'Registrando...' : `Registrar con DNI "${query.trim()}"`}
+            </button>
           </div>
         )}
       </div>

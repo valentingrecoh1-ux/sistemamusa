@@ -5280,6 +5280,27 @@ Reglas:
     }
   });
 
+  // ── Registrar cliente rapido solo con DNI (desde admin carrito) ──
+  socket.on("registrar-cliente-dni", async (dni, callback) => {
+    try {
+      if (!dni || dni.trim().length < 3) return callback?.({ error: "DNI invalido" });
+      const existente = await Cliente.findOne({ dni: dni.trim() }).lean();
+      if (existente) return callback?.({ ok: true, cliente: existente });
+
+      const nuevo = new Cliente({
+        dni: dni.trim(),
+        tags: ["auto-registro"],
+        autoRegistro: true,
+      });
+      await nuevo.save();
+      io.emit("cambios-clientes");
+      callback?.({ ok: true, cliente: nuevo.toObject() });
+    } catch (err) {
+      console.error("Error registrar-cliente-dni:", err);
+      callback?.({ error: "Error al registrar cliente" });
+    }
+  });
+
   // ── Sugerencias de clientes ──
   socket.on("request-sugerencias-clientes", async (filtro) => {
     try {

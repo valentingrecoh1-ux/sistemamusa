@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente } from '../../lib/tiendaApi';
+import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos } from '../../lib/tiendaApi';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaPerfil.module.css';
 
@@ -11,6 +11,8 @@ const NIVEL_PROGRESS = [0, 3, 10, 25, 50, 75];
 const PREMIO_ICONS = { descuento: 'bi-percent', vino_gratis: 'bi-cup-straw', degustacion_gratis: 'bi-people' };
 const PREMIO_COLORS = { descuento: '#3b82f6', vino_gratis: '#8b5cf6', degustacion_gratis: '#ec4899' };
 const PREMIO_LABELS = { descuento: 'Descuento', vino_gratis: 'Vino gratis', degustacion_gratis: 'Degustacion gratis' };
+
+const PERFIL_TOKEN_KEY = 'musa_perfil_token';
 
 export default function TiendaPerfil() {
   const { token } = useParams();
@@ -23,9 +25,14 @@ export default function TiendaPerfil() {
   const [busqueda, setBusqueda] = useState('');
   const [mode, setMode] = useState(token ? 'token' : 'search'); // 'token' or 'search'
   const [showRegister, setShowRegister] = useState(false);
-  const [regForm, setRegForm] = useState({ nombre: '', apellido: '', dni: '', email: '', whatsapp: '' });
+  const [regForm, setRegForm] = useState({ nombre: '', apellido: '', dni: '', whatsapp: '' });
   const [regLoading, setRegLoading] = useState(false);
   const [regMsg, setRegMsg] = useState('');
+
+  // Complete profile form (for clients created with only DNI)
+  const [completeForm, setCompleteForm] = useState({ nombre: '', apellido: '', whatsapp: '' });
+  const [completeLoading, setCompleteLoading] = useState(false);
+  const [completeMsg, setCompleteMsg] = useState('');
 
   // Suggestion form
   const [sugTipo, setSugTipo] = useState('sugerencia');
@@ -33,15 +40,56 @@ export default function TiendaPerfil() {
   const [sugEnviando, setSugEnviando] = useState(false);
   const [sugExito, setSugExito] = useState('');
 
+  // Load profile from URL token or cached token
   useEffect(() => {
-    if (token) {
+    const loadToken = token || localStorage.getItem(PERFIL_TOKEN_KEY);
+    if (loadToken) {
       setLoading(true);
-      fetchPerfilByToken(token)
-        .then((data) => { setPerfil(data); setMode('token'); })
-        .catch((err) => setError(err.message))
+      fetchPerfilByToken(loadToken)
+        .then((data) => {
+          setPerfil(data);
+          setMode('token');
+          localStorage.setItem(PERFIL_TOKEN_KEY, loadToken);
+        })
+        .catch((err) => {
+          setError(err.message);
+          // If cached token is invalid, clear it
+          if (!token) localStorage.removeItem(PERFIL_TOKEN_KEY);
+        })
         .finally(() => setLoading(false));
     }
   }, [token]);
+
+  const handleLogout = () => {
+    localStorage.removeItem(PERFIL_TOKEN_KEY);
+    setPerfil(null);
+    setMode('search');
+    setError('');
+    navigate(tiendaPath('/mi-perfil'));
+  };
+
+  const handleCompleteProfile = async (e) => {
+    e.preventDefault();
+    if (!completeForm.nombre.trim()) return;
+    const tok = perfil?.cliente?.tokenAcceso || localStorage.getItem(PERFIL_TOKEN_KEY);
+    if (!tok) return;
+    setCompleteLoading(true);
+    setCompleteMsg('');
+    try {
+      const res = await actualizarDatos(tok, completeForm);
+      if (res.ok) {
+        // Reload profile
+        const data = await fetchPerfilByToken(tok);
+        setPerfil(data);
+        setCompleteMsg('Datos guardados!');
+      } else {
+        setCompleteMsg(res.error || 'Error al guardar');
+      }
+    } catch {
+      setCompleteMsg('Error al guardar. Intenta de nuevo.');
+    }
+    setCompleteLoading(false);
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -52,6 +100,7 @@ export default function TiendaPerfil() {
       const data = await buscarPerfil(busqueda.trim());
       setPerfil(data);
       setMode('search');
+      if (data.cliente?.tokenAcceso) localStorage.setItem(PERFIL_TOKEN_KEY, data.cliente.tokenAcceso);
     } catch (err) {
       setError(err.message);
       setPerfil(null);
@@ -62,12 +111,13 @@ export default function TiendaPerfil() {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!regForm.nombre.trim()) return;
-    if (!regForm.dni.trim() && !regForm.email.trim()) return;
+    if (!regForm.dni.trim()) return;
     setRegLoading(true);
     setRegMsg('');
     try {
       const res = await registrarCliente(regForm);
       if (res.ok && res.token) {
+        localStorage.setItem(PERFIL_TOKEN_KEY, res.token);
         setRegMsg(res.mensaje);
         setTimeout(() => navigate(tiendaPath(`/mi-perfil/${res.token}`)), 1500);
       } else if (res.error) {
@@ -117,11 +167,11 @@ export default function TiendaPerfil() {
       {!token && !perfil && !showRegister && (
         <section className={s.searchSection}>
           <h2 className={s.searchTitle}>Busca tu perfil</h2>
-          <p className={s.searchDesc}>Ingresa tu DNI o email para ver tu progreso</p>
+          <p className={s.searchDesc}>Ingresa tu DNI para ver tu progreso</p>
           <form onSubmit={handleSearch} className={s.searchForm}>
             <input
               type="text"
-              placeholder="DNI o email..."
+              placeholder="Tu DNI..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               className={s.searchInput}
@@ -166,18 +216,13 @@ export default function TiendaPerfil() {
                   <input type="text" placeholder="12345678" value={regForm.dni} onChange={(e) => setRegForm({ ...regForm, dni: e.target.value })} />
                 </div>
                 <div className={s.regField}>
-                  <label>Email *</label>
-                  <input type="email" placeholder="tu@email.com" value={regForm.email} onChange={(e) => setRegForm({ ...regForm, email: e.target.value })} />
+                  <label>WhatsApp</label>
+                  <input type="text" placeholder="1155667788" value={regForm.whatsapp} onChange={(e) => setRegForm({ ...regForm, whatsapp: e.target.value })} />
                 </div>
               </div>
-              <div className={s.regField}>
-                <label>WhatsApp</label>
-                <input type="text" placeholder="1155667788" value={regForm.whatsapp} onChange={(e) => setRegForm({ ...regForm, whatsapp: e.target.value })} />
-              </div>
-              <p className={s.regHint}>* DNI o email es obligatorio. Tu perfil queda pendiente hasta que te aprobemos en la vinoteca.</p>
               <div className={s.regBtns}>
                 <button type="button" className={s.regBackBtn} onClick={() => setShowRegister(false)}>Volver</button>
-                <button type="submit" className={s.searchBtn} disabled={regLoading || !regForm.nombre.trim() || (!regForm.dni.trim() && !regForm.email.trim())}>
+                <button type="submit" className={s.searchBtn} disabled={regLoading || !regForm.nombre.trim() || !regForm.dni.trim()}>
                   {regLoading ? 'Registrando...' : 'Registrarme'}
                 </button>
               </div>
@@ -188,6 +233,42 @@ export default function TiendaPerfil() {
 
       {loading && !perfil && <div className={s.loading}>Cargando tu perfil...</div>}
       {error && token && <div className={s.errorBox}><i className="bi bi-exclamation-triangle" /> {error}</div>}
+
+      {/* Complete profile form (when client was created with only DNI) */}
+      {perfil && !perfil.cliente?.nombre && (
+        <section className={s.searchSection}>
+          <h2 className={s.searchTitle}>Completa tu perfil</h2>
+          <p className={s.searchDesc}>Ingresa tus datos para acceder a logros y premios</p>
+          {completeMsg ? (
+            <div className={s.regMsg}>
+              <i className="bi bi-check-circle-fill" style={{ fontSize: 32, color: '#34d399' }} />
+              <p>{completeMsg}</p>
+            </div>
+          ) : (
+            <form onSubmit={handleCompleteProfile} className={s.regForm}>
+              <div className={s.regRow}>
+                <div className={s.regField}>
+                  <label>Nombre *</label>
+                  <input type="text" placeholder="Tu nombre" value={completeForm.nombre} onChange={(e) => setCompleteForm({ ...completeForm, nombre: e.target.value })} />
+                </div>
+                <div className={s.regField}>
+                  <label>Apellido</label>
+                  <input type="text" placeholder="Tu apellido" value={completeForm.apellido} onChange={(e) => setCompleteForm({ ...completeForm, apellido: e.target.value })} />
+                </div>
+              </div>
+              <div className={s.regField}>
+                <label>WhatsApp</label>
+                <input type="text" placeholder="1155667788" value={completeForm.whatsapp} onChange={(e) => setCompleteForm({ ...completeForm, whatsapp: e.target.value })} />
+              </div>
+              <div className={s.regBtns}>
+                <button type="submit" className={s.searchBtn} disabled={completeLoading || !completeForm.nombre.trim()}>
+                  {completeLoading ? 'Guardando...' : 'Guardar datos'}
+                </button>
+              </div>
+            </form>
+          )}
+        </section>
+      )}
 
       {/* Profile content */}
       {perfil && (
@@ -200,7 +281,12 @@ export default function TiendaPerfil() {
               <span className={s.nivelNombre}>{perfil.nivel}</span>
             </div>
             <div className={s.headerInfo}>
-              <h2 className={s.clienteName}>{perfil.cliente?.nombre}{perfil.cliente?.apellido ? ` ${perfil.cliente.apellido}` : ''}</h2>
+              <div className={s.headerTop}>
+                <h2 className={s.clienteName}>{perfil.cliente?.nombre}{perfil.cliente?.apellido ? ` ${perfil.cliente.apellido}` : ''}</h2>
+                <button className={s.logoutBtn} onClick={handleLogout} title="Cerrar sesion">
+                  <i className="bi bi-box-arrow-right" /> Salir
+                </button>
+              </div>
               <div className={s.kpis}>
                 <div className={s.kpi}><span className={s.kpiVal}>{perfil.metricas?.cantCompras || 0}</span><span className={s.kpiLabel}>Compras</span></div>
                 <div className={s.kpi}><span className={s.kpiVal}>{perfil.metricas?.vinosUnicos || 0}</span><span className={s.kpiLabel}>Vinos</span></div>

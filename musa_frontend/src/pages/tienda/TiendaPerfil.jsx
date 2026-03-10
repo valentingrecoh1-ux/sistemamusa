@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos } from '../../lib/tiendaApi';
+import { useMusito } from '../../context/MusitoContext';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaPerfil.module.css';
 
@@ -40,6 +41,41 @@ const WINE_PROVINCES = [
 
 // Real Argentina SVG outline (Robinson projection, from world-map-country-shapes)
 const ARGENTINA_PATH = 'M669.8 920.7l.9-3-7.3-1.5-7.7-3.6-4.3-4.6-3-2.8 5.9 13.5h5l2.9.2 3.3 2.1 4.3-.3zm-50.4-208.1l-7.4-1.5-4 5.7.9 1.6-1.1 6.6-5.6 3.2 1.6 10.6-.9 2 2 2.5-3.2 4-2.6 5.9-.9 5.8 1.7 6.2-2.1 6.5 4.9 10.9 1.6 1.2 1.3 5.9-1.6 6.2 1.4 5.4-2.9 4.3 1.5 5.9 3.3 6.3-2.5 2.4.3 5.7.7 6.4 3.3 7.6-1.6 1.2 3.6 7.1 3.1 2.3-.8 2.6 2.8 1.3 1.3 2.3-1.8 1.1 1.8 3.7 1.1 8.2-.7 5.3 1.8 3.2-.1 3.9-2.7 2.7 3.1 6.6 2.6 2.2 3.1-.4 1.8 4.6 3.5 3.6 12 .8 4.8.9 2.2.4-4.7-3.6-4.1-6.3.9-2.9 3.5-2.5.5-7.2 4.7-3.5-.2-5.6-5.2-1.3-6.4-4.5-.1-4.7 2.9-3.1 4.7-.1.2-3.3-1.2-6.1 2.9-3.9 4.1-1.9-2.5-3.2-2.2 2-4-1.9-2.5-6.2 1.5-1.6 5.6 2.3 5-.9 2.5-2.2-1.8-3.1-.1-4.8-2-3.8 5.8.6 10.2-1.3 6.9-3.4 3.3-8.3-.3-3.2-3.9-2.8-.1-4.5-7.8-5.5-.3-3.3-.4-4.2.9-1.4-1.1-6.3.3-6.5.5-5.1 5.9-8.6 5.3-6.2 3.3-2.6 4.2-3.5-.5-5.1-3.1-3.7-2.6 1.2-.3 5.7-4.3 4.8-4.2 1.1-6.2-1-5.7-1.8 4.2-9.6-1.1-2.8-5.9-2.5-7.2-4.7-4.6-1-11.2-10.4-1-1.3-6.3-.3-1.6 5.1-3.7-4.6z';
+
+// ── Musito: pixel-art character on the wine map ──
+const FEMALE_NAMES = new Set([
+  'maria','ana','laura','lucia','sofia','valentina','camila','paula','carolina','florencia',
+  'julieta','agustina','sol','celeste','milagros','rocio','andrea','gabriela','daniela','natalia',
+  'victoria','martina','catalina','elena','isabel','mariana','fernanda','alejandra','rosa','marta',
+  'julia','romina','silvina','lorena','noelia','yanina','carina','graciela','susana','liliana',
+  'monica','patricia','claudia','veronica','cecilia','marina','eliana','viviana','nora','beatriz',
+  'pilar','ines','luz','abril','emilia','lara','micaela','brenda','aldana','constanza',
+]);
+function guessGender(nombre) {
+  if (!nombre) return 'male';
+  const first = nombre.trim().split(/\s+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (FEMALE_NAMES.has(first)) return 'female';
+  if (first.endsWith('a') && !['nikola','luca','borja','josua'].includes(first)) return 'female';
+  return 'male';
+}
+
+// Decorative elements scattered on the map (positions as % of container)
+const MAP_DECORATIONS = [
+  { type: 'vine', top: 9, left: 38, flip: false },
+  { type: 'grape', top: 14, left: 72 },
+  { type: 'bush', top: 22, left: 55 },
+  { type: 'vine', top: 30, left: 25, flip: true },
+  { type: 'barrel', top: 28, left: 68 },
+  { type: 'grape', top: 38, left: 55 },
+  { type: 'bush', top: 42, left: 62 },
+  { type: 'vine', top: 50, left: 32, flip: false },
+];
+
+// Musito speech bubbles while walking
+const MUSITO_WALK_BUBBLES = [
+  '¡Vamos!', '🍇 ¡Qué lindo viñedo!', '¿Llegamos?', '🍷 ¡Salud!',
+  '¡Qué camino!', '🌿 ¡Qué verde!', '¡A explorar!', '🏔️ ¡Qué vista!',
+];
 
 function getCharacterBubble(perfil) {
   const nivel = perfil.nivelNum || 0;
@@ -131,6 +167,7 @@ export default function TiendaPerfil() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { updateLevel } = useMusito();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -150,6 +187,62 @@ export default function TiendaPerfil() {
 
   // Map interaction
   const [expandedProv, setExpandedProv] = useState(null);
+
+  // Musito state
+  const [musitoPos, setMusitoPos] = useState({ top: 25, left: 38 }); // starts at Mendoza
+  const [musitoTarget, setMusitoTarget] = useState(null);
+  const [musitoRunning, setMusitoRunning] = useState(false);
+  const [musitoFacing, setMusitoFacing] = useState('right');
+  const [musitoBubble, setMusitoBubble] = useState('');
+  const musitoTimer = useRef(null);
+  const bubbleTimer = useRef(null);
+
+  const musitoGender = perfil ? guessGender(perfil.cliente?.nombre) : 'male';
+
+  const moveMusito = useCallback((targetProv) => {
+    if (musitoRunning) return;
+    const prov = WINE_PROVINCES.find((p) => p.id === targetProv);
+    if (!prov) return;
+
+    const targetTop = prov.top;
+    const targetLeft = prov.left;
+    setMusitoFacing(targetLeft >= musitoPos.left ? 'right' : 'left');
+    setMusitoRunning(true);
+    setMusitoTarget({ top: targetTop, left: targetLeft });
+
+    // Show a random bubble while walking
+    const bubble = MUSITO_WALK_BUBBLES[Math.floor(Math.random() * MUSITO_WALK_BUBBLES.length)];
+    setMusitoBubble(bubble);
+    clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = setTimeout(() => setMusitoBubble(''), 2000);
+
+    // After transition ends, update position
+    clearTimeout(musitoTimer.current);
+    musitoTimer.current = setTimeout(() => {
+      setMusitoPos({ top: targetTop, left: targetLeft });
+      setMusitoRunning(false);
+      setMusitoTarget(null);
+    }, 1200); // matches CSS transition duration
+  }, [musitoPos, musitoRunning]);
+
+  // Move Musito when a province is clicked
+  const handleProvClick = useCallback((provId) => {
+    setExpandedProv(expandedProv === provId ? null : provId);
+    moveMusito(provId);
+  }, [expandedProv, moveMusito]);
+
+  // Sync Musito outfit with user level
+  useEffect(() => {
+    if (perfil?.nivelNum != null) updateLevel(perfil.nivelNum);
+  }, [perfil?.nivelNum, updateLevel]);
+
+  // Cleanup timers
+  useEffect(() => {
+    return () => {
+      clearTimeout(musitoTimer.current);
+      clearTimeout(bubbleTimer.current);
+    };
+  }, []);
 
   // Suggestion form
   const [sugTipo, setSugTipo] = useState('sugerencia');
@@ -619,7 +712,7 @@ export default function TiendaPerfil() {
                   </span>
                 </div>
 
-                {/* Argentina Wine Map - SVG with pins */}
+                {/* Argentina Wine Map - SVG with pins + Musito */}
                 <div className={s.wineMap}>
                   <div className={s.mapContainer}>
                     {/* Argentina silhouette */}
@@ -627,13 +720,22 @@ export default function TiendaPerfil() {
                       <path d={ARGENTINA_PATH} className={s.mapOutline} />
                     </svg>
 
+                    {/* Decorative vineyard elements */}
+                    {MAP_DECORATIONS.map((dec, i) => (
+                      <span
+                        key={i}
+                        className={`${s.mapDeco} ${s[`mapDeco_${dec.type}`]} ${dec.flip ? s.mapDecoFlip : ''}`}
+                        style={{ top: `${dec.top}%`, left: `${dec.left}%` }}
+                      />
+                    ))}
+
                     {/* Province pins */}
                     {provincesStatus.map((prov) => (
                       <button
                         key={prov.id}
                         className={`${s.mapPin} ${prov.probada ? s.mapPinProbada : s.mapPinLocked} ${expandedProv === prov.id ? s.mapPinActive : ''}`}
                         style={{ top: `${prov.top}%`, left: `${prov.left}%` }}
-                        onClick={() => setExpandedProv(expandedProv === prov.id ? null : prov.id)}
+                        onClick={() => handleProvClick(prov.id)}
                       >
                         <span className={s.mapPinDot}>
                           {prov.probada ? <i className="bi bi-check" /> : <i className="bi bi-lock-fill" />}
@@ -644,6 +746,26 @@ export default function TiendaPerfil() {
                         )}
                       </button>
                     ))}
+
+                    {/* Musito character */}
+                    <div
+                      className={`${s.musito} ${musitoRunning ? s.musitoRunning : ''} ${musitoFacing === 'left' ? s.musitoLeft : ''} ${musitoGender === 'female' ? s.musitoFemale : ''}`}
+                      style={{
+                        top: `${(musitoTarget || musitoPos).top}%`,
+                        left: `${(musitoTarget || musitoPos).left}%`,
+                      }}
+                    >
+                      {musitoBubble && <span className={s.musitoBubble}>{musitoBubble}</span>}
+                      <div className={s.musitoSprite}>
+                        <div className={s.musitoHead} />
+                        <div className={s.musitoBody} />
+                        <div className={s.musitoLegs}>
+                          <span className={s.musitoLegL} />
+                          <span className={s.musitoLegR} />
+                        </div>
+                      </div>
+                      <span className={s.musitoName}>Musito</span>
+                    </div>
                   </div>
 
                   {/* Expanded province detail */}

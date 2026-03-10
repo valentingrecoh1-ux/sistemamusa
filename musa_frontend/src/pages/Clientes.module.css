@@ -563,6 +563,18 @@
   font-style: italic;
 }
 
+.qrCodeWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  width: fit-content;
+  align-self: center;
+  color: #000;
+}
+
 /* ── Tabs ── */
 .tabs {
   display: flex;

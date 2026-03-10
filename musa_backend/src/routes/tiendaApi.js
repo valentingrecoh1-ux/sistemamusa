@@ -931,6 +931,17 @@ IMPORTANT RULES:
     };
   }
 
+  // Normalize AR phone: strip non-digits, remove 54, leading 0, embedded 15
+  function normalizeWhatsapp(raw) {
+    if (!raw) return "";
+    let d = raw.replace(/\D/g, "");
+    if (d.startsWith("54")) d = d.slice(2);
+    if (d.startsWith("0")) d = d.slice(1);
+    const m15 = d.match(/^(\d{2,4})15(\d+)$/);
+    if (m15) d = m15[1] + m15[2];
+    return d.slice(0, 10);
+  }
+
   // POST /api/tienda/perfil/registrar - Self-registration
   router.post("/perfil/registrar", async (req, res) => {
     try {
@@ -958,7 +969,7 @@ IMPORTANT RULES:
         nombre: nombre.trim(),
         apellido: apellido?.trim() || "",
         dni: dni.trim(),
-        whatsapp: whatsapp?.trim() || "",
+        whatsapp: normalizeWhatsapp(whatsapp),
         estadoPerfil: "aprobado",
         autoRegistro: true,
         tags: ["auto-registro"],
@@ -1054,7 +1065,7 @@ IMPORTANT RULES:
       const { nombre, apellido, whatsapp } = req.body;
       if (nombre && nombre.trim()) cliente.nombre = nombre.trim();
       if (apellido !== undefined) cliente.apellido = apellido.trim();
-      if (whatsapp !== undefined) cliente.whatsapp = whatsapp.trim();
+      if (whatsapp !== undefined) cliente.whatsapp = normalizeWhatsapp(whatsapp);
       await cliente.save();
       io.emit("cambios-clientes");
 

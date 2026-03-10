@@ -161,6 +161,12 @@ function mpRawToDoc(p, ownCollectorId) {
     ret = 0;
   }
 
+  // Rechazados/cancelados/devueltos: no hay comisiones ni retenciones reales
+  if (["rejected", "cancelled", "refunded", "charged_back"].includes(p.status)) {
+    comis = 0;
+    ret = 0;
+  }
+
   return {
     mpId: p.id,
     fecha,
@@ -3511,6 +3517,11 @@ Origen: ${producto.origen || ""}`;
         const bruto = doc.monto;
         doc.retenciones = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
       }
+      // Rechazados/cancelados nunca tienen comisiones ni retenciones
+      if (["rejected", "cancelled", "refunded", "charged_back"].includes(doc.estado)) {
+        doc.comisionMp = 0;
+        doc.retenciones = 0;
+      }
       await doc.save();
       if (typeof callback === "function") callback({ ok: true, tipoMovimiento: nuevoTipo });
       io.emit("cambios-mp");
@@ -5915,6 +5926,12 @@ const PORT = process.env.PORT || 5000;
       );
       if (r3.modifiedCount) console.log(`Migración PagoMp: ${r3.modifiedCount} pagos propios → gasto`);
     }
+    // Fix: rechazados/cancelados no deben tener comisiones ni retenciones
+    const r4 = await PagoMp.updateMany(
+      { estado: { $in: ["rejected", "cancelled", "refunded", "charged_back"] }, $or: [{ comisionMp: { $ne: 0 } }, { retenciones: { $ne: 0 } }] },
+      { $set: { comisionMp: 0, retenciones: 0 } },
+    );
+    if (r4.modifiedCount) console.log(`Migración PagoMp: ${r4.modifiedCount} rechazados/cancelados → comisiones y retenciones = 0`);
   } catch (err) { console.error("Error migración PagoMp:", err); }
 })();
 

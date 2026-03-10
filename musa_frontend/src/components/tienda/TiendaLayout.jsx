@@ -47,6 +47,7 @@ export default function TiendaLayout() {
             <Link to={tiendaPath('/sommelier')} className={`${s.navLink} ${pathname.includes('sommelier') ? s.navActive : ''}`}>Sommelier</Link>
             <Link to={tiendaPath('/club')} className={`${s.navLink} ${pathname.includes('club') ? s.navActive : ''}`}>Club</Link>
             <Link to={tiendaPath('/etiqueta')} className={`${s.navLink} ${pathname.includes('etiqueta') ? s.navActive : ''}`}>Etiquetas</Link>
+            <Link to={tiendaPath('/eventos')} className={`${s.navLink} ${pathname.includes('eventos') ? s.navActive : ''}`}>Eventos</Link>
             <Link to={tiendaPath('/mi-perfil')} className={`${s.navLink} ${pathname.includes('mi-perfil') ? s.navActive : ''}`}>Mi Perfil</Link>
           </div>
 

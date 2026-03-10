@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const moment = require("moment-timezone");
+const multer = require("multer");
+const uploadAudio = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io }) {
   let mpPreference = null;
@@ -436,6 +438,39 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
     } catch (err) {
       console.error("Error sommelier:", err.message);
       res.status(500).json({ error: "Error al procesar tu consulta" });
+    }
+  });
+
+  // POST /api/tienda/transcribir-audio - Whisper STT
+  router.post("/transcribir-audio", uploadAudio.single("audio"), async (req, res) => {
+    try {
+      const key = process.env.OPENAI_API_KEY;
+      if (!key) return res.status(500).json({ error: "API key no configurada" });
+      if (!req.file) return res.status(400).json({ error: "Sin archivo de audio" });
+
+      const FormData = (await import("form-data")).default;
+      const form = new FormData();
+      form.append("file", req.file.buffer, { filename: "audio.webm", contentType: req.file.mimetype });
+      form.append("model", "whisper-1");
+      form.append("language", "es");
+
+      const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, ...form.getHeaders() },
+        body: form,
+      });
+
+      if (!whisperRes.ok) {
+        const err = await whisperRes.text();
+        console.error("Whisper error:", err);
+        return res.status(500).json({ error: "Error al transcribir" });
+      }
+
+      const data = await whisperRes.json();
+      res.json({ texto: data.text || "" });
+    } catch (err) {
+      console.error("Error transcribir-audio:", err.message);
+      res.status(500).json({ error: "Error al transcribir audio" });
     }
   });
 

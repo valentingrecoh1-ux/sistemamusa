@@ -15,49 +15,57 @@ export default function TiendaSommelier() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const chatEndRef = useRef(null);
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Web Speech API setup
+  // MediaRecorder + Whisper API
   const startRecording = async () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      await dialog.alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
-      return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4' });
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType });
+        if (blob.size < 1000) return; // muy corto
+
+        setTranscribing(true);
+        try {
+          const form = new FormData();
+          form.append('audio', blob, 'audio.webm');
+          const res = await fetch(`${IP()}/api/tienda/transcribir-audio`, { method: 'POST', body: form });
+          const data = await res.json();
+          if (data.texto?.trim()) {
+            handleSend(data.texto.trim());
+          }
+        } catch {
+          // silencio
+        } finally {
+          setTranscribing(false);
+        }
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setRecording(true);
+    } catch {
+      await dialog.alert('No se pudo acceder al microfono. Verifica los permisos.');
     }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-AR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-      setRecording(false);
-      // Auto-enviar despues de obtener el texto
-      handleSend(transcript);
-    };
-
-    recognition.onerror = () => {
-      setRecording(false);
-    };
-
-    recognition.onend = () => {
-      setRecording(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setRecording(true);
   };
 
   const stopRecording = () => {
-    recognitionRef.current?.stop();
+    mediaRecorderRef.current?.stop();
     setRecording(false);
   };
 
@@ -177,10 +185,10 @@ export default function TiendaSommelier() {
           <button
             className={`${s.micBtn} ${recording ? s.micRecording : ''}`}
             onClick={recording ? stopRecording : startRecording}
-            disabled={loading}
-            title={recording ? 'Detener grabacion' : 'Hablar'}
+            disabled={loading || transcribing}
+            title={recording ? 'Detener grabacion' : transcribing ? 'Transcribiendo...' : 'Hablar'}
           >
-            <i className={`bi ${recording ? 'bi-stop-fill' : 'bi-mic'}`} />
+            <i className={`bi ${recording ? 'bi-stop-fill' : transcribing ? 'bi-hourglass-split' : 'bi-mic'}`} />
           </button>
           <button className={s.sendBtn} onClick={() => handleSend()} disabled={loading || !input.trim()}>
             <i className="bi bi-send-fill" />

@@ -3,6 +3,7 @@ const router = express.Router();
 const moment = require("moment-timezone");
 const multer = require("multer");
 const uploadAudio = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const { cotizarEnvio, crearEnvioLogistica } = require("../logisticaService");
 
 module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io }) {
   let mpPreference = null;
@@ -116,10 +117,28 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
     }
   });
 
+  // POST /api/tienda/cotizar-envio - Cotizar opciones de envio
+  router.post("/cotizar-envio", async (req, res) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config) return res.status(500).json({ error: "Config no encontrada" });
+
+      const { direccion, codigoPostal, ciudad, provincia } = req.body;
+      if (!direccion && !codigoPostal) return res.status(400).json({ error: "Direccion o codigo postal requerido" });
+
+      const destino = { direccion, codigoPostal, ciudad: ciudad || "CABA", provincia: provincia || "CABA" };
+      const opciones = await cotizarEnvio(config, destino);
+      res.json({ opciones });
+    } catch (err) {
+      console.error("Error cotizar-envio:", err.message);
+      res.status(500).json({ error: "Error al cotizar envio" });
+    }
+  });
+
   // POST /api/tienda/pedido
   router.post("/pedido", async (req, res) => {
     try {
-      const { items, cliente, entrega } = req.body;
+      const { items, cliente, entrega, opcionEnvio } = req.body;
 
       if (!items?.length) return res.status(400).json({ error: "El pedido debe tener al menos un producto" });
       if (!cliente?.nombre || !cliente?.email || !cliente?.telefono) {
@@ -149,11 +168,17 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
 
       const montoSubtotal = itemsDocs.reduce((s, i) => s + i.subtotal, 0);
 
-      // Costo envio
+      // Costo envio - usar opcion elegida o costo fijo
       let costoEnvio = 0;
+      let logisticaProveedor = null;
       if (entrega === "envio") {
-        const config = await ConfigTienda.findById("main").lean();
-        if (config?.envioHabilitado) costoEnvio = config.costoEnvio || 0;
+        if (opcionEnvio?.precio != null) {
+          costoEnvio = opcionEnvio.precio;
+          logisticaProveedor = opcionEnvio.proveedor;
+        } else {
+          const config = await ConfigTienda.findById("main").lean();
+          if (config?.envioHabilitado) costoEnvio = config.costoEnvio || 0;
+        }
       }
 
       const montoTotal = montoSubtotal + costoEnvio;
@@ -165,6 +190,8 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
         montoSubtotal,
         costoEnvio,
         montoTotal,
+        logisticaProveedor: logisticaProveedor || null,
+        opcionEnvio: opcionEnvio || null,
       });
 
       await pedido.save();

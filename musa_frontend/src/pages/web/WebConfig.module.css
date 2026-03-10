@@ -201,12 +201,27 @@
   margin-left: 46px;
 }
 
-/* ── Galeria fotos eventos ── */
+/* ── Shared helpers ── */
 .cardHint {
   font-size: 13px;
   color: var(--text-muted);
   margin: -4px 0 8px;
 }
+
+.subTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 12px 0 6px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--card-border);
+  margin: 16px 0;
+}
+
+/* ── Galeria fotos eventos ── */
 
 .galeriaGrid {
   display: grid;

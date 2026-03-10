@@ -158,6 +158,107 @@
   color: var(--text-primary);
 }
 
+/* ── Cotizar envio ── */
+.cotizarBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  margin-top: 10px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--primary);
+  background: transparent;
+  color: var(--primary-light);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.cotizarBtn:hover { background: rgba(59, 130, 246, 0.1); }
+.cotizarBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.shippingOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.shippingOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.shippingOption input[type="radio"] {
+  accent-color: var(--primary);
+}
+
+.shippingOptionActive {
+  border-color: var(--primary);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.shippingOptionInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shippingOptionTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shippingProvider {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(124, 58, 237, 0.15);
+  color: #a78bfa;
+}
+
+.shippingService {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.shippingDate {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shippingPrice {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.shippingHint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ── Summary ── */
 .summaryCol {
   position: sticky;

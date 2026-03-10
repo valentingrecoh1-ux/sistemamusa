@@ -38,6 +38,11 @@ const pedidoWebSchema = new mongoose.Schema(
     mpPaymentId: { type: Number },
     mpStatus: { type: String },
     clienteId: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente", default: null },
+    // Logistica integrada
+    logisticaProveedor: { type: String, default: null }, // "shipnow", "moova", "fijo"
+    opcionEnvio: { type: mongoose.Schema.Types.Mixed, default: null },
+    logisticaEnvioId: { type: String, default: null },
+    logisticaTracking: { type: String, default: null },
   },
   { timestamps: true }
 );

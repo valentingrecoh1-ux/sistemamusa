@@ -26,6 +26,15 @@ export async function fetchConfig() {
   return res.json();
 }
 
+export async function cotizarEnvio(data) {
+  const res = await fetch(`${BASE()}/cotizar-envio`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
 export async function crearPedido(data) {
   const res = await fetch(`${BASE()}/pedido`, {
     method: 'POST',

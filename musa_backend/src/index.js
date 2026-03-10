@@ -138,7 +138,10 @@ function mpRawToDoc(p, ownCollectorId) {
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();
   let tipo = "cobro";
-  if (desc.startsWith("pago:") || desc.startsWith("pago :") || desc.startsWith("pago de")) {
+  if (desc === "bank transfer" || (p.payment_type_id === "bank_transfer" && bruto > 0 && p.status === "approved")) {
+    // Transferencias bancarias recibidas → cobro (plata que nos transfieren)
+    tipo = "cobro";
+  } else if (desc.startsWith("pago:") || desc.startsWith("pago :") || desc.startsWith("pago de")) {
     // Descripcion "Pago: ...", "Pago de servicio", etc → pagos que hicimos → gasto
     tipo = "gasto";
   } else if (ownCollectorId && p.payer?.id && String(p.payer.id) === String(ownCollectorId)) {
@@ -5969,10 +5972,16 @@ const PORT = process.env.PORT || 5000;
     if (sinPagadorId.deletedCount) console.log(`Migración PagoMp: borrados ${sinPagadorId.deletedCount} pagos sin pagador.id (se re-sincronizarán)`);
     // Reclasificar: payout = cobro (transferencias bancarias recibidas)
     const r1 = await PagoMp.updateMany(
-      { operationType: "payout", tipoMovimiento: "gasto" },
+      { operationType: "payout", tipoMovimiento: "gasto", tipoManual: { $ne: true } },
       { $set: { tipoMovimiento: "cobro" } },
     );
     if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} payout → cobro`);
+    // Reclasificar: Bank Transfer = cobro (transferencias bancarias recibidas)
+    const r1b = await PagoMp.updateMany(
+      { descripcion: "Bank Transfer", tipoMovimiento: "gasto", tipoManual: { $ne: true } },
+      { $set: { tipoMovimiento: "cobro" } },
+    );
+    if (r1b.modifiedCount) console.log(`Migración PagoMp: ${r1b.modifiedCount} Bank Transfer → cobro`);
     // Reclasificar: descripcion "Pago: ..." = gasto
     const r2 = await PagoMp.updateMany(
       { descripcion: { $regex: /^Pago:/i }, tipoMovimiento: { $ne: "gasto" } },

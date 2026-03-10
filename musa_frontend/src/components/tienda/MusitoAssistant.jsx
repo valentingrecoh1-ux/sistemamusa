@@ -8,7 +8,7 @@ import s from './MusitoAssistant.module.css';
 export default function MusitoAssistant() {
   const {
     message, pose, visible, bubbleVisible, dismissed, outfit,
-    showQuickMenu, quickSuggestions, musitoX, facing, isRunning,
+    showQuickMenu, quickSuggestions, musitoX, musitoY, facing, isRunning,
     isDragging, isThrown,
     dismiss, reactivate, handleMusitoClick, toggleQuickMenu, setShowQuickMenu,
     startDrag, onDrag, endDrag,
@@ -58,10 +58,10 @@ export default function MusitoAssistant() {
     if (!dragging.current && (dx > 8 || dy > 8)) {
       dragging.current = true;
       clearTimeout(pressTimer.current);
-      startDrag(e.clientX);
+      startDrag(e.clientX, e.clientY);
     }
     if (dragging.current) {
-      onDrag(e.clientX);
+      onDrag(e.clientX, e.clientY);
     }
   };
 
@@ -83,7 +83,7 @@ export default function MusitoAssistant() {
   return (
     <div
       className={`${s.container} ${poseClass} ${isDragging ? s.draggingContainer : ''}`}
-      style={{ left: `${musitoX}%` }}
+      style={{ left: `${musitoX}%`, bottom: `${musitoY}px` }}
     >
       {/* Speech bubble */}
       {bubbleVisible && message && !showQuickMenu && (

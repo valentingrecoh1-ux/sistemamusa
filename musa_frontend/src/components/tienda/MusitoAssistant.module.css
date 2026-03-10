@@ -5,7 +5,6 @@
 /* ── Container: fixed at bottom edge ── */
 .container {
   position: fixed;
-  bottom: 72px;
   z-index: 9998;
   transform: translateX(-50%);
   display: flex;
@@ -13,7 +12,7 @@
   align-items: center;
   gap: 4px;
   pointer-events: none;
-  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .container > * { pointer-events: auto; }
 
@@ -403,7 +402,6 @@
    RESPONSIVE
    ══════════════════════════════════ */
 @media (max-width: 640px) {
-  .container { bottom: 68px; }
   .bubble { max-width: 170px; font-size: 9px; }
   .minimizedBtn { bottom: 72px; right: 10px; }
   .reactivateBtn { bottom: 72px; right: 10px; }

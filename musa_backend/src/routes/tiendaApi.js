@@ -901,8 +901,18 @@ IMPORTANT RULES:
     const cepaFav = Object.entries(cepaCount).sort((a, b) => b[1] - a[1])[0];
     const bodegaFav = Object.entries(bodegaCount).sort((a, b) => b[1] - a[1])[0];
 
-    const todasCepas = await Product.distinct("cepa", { cantidad: { $gt: 0 }, cepa: { $ne: null, $ne: "" } });
+    // Solo productos tipo vino para colecciones (excluir cerveza, agua tonica, aceite, etc.)
+    const filtroVino = { cantidad: { $gt: 0 }, $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }] };
+    const todasCepas = (await Product.distinct("cepa", { ...filtroVino, cepa: { $ne: null, $ne: "" } })).filter(Boolean);
+    const todasBodegas = (await Product.distinct("bodega", { ...filtroVino, bodega: { $ne: null, $ne: "" } })).filter(Boolean);
+    const todasRegiones = (await Product.distinct("origen", { ...filtroVino, origen: { $ne: null, $ne: "" } })).filter(Boolean);
     const valoraciones = ValoracionVino ? await ValoracionVino.find({ clienteId: cliente._id }).lean() : [];
+
+    // Filtrar cepas/bodegas/regiones probadas solo de productos tipo vino
+    const origenProbado = new Set();
+    for (const p of productosComprados) {
+      if (p.origen) origenProbado.add(p.origen);
+    }
 
     // Logros con premios
     const logros = [];
@@ -944,11 +954,16 @@ IMPORTANT RULES:
       { id: "mecenas", nombre: "Mecenas", desc: "Mas de $200.000 invertidos", icono: "bi-gem", req: totalGastado >= 200000, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } },
     ];
 
-    // Coleccion de cepas
-    const coleccionCepas = todasCepas.filter(Boolean).map((cepa) => {
-      const probada = cepasProbadas.has(cepa);
-      return { cepa, probada };
-    });
+    // Colecciones
+    const coleccionCepas = todasCepas.sort((a, b) => a.localeCompare(b, "es")).map((cepa) => ({
+      cepa, probada: cepasProbadas.has(cepa),
+    }));
+    const coleccionBodegas = todasBodegas.sort((a, b) => a.localeCompare(b, "es")).map((bodega) => ({
+      bodega, probada: bodegasProbadas.has(bodega),
+    }));
+    const coleccionRegiones = todasRegiones.sort((a, b) => a.localeCompare(b, "es")).map((region) => ({
+      region, probada: origenProbado.has(region),
+    }));
 
     return {
       cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido, estadoPerfil: cliente.estadoPerfil || "aprobado", tokenAcceso: cliente.tokenAcceso },
@@ -959,8 +974,14 @@ IMPORTANT RULES:
         bodegaFavorita: bodegaFav ? bodegaFav[0] : null,
         cepasProbadas: cepasProbadas.size,
         totalCepas: todasCepas.length,
+        bodegasProbadas: bodegasProbadas.size,
+        totalBodegas: todasBodegas.length,
+        regionesProbadas: origenProbado.size,
+        totalRegiones: todasRegiones.length,
       },
       coleccionCepas,
+      coleccionBodegas,
+      coleccionRegiones,
       logros,
       todosLogros,
     };

@@ -2,6 +2,8 @@
  * Servicio de logistica integrada: Shipnow + Moova
  */
 
+const PESO_BOTELLA_GRAMOS = 1300; // Botella de vino ~1.3kg (750ml + vidrio)
+
 // ── Shipnow ──
 const SHIPNOW_BASE = "https://api.shipnow.com.ar";
 
@@ -82,20 +84,30 @@ async function shipnowCrearEnvio(token, { referencia, destino, items, opcionEleg
 // ── Moova ──
 const MOOVA_BASE = "https://api.moova.io/b2b";
 
+function parseAddress(obj) {
+  // Si tiene calle y numero separados, usar esos
+  if (obj.calle) return { street: obj.calle, number: obj.numero || "" };
+  // Sino parsear de direccion completa
+  const dir = obj.direccion || "";
+  return { street: dir.replace(/\s+\d.*$/, "") || dir, number: dir.match(/\d+/)?.[0] || "" };
+}
+
 async function moovaCotizar(appId, apiKey, { origen, destino }) {
+  const fromAddr = parseAddress(origen);
+  const toAddr = parseAddress(destino);
   const body = {
     from: {
-      street: origen.direccion?.split(/\s+\d/)?.[0] || origen.direccion,
-      number: origen.direccion?.match(/\d+/)?.[0] || "",
-      city: origen.ciudad || "CABA",
+      street: fromAddr.street,
+      number: fromAddr.number,
+      city: origen.ciudad || origen.localidad || "CABA",
       state: origen.provincia || "CABA",
       postalCode: origen.codigoPostal || "",
       country: "AR",
     },
     to: {
-      street: destino.direccion?.split(/\s+\d/)?.[0] || destino.direccion,
-      number: destino.direccion?.match(/\d+/)?.[0] || "",
-      city: destino.ciudad || "CABA",
+      street: toAddr.street,
+      number: toAddr.number,
+      city: destino.ciudad || destino.localidad || "CABA",
       state: destino.provincia || "CABA",
       postalCode: destino.codigoPostal || "",
       country: "AR",
@@ -131,15 +143,18 @@ async function moovaCotizar(appId, apiKey, { origen, destino }) {
 }
 
 async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referencia }) {
+  const fromAddr = parseAddress(origen);
+  const toAddr = parseAddress(destino);
   const body = {
     scheduledDate: null,
     currency: "ARS",
     type: "regular",
     flow: "manual",
     from: {
-      street: origen.direccion?.split(/\s+\d/)?.[0] || origen.direccion,
-      number: origen.direccion?.match(/\d+/)?.[0] || "",
-      city: origen.ciudad || "CABA",
+      street: fromAddr.street,
+      number: fromAddr.number,
+      floor: origen.pisoDepto || "",
+      city: origen.ciudad || origen.localidad || "CABA",
       state: origen.provincia || "CABA",
       postalCode: origen.codigoPostal || "",
       country: "AR",
@@ -149,9 +164,10 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
       },
     },
     to: {
-      street: destino.direccion?.split(/\s+\d/)?.[0] || destino.direccion,
-      number: destino.direccion?.match(/\d+/)?.[0] || "",
-      city: destino.ciudad || "CABA",
+      street: toAddr.street,
+      number: toAddr.number,
+      floor: destino.pisoDepto || "",
+      city: destino.ciudad || destino.localidad || "CABA",
       state: destino.provincia || "CABA",
       postalCode: destino.codigoPostal || "",
       country: "AR",
@@ -165,7 +181,7 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
       description: it.nombre || "Vino",
       quantity: it.cantidad || 1,
       price: it.precioUnitario || 0,
-      weight: 1.5,
+      weight: PESO_BOTELLA_GRAMOS / 1000,
     })),
     externalCode: referencia,
   };
@@ -194,16 +210,17 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
 
 // ── Servicio unificado ──
 
-async function cotizarEnvio(config, destino) {
+async function cotizarEnvio(config, destino, { cantidadBotellas = 1 } = {}) {
   const opciones = [];
   const origen = config.origenEnvio || {};
+  const pesoTotal = cantidadBotellas * PESO_BOTELLA_GRAMOS;
 
   // Shipnow
   if (config.shipnowActivo && config.shipnowToken && destino.codigoPostal) {
     try {
       const shipnowOpts = await shipnowCotizar(config.shipnowToken, {
         codigoPostalDestino: destino.codigoPostal,
-        pesoGramos: destino.pesoGramos || 2000,
+        pesoGramos: pesoTotal,
       });
       opciones.push(...shipnowOpts);
     } catch (err) {

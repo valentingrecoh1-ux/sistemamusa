@@ -9,9 +9,9 @@ const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currenc
 
 export default function TiendaCheckout() {
   const navigate = useNavigate();
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, totalItems, clearCart } = useCart();
   const [config, setConfig] = useState({});
-  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', codigoPostal: '', notas: '' });
+  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', calle: '', numero: '', pisoDepto: '', localidad: '', codigoPostal: '', notas: '' });
   const [entrega, setEntrega] = useState('retiro');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,20 +30,26 @@ export default function TiendaCheckout() {
     if (items.length === 0) navigate(tiendaPath('/carrito'));
   }, [items, navigate]);
 
+  const direccionCompleta = [form.calle, form.numero, form.pisoDepto, form.localidad].filter(Boolean).join(' ');
+
   // Cotizar cuando cambia la direccion/CP y esta en modo envio
   const handleCotizar = useCallback(async () => {
     if (entrega !== 'envio') return;
     if (!tieneLogistica) return;
-    if (!form.direccion.trim() && !form.codigoPostal.trim()) return;
+    if (!form.calle.trim() && !form.codigoPostal.trim()) return;
 
     setCotizando(true);
     setOpcionElegida(null);
     try {
       const res = await cotizarEnvio({
-        direccion: form.direccion,
+        direccion: direccionCompleta,
+        calle: form.calle,
+        numero: form.numero,
+        localidad: form.localidad,
         codigoPostal: form.codigoPostal,
-        ciudad: 'CABA',
+        ciudad: form.localidad || 'CABA',
         provincia: 'CABA',
+        cantidadBotellas: totalItems,
       });
       const opts = res.opciones || [];
       setOpcionesEnvio(opts);
@@ -53,7 +59,7 @@ export default function TiendaCheckout() {
     } finally {
       setCotizando(false);
     }
-  }, [entrega, form.direccion, form.codigoPostal, tieneLogistica]);
+  }, [entrega, form.calle, form.numero, form.localidad, form.codigoPostal, tieneLogistica, direccionCompleta]);
 
   // Costo de envio
   let costoEnvio = 0;
@@ -76,16 +82,24 @@ export default function TiendaCheckout() {
       setError('Completa nombre, email y telefono');
       return;
     }
-    if (entrega === 'envio' && !form.direccion.trim()) {
-      setError('Completa la direccion de envio');
+    if (entrega === 'envio' && (!form.calle.trim() || !form.numero.trim())) {
+      setError('Completa calle y numero para el envio');
+      return;
+    }
+    if (entrega === 'envio' && !form.codigoPostal.trim()) {
+      setError('Completa el codigo postal');
       return;
     }
 
     setLoading(true);
     try {
+      const clienteData = {
+        ...form,
+        direccion: direccionCompleta,
+      };
       const result = await crearPedido({
         items: items.map((i) => ({ productoId: i.productoId, nombre: i.nombre, cantidad: i.cantidad })),
-        cliente: form,
+        cliente: clienteData,
         entrega,
         opcionEnvio: entrega === 'envio' && opcionElegida ? opcionElegida : null,
       });
@@ -177,17 +191,27 @@ export default function TiendaCheckout() {
 
             {entrega === 'envio' && (
               <div style={{ marginTop: 12 }}>
-                <div className={s.formGrid}>
+                <div className={s.addressGrid}>
                   <div className={s.field}>
-                    <label>Direccion de envio *</label>
-                    <input type="text" value={form.direccion} onChange={handleField('direccion')} placeholder="Calle, numero, piso, depto" />
+                    <label>Calle *</label>
+                    <input type="text" value={form.calle} onChange={handleField('calle')} placeholder="Av. Corrientes" />
                   </div>
-                  {tieneLogistica && (
-                    <div className={s.field}>
-                      <label>Codigo postal</label>
-                      <input type="text" value={form.codigoPostal} onChange={handleField('codigoPostal')} placeholder="1425" />
-                    </div>
-                  )}
+                  <div className={s.field}>
+                    <label>Numero *</label>
+                    <input type="text" value={form.numero} onChange={handleField('numero')} placeholder="1234" />
+                  </div>
+                  <div className={s.field}>
+                    <label>Piso / Depto</label>
+                    <input type="text" value={form.pisoDepto} onChange={handleField('pisoDepto')} placeholder="3ro B" />
+                  </div>
+                  <div className={s.field}>
+                    <label>Localidad</label>
+                    <input type="text" value={form.localidad} onChange={handleField('localidad')} placeholder="CABA" />
+                  </div>
+                  <div className={s.field}>
+                    <label>Codigo postal *</label>
+                    <input type="text" value={form.codigoPostal} onChange={handleField('codigoPostal')} placeholder="1425" />
+                  </div>
                 </div>
 
                 {tieneLogistica && (
@@ -196,7 +220,7 @@ export default function TiendaCheckout() {
                       type="button"
                       className={s.cotizarBtn}
                       onClick={handleCotizar}
-                      disabled={cotizando || (!form.direccion.trim() && !form.codigoPostal.trim())}
+                      disabled={cotizando || (!form.calle.trim() && !form.codigoPostal.trim())}
                     >
                       {cotizando ? (
                         <><i className="bi bi-hourglass-split" /> Cotizando...</>
@@ -236,7 +260,7 @@ export default function TiendaCheckout() {
                       </div>
                     )}
 
-                    {opcionesEnvio.length === 0 && !cotizando && form.direccion.trim() && (
+                    {opcionesEnvio.length === 0 && !cotizando && form.calle.trim() && (
                       <p className={s.shippingHint}>
                         <i className="bi bi-info-circle" /> Ingresa tu direccion y presiona "Cotizar envio"
                       </p>

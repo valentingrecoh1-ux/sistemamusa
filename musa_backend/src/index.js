@@ -24,6 +24,8 @@ const OrdenCompra = require("./models/ordenCompra");
 const PagoProveedor = require("./models/pagoProveedor");
 const PedidoWeb = require("./models/pedidoWeb");
 const ConfigTienda = require("./models/configTienda");
+const { crearEnvioLogistica } = require("./logisticaService");
+const { normalizar, NORMALIZAR_CEPAS, NORMALIZAR_REGIONES } = require("./migracionNormalizacion");
 const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
 const Notificacion = require("./models/notificacion");
@@ -89,6 +91,14 @@ mongoose
         { $set: { tipo: "vino" } }
       );
       console.log(`Migración: ${sinTipo + tipoNull} productos actualizados con tipo=vino`);
+    }
+    // Migración: normalizar cepas, bodegas y regiones
+    try {
+      const { migrarNormalizacion } = require("./migracionNormalizacion");
+      const cambiosNorm = await migrarNormalizacion(Product);
+      if (cambiosNorm > 0) console.log(`Normalización: ${cambiosNorm} productos corregidos (cepas/bodegas/regiones)`);
+    } catch (err) {
+      console.error("Error en migracion normalizacion:", err.message);
     }
   })
   .catch((err) => console.error("Error al conectar a MongoDB:", err));
@@ -768,11 +778,11 @@ app.post("/upload", upload.array("fotos", 10), async (req, res) => {
 
       const product = {
         codigo: formData.codigo,
-        bodega: formData.bodega,
-        cepa: formData.cepa,
+        bodega: formData.bodega ? formData.bodega.trim() : formData.bodega,
+        cepa: normalizar(formData.cepa, NORMALIZAR_CEPAS),
         nombre: formData.nombre,
         year: formData.year,
-        origen: formData.origen,
+        origen: normalizar(formData.origen, NORMALIZAR_REGIONES),
         costo: formData.costo,
         venta: formData.venta,
         cantidad: formData.cantidad,
@@ -798,11 +808,11 @@ app.post("/upload", upload.array("fotos", 10), async (req, res) => {
       const fotosArray = [...nuevasFotos];
       const newProduct = new Product({
         codigo: formData.codigo,
-        bodega: formData.bodega,
-        cepa: formData.cepa,
+        bodega: formData.bodega ? formData.bodega.trim() : formData.bodega,
+        cepa: normalizar(formData.cepa, NORMALIZAR_CEPAS),
         nombre: formData.nombre,
         year: formData.year,
-        origen: formData.origen,
+        origen: normalizar(formData.origen, NORMALIZAR_REGIONES),
         costo: formData.costo,
         venta: formData.venta,
         cantidad: formData.cantidad,
@@ -5662,8 +5672,35 @@ Reglas:
         }
       }
 
+      // Si pasa a "enviado" y tiene logistica integrada, crear envio
+      if (estado === "enviado" && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId) {
+        try {
+          const config = await ConfigTienda.findById("main").lean();
+          if (config) {
+            const resultado = await crearEnvioLogistica(config, {
+              destino: {
+                nombre: pedido.cliente.nombre,
+                direccion: pedido.cliente.direccion,
+                codigoPostal: pedido.opcionEnvio?.meta?.codigoPostal || "",
+                email: pedido.cliente.email,
+                telefono: pedido.cliente.telefono,
+              },
+              items: pedido.items,
+              referencia: String(pedido.numeroPedido),
+              opcionElegida: pedido.opcionEnvio,
+            });
+            pedido.logisticaEnvioId = resultado.envioId;
+            pedido.logisticaTracking = resultado.tracking;
+            pedido.logisticaProveedor = resultado.proveedor;
+          }
+        } catch (logErr) {
+          console.error("Error creando envio logistica:", logErr.message);
+          // No bloquea el cambio de estado
+        }
+      }
+
       await pedido.save();
-      cb?.({ ok: true });
+      cb?.({ ok: true, tracking: pedido.logisticaTracking, proveedor: pedido.logisticaProveedor });
       io.emit("cambios-web");
       io.emit("cambios");
     } catch (err) {

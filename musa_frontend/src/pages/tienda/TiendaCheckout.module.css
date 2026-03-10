@@ -158,6 +158,27 @@
   color: var(--text-primary);
 }
 
+/* ── Address grid ── */
+.addressGrid {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px;
+  gap: 10px;
+}
+
+.addressGrid .field:nth-child(4),
+.addressGrid .field:nth-child(5) {
+  /* localidad y CP en segunda fila */
+}
+
+@media (max-width: 768px) {
+  .addressGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .addressGrid .field:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ── Cotizar envio ── */
 .cotizarBtn {
   display: inline-flex;

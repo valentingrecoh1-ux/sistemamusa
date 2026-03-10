@@ -66,7 +66,12 @@ export default function WebPedidos() {
       if (res?.ok) {
         fetchPedidos();
         if (selected?._id === pedidoId) {
-          setSelected((prev) => prev ? { ...prev, estado: nuevoEstado } : null);
+          setSelected((prev) => prev ? {
+            ...prev,
+            estado: nuevoEstado,
+            logisticaTracking: res.tracking || prev.logisticaTracking,
+            logisticaProveedor: res.proveedor || prev.logisticaProveedor,
+          } : null);
         }
       }
     });
@@ -171,6 +176,9 @@ export default function WebPedidos() {
                   <div><label>Email</label><span>{selected.cliente?.email}</span></div>
                   <div><label>Telefono</label><span>{selected.cliente?.telefono}</span></div>
                   {selected.cliente?.direccion && <div><label>Direccion</label><span>{selected.cliente.direccion}</span></div>}
+                  {selected.cliente?.pisoDepto && <div><label>Piso/Depto</label><span>{selected.cliente.pisoDepto}</span></div>}
+                  {selected.cliente?.localidad && <div><label>Localidad</label><span>{selected.cliente.localidad}</span></div>}
+                  {selected.cliente?.codigoPostal && <div><label>CP</label><span>{selected.cliente.codigoPostal}</span></div>}
                 </div>
                 {selected.cliente?.telefono && (
                   <a
@@ -220,6 +228,20 @@ export default function WebPedidos() {
                 <div className={s.modalSection}>
                   <h4><i className="bi bi-chat-left-text" /> Notas del cliente</h4>
                   <p className={s.notas}>{selected.cliente.notas}</p>
+                </div>
+              )}
+
+              {/* Logistica */}
+              {selected.entrega === 'envio' && selected.logisticaProveedor && (
+                <div className={s.modalSection}>
+                  <h4><i className="bi bi-truck" /> Logistica</h4>
+                  <div className={s.modalGrid}>
+                    <div><label>Proveedor</label><span style={{ textTransform: 'capitalize' }}>{selected.logisticaProveedor}</span></div>
+                    {selected.logisticaEnvioId && <div><label>ID Envio</label><span>{selected.logisticaEnvioId}</span></div>}
+                    {selected.logisticaTracking && <div><label>Tracking</label><span className={s.tracking}>{selected.logisticaTracking}</span></div>}
+                    {selected.opcionEnvio?.servicio && <div><label>Servicio</label><span>{selected.opcionEnvio.servicio}</span></div>}
+                    {selected.costoEnvio > 0 && <div><label>Costo envio</label><span>{money(selected.costoEnvio)}</span></div>}
+                  </div>
                 </div>
               )}
 

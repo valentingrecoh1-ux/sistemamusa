@@ -5106,7 +5106,7 @@ Reglas:
             nombre: p.nombre || "—",
             cepa: p.cepa || null,
             bodega: p.bodega || null,
-            cantidad: p.cantidad || p.carritoCantidad || 1,
+            cantidad: p.carritoCantidad || 1,
             fecha: v.fecha || v.createdAt,
             ventaId: v._id,
           });

@@ -41,6 +41,7 @@ const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJS
 const pino = require("pino");
 const QRCode = require("qrcode");
 
+const cron = require("node-cron");
 const AfipService = require("./AfipService");
 const afipService = new AfipService({ CUIT: 20418588897 });
 
@@ -138,7 +139,14 @@ function mpRawToDoc(p, ownCollectorId) {
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();
   let tipo = "cobro";
-  if (desc.startsWith("pago:") || desc.startsWith("pago :") || desc.startsWith("pago de")) {
+  // Log detallado para Bank Transfer para diagnóstico
+  if (desc === "bank transfer" || p.payment_type_id === "bank_transfer") {
+    console.log(`[MP Bank Transfer] id=${p.id} desc="${p.description}" op=${p.operation_type} payment_type=${p.payment_type_id} status=${p.status} monto=${bruto} collector=${p.collector_id} payer=${p.payer?.id} ownId=${ownCollectorId}`);
+  }
+  if (desc === "bank transfer" || (p.payment_type_id === "bank_transfer" && bruto > 0 && p.status === "approved")) {
+    // Transferencias bancarias recibidas → cobro (plata que nos transfieren)
+    tipo = "cobro";
+  } else if (desc.startsWith("pago:") || desc.startsWith("pago :") || desc.startsWith("pago de")) {
     // Descripcion "Pago: ...", "Pago de servicio", etc → pagos que hicimos → gasto
     tipo = "gasto";
   } else if (ownCollectorId && p.payer?.id && String(p.payer.id) === String(ownCollectorId)) {
@@ -5098,7 +5106,7 @@ Reglas:
             nombre: p.nombre || "—",
             cepa: p.cepa || null,
             bodega: p.bodega || null,
-            cantidad: p.cantidad || p.carritoCantidad || 1,
+            cantidad: p.carritoCantidad || 1,
             fecha: v.fecha || v.createdAt,
             ventaId: v._id,
           });
@@ -5166,40 +5174,38 @@ Reglas:
       if (cantCompras >= 1) logros.push({ id: "primera_compra", nombre: "Primera Compra", desc: "Realizaste tu primera compra", icono: "bi-bag-check", premio: { tipo: "descuento", valor: 5, descripcion: "5% de descuento en tu proxima compra" } });
       if (cantCompras >= 5) logros.push({ id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras realizadas", icono: "bi-arrow-repeat", premio: { tipo: "descuento", valor: 10, descripcion: "10% de descuento en tu proxima compra" } });
       if (cantCompras >= 10) logros.push({ id: "fiel", nombre: "Cliente Fiel", desc: "10 compras realizadas", icono: "bi-heart", premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } });
-      if (cantCompras >= 25) logros.push({ id: "vip", nombre: "VIP", desc: "25 compras realizadas", icono: "bi-star", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 2 personas" } });
+      if (cantCompras >= 20) logros.push({ id: "vip", nombre: "VIP", desc: "20 compras realizadas", icono: "bi-star", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 1 persona" } });
       if (vinosUnicos >= 5) logros.push({ id: "explorador_5", nombre: "Explorador", desc: "Probaste 5 vinos diferentes", icono: "bi-compass", premio: { tipo: "descuento", valor: 5, descripcion: "5% en vinos que no hayas probado" } });
       if (vinosUnicos >= 15) logros.push({ id: "explorador_15", nombre: "Gran Explorador", desc: "Probaste 15 vinos diferentes", icono: "bi-binoculars", premio: { tipo: "vino_gratis", descripcion: "Un vino sorpresa de regalo" } });
-      if (vinosUnicos >= 30) logros.push({ id: "explorador_30", nombre: "Aventurero", desc: "Probaste 30 vinos diferentes", icono: "bi-globe", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion premium gratuita para 2 personas" } });
+      if (vinosUnicos >= 50) logros.push({ id: "explorador_50", nombre: "Aventurero", desc: "Probaste 50 vinos diferentes", icono: "bi-globe", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 1 persona" } });
       if (cepasProbadas.size >= 3) logros.push({ id: "cepas_3", nombre: "Multicepas", desc: "Probaste 3 cepas diferentes", icono: "bi-collection", premio: { tipo: "descuento", valor: 5, descripcion: "5% en cepas que no probaste" } });
       if (cepasProbadas.size >= 5) logros.push({ id: "cepas_5", nombre: "Conocedor de Cepas", desc: "Probaste 5 cepas diferentes", icono: "bi-grid-3x3", premio: { tipo: "descuento", valor: 10, descripcion: "10% en cepas que no probaste" } });
-      if (cepasProbadas.size >= todasCepas.length && todasCepas.length > 0) logros.push({ id: "todas_cepas", nombre: "Coleccionista", desc: "Probaste todas las cepas!", icono: "bi-trophy", premio: { tipo: "vino_gratis", descripcion: "Botella premium de regalo" } });
+      if (cepasProbadas.size >= 15) logros.push({ id: "cepas_15", nombre: "Coleccionista", desc: "Probaste 15 cepas diferentes", icono: "bi-trophy", premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } });
+      if (cepasProbadas.size >= todasCepas.length && todasCepas.length > 0) logros.push({ id: "todas_cepas", nombre: "Maestro de Cepas", desc: "Probaste todas las cepas!", icono: "bi-mortarboard", premio: { tipo: "membresia", descripcion: "Membresia anual al plan basico de Musa" } });
       if (bodegasProbadas.size >= 3) logros.push({ id: "bodegas_3", nombre: "Viajero", desc: "Probaste 3 bodegas diferentes", icono: "bi-geo-alt", premio: { tipo: "descuento", valor: 5, descripcion: "5% en bodegas que no probaste" } });
       if (bodegasProbadas.size >= 8) logros.push({ id: "bodegas_8", nombre: "Trotamundos", desc: "Probaste 8 bodegas diferentes", icono: "bi-map", premio: { tipo: "vino_gratis", descripcion: "Vino de bodega sorpresa de regalo" } });
       if (valoraciones.length >= 1) logros.push({ id: "primera_nota", nombre: "Critico Novato", desc: "Escribiste tu primera nota de cata", icono: "bi-pencil", premio: { tipo: "descuento", valor: 5, descripcion: "5% en tu proxima compra" } });
       if (valoraciones.length >= 5) logros.push({ id: "critico", nombre: "Critico", desc: "5 vinos valorados", icono: "bi-journal-text", premio: { tipo: "descuento", valor: 10, descripcion: "10% en tu proxima compra" } });
       if (valoraciones.length >= 10) logros.push({ id: "gran_critico", nombre: "Gran Critico", desc: "10 vinos valorados", icono: "bi-award", premio: { tipo: "vino_gratis", descripcion: "Un vino a eleccion de regalo" } });
-      if (totalGastado >= 50000) logros.push({ id: "gastador", nombre: "Gran Inversor", desc: "Invertiste mas de $50.000 en vinos", icono: "bi-cash-coin", premio: { tipo: "descuento", valor: 15, descripcion: "15% en tu proxima compra" } });
-      if (totalGastado >= 200000) logros.push({ id: "mecenas", nombre: "Mecenas", desc: "Invertiste mas de $200.000 en vinos", icono: "bi-gem", premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } });
 
       // Logros posibles (no desbloqueados aún) para mostrar progreso
       const todosLogros = [
         { id: "primera_compra", nombre: "Primera Compra", desc: "Realiza tu primera compra", icono: "bi-bag-check", req: cantCompras >= 1, premio: { tipo: "descuento", valor: 5, descripcion: "5% de descuento en tu proxima compra" } },
         { id: "cliente_frecuente", nombre: "Cliente Frecuente", desc: "5 compras", icono: "bi-arrow-repeat", req: cantCompras >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% de descuento en tu proxima compra" } },
         { id: "fiel", nombre: "Cliente Fiel", desc: "10 compras", icono: "bi-heart", req: cantCompras >= 10, premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } },
-        { id: "vip", nombre: "VIP", desc: "25 compras", icono: "bi-star", req: cantCompras >= 25, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 2 personas" } },
+        { id: "vip", nombre: "VIP", desc: "20 compras", icono: "bi-star", req: cantCompras >= 20, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 1 persona" } },
         { id: "explorador_5", nombre: "Explorador", desc: "5 vinos diferentes", icono: "bi-compass", req: vinosUnicos >= 5, premio: { tipo: "descuento", valor: 5, descripcion: "5% en vinos que no hayas probado" } },
         { id: "explorador_15", nombre: "Gran Explorador", desc: "15 vinos diferentes", icono: "bi-binoculars", req: vinosUnicos >= 15, premio: { tipo: "vino_gratis", descripcion: "Un vino sorpresa de regalo" } },
-        { id: "explorador_30", nombre: "Aventurero", desc: "30 vinos diferentes", icono: "bi-globe", req: vinosUnicos >= 30, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion premium gratuita para 2 personas" } },
+        { id: "explorador_50", nombre: "Aventurero", desc: "50 vinos diferentes", icono: "bi-globe", req: vinosUnicos >= 50, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion gratuita para 1 persona" } },
         { id: "cepas_3", nombre: "Multicepas", desc: "3 cepas diferentes", icono: "bi-collection", req: cepasProbadas.size >= 3, premio: { tipo: "descuento", valor: 5, descripcion: "5% en cepas que no probaste" } },
         { id: "cepas_5", nombre: "Conocedor de Cepas", desc: "5 cepas diferentes", icono: "bi-grid-3x3", req: cepasProbadas.size >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% en cepas que no probaste" } },
-        { id: "todas_cepas", nombre: "Coleccionista", desc: "Todas las cepas", icono: "bi-trophy", req: cepasProbadas.size >= todasCepas.length && todasCepas.length > 0, premio: { tipo: "vino_gratis", descripcion: "Botella premium de regalo" } },
+        { id: "cepas_15", nombre: "Coleccionista", desc: "15 cepas diferentes", icono: "bi-trophy", req: cepasProbadas.size >= 15, premio: { tipo: "vino_gratis", descripcion: "Un vino de regalo a eleccion (hasta $15.000)" } },
+        { id: "todas_cepas", nombre: "Maestro de Cepas", desc: "Todas las cepas", icono: "bi-mortarboard", req: cepasProbadas.size >= todasCepas.length && todasCepas.length > 0, premio: { tipo: "membresia", descripcion: "Membresia anual al plan basico de Musa" } },
         { id: "bodegas_3", nombre: "Viajero", desc: "3 bodegas", icono: "bi-geo-alt", req: bodegasProbadas.size >= 3, premio: { tipo: "descuento", valor: 5, descripcion: "5% en bodegas que no probaste" } },
         { id: "bodegas_8", nombre: "Trotamundos", desc: "8 bodegas", icono: "bi-map", req: bodegasProbadas.size >= 8, premio: { tipo: "vino_gratis", descripcion: "Vino de bodega sorpresa de regalo" } },
         { id: "primera_nota", nombre: "Critico Novato", desc: "Primera nota de cata", icono: "bi-pencil", req: valoraciones.length >= 1, premio: { tipo: "descuento", valor: 5, descripcion: "5% en tu proxima compra" } },
         { id: "critico", nombre: "Critico", desc: "5 valoraciones", icono: "bi-journal-text", req: valoraciones.length >= 5, premio: { tipo: "descuento", valor: 10, descripcion: "10% en tu proxima compra" } },
         { id: "gran_critico", nombre: "Gran Critico", desc: "10 valoraciones", icono: "bi-award", req: valoraciones.length >= 10, premio: { tipo: "vino_gratis", descripcion: "Un vino a eleccion de regalo" } },
-        { id: "gastador", nombre: "Gran Inversor", desc: "Mas de $50.000 invertidos", icono: "bi-cash-coin", req: totalGastado >= 50000, premio: { tipo: "descuento", valor: 15, descripcion: "15% en tu proxima compra" } },
-        { id: "mecenas", nombre: "Mecenas", desc: "Mas de $200.000 invertidos", icono: "bi-gem", req: totalGastado >= 200000, premio: { tipo: "degustacion_gratis", descripcion: "Degustacion exclusiva para 4 personas + vino de regalo" } },
       ];
 
       // Vinos con valoraciones públicas de otros clientes (para los vinos que el cliente aún no probó)
@@ -5969,10 +5975,16 @@ const PORT = process.env.PORT || 5000;
     if (sinPagadorId.deletedCount) console.log(`Migración PagoMp: borrados ${sinPagadorId.deletedCount} pagos sin pagador.id (se re-sincronizarán)`);
     // Reclasificar: payout = cobro (transferencias bancarias recibidas)
     const r1 = await PagoMp.updateMany(
-      { operationType: "payout", tipoMovimiento: "gasto" },
+      { operationType: "payout", tipoMovimiento: "gasto", tipoManual: { $ne: true } },
       { $set: { tipoMovimiento: "cobro" } },
     );
     if (r1.modifiedCount) console.log(`Migración PagoMp: ${r1.modifiedCount} payout → cobro`);
+    // Reclasificar: Bank Transfer = cobro (transferencias bancarias recibidas)
+    const r1b = await PagoMp.updateMany(
+      { descripcion: "Bank Transfer", tipoMovimiento: "gasto", tipoManual: { $ne: true } },
+      { $set: { tipoMovimiento: "cobro" } },
+    );
+    if (r1b.modifiedCount) console.log(`Migración PagoMp: ${r1b.modifiedCount} Bank Transfer → cobro`);
     // Reclasificar: descripcion "Pago: ..." = gasto
     const r2 = await PagoMp.updateMany(
       { descripcion: { $regex: /^Pago:/i }, tipoMovimiento: { $ne: "gasto" } },
@@ -5996,6 +6008,124 @@ const PORT = process.env.PORT || 5000;
     if (r4.modifiedCount) console.log(`Migración PagoMp: ${r4.modifiedCount} rechazados/cancelados → comisiones y retenciones = 0`);
   } catch (err) { console.error("Error migración PagoMp:", err); }
 })();
+
+// ── Sync rendimientos MP (settlement report) ──
+async function syncRendimientosMp(fecha) {
+  // fecha = "YYYY-MM-DD" del día a consultar
+  const token = process.env.MP_ACCESS_TOKEN;
+  if (!token) return;
+
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const baseUrl = "https://api.mercadopago.com/v1/account/settlement_report";
+
+  try {
+    // 1. Generar reporte para el día
+    const beginDate = `${fecha}T00:00:00Z`;
+    const endDate = `${fecha}T23:59:59Z`;
+    const genRes = await fetch(`${baseUrl}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ begin_date: beginDate, end_date: endDate }),
+    });
+    if (!genRes.ok) {
+      const errText = await genRes.text();
+      console.log(`[Rendimientos MP] Error generando reporte para ${fecha}: ${genRes.status} ${errText}`);
+      return;
+    }
+    const genData = await genRes.json();
+    const fileName = genData.file_name;
+    if (!fileName) {
+      console.log(`[Rendimientos MP] No se obtuvo file_name para ${fecha}:`, genData);
+      return;
+    }
+    console.log(`[Rendimientos MP] Reporte solicitado: ${fileName}`);
+
+    // 2. Esperar a que esté listo (poll cada 10s, max 5 min)
+    let csvText = null;
+    for (let i = 0; i < 30; i++) {
+      await new Promise((r) => setTimeout(r, 10000));
+      const dlRes = await fetch(`${baseUrl}/${fileName}`, { headers });
+      if (dlRes.ok) {
+        csvText = await dlRes.text();
+        break;
+      }
+      if (dlRes.status !== 404 && dlRes.status !== 202) {
+        console.log(`[Rendimientos MP] Error descargando ${fileName}: ${dlRes.status}`);
+        return;
+      }
+    }
+    if (!csvText) {
+      console.log(`[Rendimientos MP] Timeout esperando reporte ${fileName}`);
+      return;
+    }
+
+    // 3. Parsear CSV y buscar rendimientos
+    const lines = csvText.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) return;
+    const headerRow = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
+    const colIdx = (name) => headerRow.indexOf(name);
+
+    const iDesc = colIdx("DESCRIPTION");
+    const iCredit = colIdx("NET_CREDIT_AMOUNT");
+    const iDebit = colIdx("NET_DEBIT_AMOUNT");
+    const iDate = colIdx("DATE");
+    const iSourceId = colIdx("SOURCE_ID");
+    const iTxType = colIdx("TRANSACTION_TYPE");
+
+    let rendimientosTotal = 0;
+    let rendimientosCount = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+      // Parseo simple de CSV (los valores de MP no tienen comas internas)
+      const cols = lines[i].split(",").map((c) => c.trim().replace(/"/g, ""));
+      const desc = (cols[iDesc] || "").toLowerCase();
+      const credit = parseFloat(cols[iCredit]) || 0;
+
+      // Detectar rendimientos: pueden venir como "rendimiento", "yield", o similar
+      if (desc.includes("rendimiento") || desc.includes("yield") || desc.includes("interest")) {
+        rendimientosTotal += credit;
+        rendimientosCount++;
+      }
+    }
+
+    if (rendimientosTotal <= 0) {
+      console.log(`[Rendimientos MP] No se encontraron rendimientos para ${fecha}`);
+      return;
+    }
+
+    // 4. Verificar que no exista ya una operación de rendimientos para esta fecha
+    const yaExiste = await Operacion.findOne({
+      fecha,
+      nombre: "Rendimientos MercadoPago",
+      tipoOperacion: "INGRESO",
+    });
+    if (yaExiste) {
+      console.log(`[Rendimientos MP] Ya existe operación de rendimientos para ${fecha} ($${yaExiste.monto})`);
+      return;
+    }
+
+    // 5. Crear operación de ingreso en Caja
+    await Operacion.create({
+      tipoOperacion: "INGRESO",
+      formaPago: "DIGITAL",
+      nombre: "Rendimientos MercadoPago",
+      descripcion: `Rendimientos diarios MP (${rendimientosCount} movimiento${rendimientosCount > 1 ? "s" : ""})`,
+      monto: Math.round(rendimientosTotal * 100) / 100,
+      fecha,
+    });
+    console.log(`[Rendimientos MP] Creada operación: $${rendimientosTotal} para ${fecha}`);
+    io.emit("cambios");
+  } catch (err) {
+    console.error(`[Rendimientos MP] Error sync ${fecha}:`, err.message);
+  }
+}
+
+// Cron: todos los días a las 8:00 AM (Argentina), sync rendimientos del día anterior
+cron.schedule("0 8 * * *", async () => {
+  const ayer = moment().tz("America/Argentina/Buenos_Aires").subtract(1, "day").format("YYYY-MM-DD");
+  console.log(`[Rendimientos MP] Cron ejecutado, syncing ${ayer}`);
+  await syncRendimientosMp(ayer);
+}, { timezone: "America/Argentina/Buenos_Aires" });
 
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);

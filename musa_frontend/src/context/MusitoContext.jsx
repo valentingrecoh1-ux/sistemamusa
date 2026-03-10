@@ -97,52 +97,36 @@ function getProductReaction(product) {
 const SECTION_MESSAGES = {
   home: [
     { text: null, delay: 2000, useTime: true },
-    { text: 'Explora nuestros vinos por categoria o busca tu favorito.', delay: 9000 },
-    { text: 'Te recomiendo ver el catalogo completo!', delay: 16000 },
   ],
   catalogo: [
     { text: 'Aca vas a encontrar todos nuestros vinos!', delay: 1500 },
-    { text: 'Usa los filtros para buscar por bodega o cepa.', delay: 8000 },
-    { text: 'Si no sabes que elegir, preguntale al Sommelier!', delay: 14000 },
   ],
   producto: [
     { text: 'Buen ojo! Veamos este vino...', delay: 1500 },
-    { text: 'Baja para ver las resenas de otros clientes.', delay: 7000 },
-    { text: 'Si te gusta, sumalo al carrito!', delay: 12000 },
   ],
   carrito: [
     { text: 'Veamos que tenemos aca...', delay: 1000 },
-    { text: 'Todo listo? Dale a "Finalizar compra"!', delay: 6000 },
   ],
   checkout: [
     { text: 'Ultimo paso! Completa tus datos.', delay: 1500 },
-    { text: 'Podes elegir retiro en local o envio a domicilio.', delay: 7000 },
-    { text: 'Ya casi es tuyo! Solo falta el pago.', delay: 13000 },
   ],
   resultado: [
     { text: 'Genial! Tu pedido esta en camino!', delay: 1500, pose: 'moto' },
-    { text: 'Ya estoy preparando tu paquete...', delay: 5000, pose: 'paquete' },
-    { text: 'Pronto vas a estar disfrutando un gran vino!', delay: 10000, pose: 'celebrar' },
   ],
   sommelier: [
     { text: 'Aca te atiende nuestro sommelier con IA!', delay: 2000 },
-    { text: 'Contale que te gusta y te va a recomendar.', delay: 8000 },
   ],
   club: [
     { text: 'El Club MUSA es lo mejor para los amantes del vino!', delay: 1500 },
-    { text: 'Recibi vinos seleccionados todos los meses.', delay: 7000 },
   ],
   etiqueta: [
     { text: 'Crea una etiqueta personalizada para regalar!', delay: 1500 },
-    { text: 'Elegi la ocasion y nuestra IA hace la magia.', delay: 7000 },
   ],
   eventos: [
     { text: 'Degustaciones y eventos especiales!', delay: 1500 },
-    { text: 'Reserva tu lugar por WhatsApp.', delay: 7000 },
   ],
   perfil: [
     { text: 'Tu perfil de vinos! Mira todo lo que exploraste.', delay: 1500 },
-    { text: 'Completa tu mapa vinicola!', delay: 7000 },
   ],
 };
 
@@ -261,7 +245,8 @@ export function MusitoProvider({ children }) {
   });
   const [userName, setUserName] = useState(() => localStorage.getItem(USERNAME_KEY) || '');
   // Musito position on screen (follows scroll + drag)
-  const [musitoX, setMusitoX] = useState(88); // % from left — stays near right edge
+  const [musitoX, setMusitoX] = useState(88); // % from left
+  const [musitoY, setMusitoY] = useState(72); // px from bottom
   const [facing, setFacing] = useState('left'); // left or right
   const [isRunning, setIsRunning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -308,12 +293,6 @@ export function MusitoProvider({ children }) {
       sfxDizzy();
       const t = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 4000);
       timers.current.push(t);
-    } else if (totalItems < prevItemsRef.current && totalItems > 0) {
-      const sadMsgs = ['Sacaste uno... estas seguro?', 'Uno menos? Bueno, vos sabes...'];
-      setMessage(sadMsgs[Math.floor(Math.random() * sadMsgs.length)]);
-      setBubbleVisible(true);
-      const t = setTimeout(() => setBubbleVisible(false), 3000);
-      timers.current.push(t);
     }
     prevItemsRef.current = totalItems;
   }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -329,18 +308,27 @@ export function MusitoProvider({ children }) {
       const absDelta = Math.abs(delta);
       lastScrollY.current = currentY;
 
-      // Normal scroll: Musito shuffles subtly at the edge
+      // Normal scroll: Musito shuffles subtly
       if (absDelta > 20 && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
         const scrollDown = delta > 0;
         setFacing(scrollDown ? 'left' : 'right');
         setIsRunning(true);
 
-        // Small shuffle within edge zone (82-94%)
+        // Small shuffle on X
         setMusitoX((prev) => {
           const step = scrollDown ? 1.5 : -1.5;
           const next = prev + step;
-          if (next < 82) return 82;
-          if (next > 94) return 94;
+          if (next < 5) return 5;
+          if (next > 95) return 95;
+          return next;
+        });
+
+        // Small bounce on Y
+        setMusitoY((prev) => {
+          const step = scrollDown ? -3 : 3;
+          const next = prev + step;
+          if (next < 20) return 20;
+          if (next > 200) return 200;
           return next;
         });
 
@@ -414,16 +402,18 @@ export function MusitoProvider({ children }) {
   }, []);
 
   // ── Drag and throw ──
-  const dragStart = useRef({ x: 0, time: 0 });
-  const startDrag = useCallback((clientX) => {
+  const dragStart = useRef({ x: 0, y: 0, time: 0 });
+  const startDrag = useCallback((clientX, clientY) => {
     setIsDragging(true);
-    dragStart.current = { x: clientX, time: Date.now() };
+    dragStart.current = { x: clientX, y: clientY, time: Date.now() };
   }, []);
 
-  const onDrag = useCallback((clientX) => {
+  const onDrag = useCallback((clientX, clientY) => {
     if (!isDragging) return;
-    const pct = (clientX / window.innerWidth) * 100;
-    setMusitoX(Math.max(5, Math.min(95, pct)));
+    const pctX = (clientX / window.innerWidth) * 100;
+    const bottomPx = window.innerHeight - clientY;
+    setMusitoX(Math.max(5, Math.min(95, pctX)));
+    setMusitoY(Math.max(20, Math.min(window.innerHeight - 40, bottomPx)));
     setFacing(clientX > dragStart.current.x ? 'right' : 'left');
   }, [isDragging]);
 
@@ -445,22 +435,22 @@ export function MusitoProvider({ children }) {
       sfxThrow();
 
       // Animate the throw
-      const targetX = velocity > 0 ? Math.min(94, musitoX + 30) : Math.max(6, musitoX - 30);
+      const targetX = velocity > 0 ? Math.min(95, musitoX + 30) : Math.max(5, musitoX - 30);
       setMusitoX(targetX);
 
       const t = setTimeout(() => {
         setIsThrown(false);
         setPose('idle');
         setMessage('Eso dolio... pero aca sigo!');
-        // Drift back to right edge
+        // Drift back to default position
         setMusitoX(88);
+        setMusitoY(72);
         const t2 = setTimeout(() => setBubbleVisible(false), 2500);
         timers.current.push(t2);
       }, 1200);
       timers.current.push(t);
     } else {
-      // Gentle release — snap back to edge zone
-      setMusitoX(88);
+      // Gentle release — stay where dropped
     }
   }, [isDragging, musitoX]);
 
@@ -510,61 +500,6 @@ export function MusitoProvider({ children }) {
       timers.current.push(t);
     });
 
-    // Cart-aware message
-    if (totalItems > 0 && !['carrito', 'checkout', 'resultado'].includes(section)) {
-      const cartMsg = getCartMessage(totalItems);
-      if (cartMsg) {
-        const lastDelay = messages.length > 0 ? messages[messages.length - 1].delay + 6000 : 5000;
-        const t = setTimeout(() => {
-          setMessage(cartMsg);
-          setBubbleVisible(true);
-          const hideT = setTimeout(() => setBubbleVisible(false), 4000);
-          timers.current.push(hideT);
-        }, lastDelay);
-        timers.current.push(t);
-      }
-    }
-
-    // Tutorial tip for unvisited sections
-    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((sec) => {
-      if (sec === 'carrito' && totalItems > 0) return false; // skip if cart has items
-      return !visited.includes(sec) && sec !== section;
-    });
-    let lastTipDelay = messages.length > 0 ? messages[messages.length - 1].delay + 12000 : 10000;
-
-    if (unvisitedSections.length > 0) {
-      const randomSection = unvisitedSections[Math.floor(Math.random() * unvisitedSections.length)];
-      const tip = SECTION_TUTORIALS[randomSection];
-      const t = setTimeout(() => {
-        setMessage(tip);
-        setBubbleVisible(true);
-        setPose('wave');
-        const hideT = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 5000);
-        timers.current.push(hideT);
-      }, lastTipDelay);
-      timers.current.push(t);
-      lastTipDelay += 8000;
-    }
-
-    // Feature tip (PWA install, general tips)
-    const isMobile = window.innerWidth <= 640;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const pwaInstalled = localStorage.getItem('musa_pwa_installed') === '1';
-    const applicableTips = FEATURE_TIPS.filter((ft) => {
-      if (ft.condition === 'pwa') return isMobile && !isStandalone && !pwaInstalled;
-      return true;
-    });
-    if (applicableTips.length > 0) {
-      const featureTip = applicableTips[Math.floor(Math.random() * applicableTips.length)];
-      const t = setTimeout(() => {
-        setMessage(featureTip.text);
-        setBubbleVisible(true);
-        setPose('wave');
-        const hideT = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 5500);
-        timers.current.push(hideT);
-      }, lastTipDelay);
-      timers.current.push(t);
-    }
   }, [section, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Update level from perfil page data ──
@@ -617,7 +552,7 @@ export function MusitoProvider({ children }) {
     <MusitoContext.Provider value={{
       section, message, pose, visible, bubbleVisible, dismissed, visited,
       outfit, userLevel, userName, showQuickMenu, quickSuggestions,
-      musitoX, facing, isRunning, isDragging, isThrown, throwDir,
+      musitoX, musitoY, facing, isRunning, isDragging, isThrown, throwDir,
       dismiss, reactivate, setMessage, setBubbleVisible, setPose,
       handleMusitoClick, toggleQuickMenu, setShowQuickMenu,
       updateLevel, updateUserName, onMapProvinceClick,

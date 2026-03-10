@@ -42,23 +42,6 @@ const WINE_PROVINCES = [
 // Real Argentina SVG outline (Robinson projection, from world-map-country-shapes)
 const ARGENTINA_PATH = 'M669.8 920.7l.9-3-7.3-1.5-7.7-3.6-4.3-4.6-3-2.8 5.9 13.5h5l2.9.2 3.3 2.1 4.3-.3zm-50.4-208.1l-7.4-1.5-4 5.7.9 1.6-1.1 6.6-5.6 3.2 1.6 10.6-.9 2 2 2.5-3.2 4-2.6 5.9-.9 5.8 1.7 6.2-2.1 6.5 4.9 10.9 1.6 1.2 1.3 5.9-1.6 6.2 1.4 5.4-2.9 4.3 1.5 5.9 3.3 6.3-2.5 2.4.3 5.7.7 6.4 3.3 7.6-1.6 1.2 3.6 7.1 3.1 2.3-.8 2.6 2.8 1.3 1.3 2.3-1.8 1.1 1.8 3.7 1.1 8.2-.7 5.3 1.8 3.2-.1 3.9-2.7 2.7 3.1 6.6 2.6 2.2 3.1-.4 1.8 4.6 3.5 3.6 12 .8 4.8.9 2.2.4-4.7-3.6-4.1-6.3.9-2.9 3.5-2.5.5-7.2 4.7-3.5-.2-5.6-5.2-1.3-6.4-4.5-.1-4.7 2.9-3.1 4.7-.1.2-3.3-1.2-6.1 2.9-3.9 4.1-1.9-2.5-3.2-2.2 2-4-1.9-2.5-6.2 1.5-1.6 5.6 2.3 5-.9 2.5-2.2-1.8-3.1-.1-4.8-2-3.8 5.8.6 10.2-1.3 6.9-3.4 3.3-8.3-.3-3.2-3.9-2.8-.1-4.5-7.8-5.5-.3-3.3-.4-4.2.9-1.4-1.1-6.3.3-6.5.5-5.1 5.9-8.6 5.3-6.2 3.3-2.6 4.2-3.5-.5-5.1-3.1-3.7-2.6 1.2-.3 5.7-4.3 4.8-4.2 1.1-6.2-1-5.7-1.8 4.2-9.6-1.1-2.8-5.9-2.5-7.2-4.7-4.6-1-11.2-10.4-1-1.3-6.3-.3-1.6 5.1-3.7-4.6z';
 
-// ── Musito: pixel-art character on the wine map ──
-const FEMALE_NAMES = new Set([
-  'maria','ana','laura','lucia','sofia','valentina','camila','paula','carolina','florencia',
-  'julieta','agustina','sol','celeste','milagros','rocio','andrea','gabriela','daniela','natalia',
-  'victoria','martina','catalina','elena','isabel','mariana','fernanda','alejandra','rosa','marta',
-  'julia','romina','silvina','lorena','noelia','yanina','carina','graciela','susana','liliana',
-  'monica','patricia','claudia','veronica','cecilia','marina','eliana','viviana','nora','beatriz',
-  'pilar','ines','luz','abril','emilia','lara','micaela','brenda','aldana','constanza',
-]);
-function guessGender(nombre) {
-  if (!nombre) return 'male';
-  const first = nombre.trim().split(/\s+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (FEMALE_NAMES.has(first)) return 'female';
-  if (first.endsWith('a') && !['nikola','luca','borja','josua'].includes(first)) return 'female';
-  return 'male';
-}
-
 // Decorative elements scattered on the map (positions as % of container)
 const MAP_DECORATIONS = [
   { type: 'vine', top: 9, left: 38, flip: false },
@@ -196,8 +179,6 @@ export default function TiendaPerfil() {
   const [musitoBubble, setMusitoBubble] = useState('');
   const musitoTimer = useRef(null);
   const bubbleTimer = useRef(null);
-
-  const musitoGender = perfil ? guessGender(perfil.cliente?.nombre) : 'male';
 
   const moveMusito = useCallback((targetProv) => {
     if (musitoRunning) return;
@@ -749,7 +730,7 @@ export default function TiendaPerfil() {
 
                     {/* Musito character */}
                     <div
-                      className={`${s.musito} ${musitoRunning ? s.musitoRunning : ''} ${musitoFacing === 'left' ? s.musitoLeft : ''} ${musitoGender === 'female' ? s.musitoFemale : ''}`}
+                      className={`${s.musito} ${musitoRunning ? s.musitoRunning : ''} ${musitoFacing === 'left' ? s.musitoLeft : ''}`}
                       style={{
                         top: `${(musitoTarget || musitoPos).top}%`,
                         left: `${(musitoTarget || musitoPos).left}%`,
@@ -757,8 +738,16 @@ export default function TiendaPerfil() {
                     >
                       {musitoBubble && <span className={s.musitoBubble}>{musitoBubble}</span>}
                       <div className={s.musitoSprite}>
-                        <div className={s.musitoHead} />
-                        <div className={s.musitoBody} />
+                        <div className={s.musitoHair} />
+                        <div className={s.musitoHead}>
+                          <span className={s.musitoEyeL} />
+                          <span className={s.musitoEyeR} />
+                          <span className={s.musitoMouth} />
+                        </div>
+                        <div className={s.musitoBody}>
+                          <span className={s.musitoArmL} />
+                          <span className={s.musitoArmR} />
+                        </div>
                         <div className={s.musitoLegs}>
                           <span className={s.musitoLegL} />
                           <span className={s.musitoLegR} />

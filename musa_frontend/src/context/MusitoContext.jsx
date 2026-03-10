@@ -118,12 +118,23 @@ const SECTION_MESSAGES = {
 // ── Tutorial tips for unvisited sections ──
 const SECTION_TUTORIALS = {
   catalogo: 'Todavia no visitaste el catalogo. Hay mas de 100 vinos esperandote!',
-  sommelier: 'Conoces a nuestro Sommelier IA? Te recomienda vinos con tu voz!',
-  club: 'Sabias que tenemos un Club del Vino? Recibi vinos cada mes!',
-  etiqueta: 'Podes crear etiquetas personalizadas con IA! Ideal para regalos.',
-  eventos: 'Hacemos degustaciones y eventos. Pasa a ver!',
-  perfil: 'Crea tu perfil y lleva un registro de tus vinos favoritos.',
+  sommelier: 'Conoces a nuestro Sommelier IA? Te recomienda vinos con tu voz! Podes hablarle por microfono.',
+  club: 'Sabias que tenemos un Club del Vino? Recibi vinos seleccionados cada mes en tu casa!',
+  etiqueta: 'Podes crear etiquetas personalizadas con IA! Ideal para regalos. Elegi la ocasion y listo.',
+  eventos: 'Hacemos degustaciones y eventos especiales! Reserva tu lugar.',
+  perfil: 'Crea tu perfil para llevar un registro de tus vinos, cepas y regiones exploradas.',
+  carrito: 'Tu carrito esta vacio todavia! Explora el catalogo y agrega vinos que te gusten.',
 };
+
+// ── Feature tips (not section-dependent, shown occasionally) ──
+const FEATURE_TIPS = [
+  { text: 'Podes instalar MUSA como app! Toca el icono del celular arriba a la derecha.', condition: 'pwa' },
+  { text: 'Cada compra te suma puntos para subir de nivel! Mira tu progreso en Mi Perfil.', condition: 'always' },
+  { text: 'Podes buscar vinos por nombre, bodega o cepa desde el catalogo.', condition: 'always' },
+  { text: 'En Mi Perfil tenes un mapa de Argentina con todas las regiones vinicolas que probaste!', condition: 'always' },
+  { text: 'El Sommelier entiende audio! Podes hablarle por microfono.', condition: 'always' },
+  { text: 'Las etiquetas personalizadas se generan con IA. Podes descargarlas o pedir que las impriman!', condition: 'always' },
+];
 
 // ── Cart count messages ──
 function getCartMessage(totalItems) {
@@ -163,7 +174,7 @@ export function MusitoProvider({ children }) {
   });
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === '1');
   const [message, setMessage] = useState('');
-  const [pose, setPose] = useState('idle'); // idle, walk, moto, paquete, celebrar, wave, dizzy, sleep, dance
+  const [pose, setPose] = useState('idle'); // idle, walk, run, moto, paquete, celebrar, wave, dizzy, sleep, dance
   const [visible, setVisible] = useState(true);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [showQuickMenu, setShowQuickMenu] = useState(false);
@@ -172,11 +183,19 @@ export function MusitoProvider({ children }) {
     try { return parseInt(localStorage.getItem(LEVEL_KEY)) || 0; }
     catch { return 0; }
   });
+  // Musito position on screen (follows scroll + drag)
+  const [musitoX, setMusitoX] = useState(80); // % from left
+  const [facing, setFacing] = useState('left'); // left or right
+  const [isRunning, setIsRunning] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isThrown, setIsThrown] = useState(false);
+  const [throwDir, setThrowDir] = useState(0); // velocity for throw
   const timers = useRef([]);
   const idleTimer = useRef(null);
   const scrollTimer = useRef(null);
   const lastScrollY = useRef(0);
   const rapidScrollCount = useRef(0);
+  const runStopTimer = useRef(null);
 
   const outfit = LEVEL_OUTFITS[userLevel] || LEVEL_OUTFITS[0];
 
@@ -205,32 +224,71 @@ export function MusitoProvider({ children }) {
     prevItemsRef.current = totalItems;
   }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Easter egg: rapid scroll = dizzy ──
+  // ── Scroll following: Musito runs when user scrolls ──
+  const dizzyTimer = useRef(null);
+  const poseRef = useRef(pose);
+  poseRef.current = pose;
   useEffect(() => {
     if (dismissed) return;
     const handleScroll = () => {
-      const delta = Math.abs(window.scrollY - lastScrollY.current);
-      lastScrollY.current = window.scrollY;
-      if (delta > 200) {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+      const absDelta = Math.abs(delta);
+      lastScrollY.current = currentY;
+
+      // Rapid scroll = dizzy easter egg
+      if (absDelta > 80) {
         rapidScrollCount.current++;
-        if (rapidScrollCount.current >= 5 && pose !== 'dizzy') {
+        if (rapidScrollCount.current >= 4 && poseRef.current !== 'dizzy') {
           setPose('dizzy');
           setMessage('Uy... para un poco que me mareo!');
           setBubbleVisible(true);
-          clearTimeout(scrollTimer.current);
-          scrollTimer.current = setTimeout(() => {
+          rapidScrollCount.current = 0;
+          setIsRunning(false);
+          clearTimeout(dizzyTimer.current);
+          dizzyTimer.current = setTimeout(() => {
             setPose('idle');
             setBubbleVisible(false);
-            rapidScrollCount.current = 0;
           }, 3000);
+          return;
         }
       }
+
+      // Normal scroll: Musito runs to follow
+      if (absDelta > 15 && poseRef.current !== 'dizzy' && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
+        // Move horizontally based on scroll direction
+        const scrollDown = delta > 0;
+        setFacing(scrollDown ? 'right' : 'left');
+        setIsRunning(true);
+
+        // Move Musito across the screen as user scrolls
+        setMusitoX((prev) => {
+          const step = scrollDown ? -3 : 3;
+          const next = prev + step;
+          // Bounce between 10% and 90%
+          if (next <= 10) return 10;
+          if (next >= 90) return 90;
+          return next;
+        });
+
+        // Stop running after scroll stops
+        clearTimeout(runStopTimer.current);
+        runStopTimer.current = setTimeout(() => {
+          setIsRunning(false);
+        }, 300);
+      }
+
+      // Reset rapid scroll count
       clearTimeout(scrollTimer.current);
       scrollTimer.current = setTimeout(() => { rapidScrollCount.current = 0; }, 1000);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [dismissed, pose]);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(dizzyTimer.current);
+      clearTimeout(runStopTimer.current);
+    };
+  }, [dismissed]);
 
   // ── Easter egg: idle too long = sleep ──
   useEffect(() => {
@@ -265,21 +323,69 @@ export function MusitoProvider({ children }) {
   }, [dismissed, pose]);
 
   // ── Easter egg: multiple clicks = dance ──
+  const clickResetTimer = useRef(null);
   const handleMusitoClick = useCallback(() => {
-    const newCount = clickCount + 1;
-    setClickCount(newCount);
-    if (newCount >= 5) {
-      setPose('dance');
-      setMessage('Dale que suena el ritmo!');
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount >= 3) {
+        setPose('dance');
+        setMessage('Dale que suena el ritmo!');
+        setBubbleVisible(true);
+        const t = setTimeout(() => { setPose('idle'); setBubbleVisible(false); }, 4000);
+        timers.current.push(t);
+        return 0;
+      }
+      // Reset click count after 2 seconds of no clicks
+      clearTimeout(clickResetTimer.current);
+      clickResetTimer.current = setTimeout(() => setClickCount(0), 2000);
+      return newCount;
+    });
+  }, []);
+
+  // ── Drag and throw ──
+  const dragStart = useRef({ x: 0, time: 0 });
+  const startDrag = useCallback((clientX) => {
+    setIsDragging(true);
+    dragStart.current = { x: clientX, time: Date.now() };
+  }, []);
+
+  const onDrag = useCallback((clientX) => {
+    if (!isDragging) return;
+    const pct = (clientX / window.innerWidth) * 100;
+    setMusitoX(Math.max(5, Math.min(95, pct)));
+    setFacing(clientX > dragStart.current.x ? 'right' : 'left');
+  }, [isDragging]);
+
+  const endDrag = useCallback((clientX) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const dt = Date.now() - dragStart.current.time;
+    const dx = clientX - dragStart.current.x;
+    const velocity = dx / Math.max(dt, 1);
+
+    // If thrown with enough velocity
+    if (Math.abs(velocity) > 0.5) {
+      setIsThrown(true);
+      setThrowDir(velocity > 0 ? 1 : -1);
+      setFacing(velocity > 0 ? 'right' : 'left');
+      setPose('dizzy');
+      setMessage(velocity > 0 ? 'Aaaaaah!' : 'Nooooo!');
       setBubbleVisible(true);
-      setClickCount(0);
-      const t = setTimeout(() => { setPose('idle'); setBubbleVisible(false); }, 4000);
+
+      // Animate the throw
+      const targetX = velocity > 0 ? Math.min(95, musitoX + 40) : Math.max(5, musitoX - 40);
+      setMusitoX(targetX);
+
+      const t = setTimeout(() => {
+        setIsThrown(false);
+        setPose('idle');
+        setMessage('Eso dolio... pero aca sigo!');
+        const t2 = setTimeout(() => setBubbleVisible(false), 2500);
+        timers.current.push(t2);
+      }, 1200);
       timers.current.push(t);
     }
-    // Reset click count after 2 seconds
-    const t = setTimeout(() => setClickCount(0), 2000);
-    timers.current.push(t);
-  }, [clickCount]);
+  }, [isDragging, musitoX]);
 
   // ── Toggle quick sommelier menu ──
   const toggleQuickMenu = useCallback(() => {
@@ -338,18 +444,43 @@ export function MusitoProvider({ children }) {
     }
 
     // Tutorial tip for unvisited sections
-    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((sec) => !visited.includes(sec) && sec !== section);
+    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((sec) => {
+      if (sec === 'carrito' && totalItems > 0) return false; // skip if cart has items
+      return !visited.includes(sec) && sec !== section;
+    });
+    let lastTipDelay = messages.length > 0 ? messages[messages.length - 1].delay + 12000 : 10000;
+
     if (unvisitedSections.length > 0) {
       const randomSection = unvisitedSections[Math.floor(Math.random() * unvisitedSections.length)];
       const tip = SECTION_TUTORIALS[randomSection];
-      const tipDelay = messages.length > 0 ? messages[messages.length - 1].delay + 12000 : 10000;
       const t = setTimeout(() => {
         setMessage(tip);
         setBubbleVisible(true);
         setPose('wave');
         const hideT = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 5000);
         timers.current.push(hideT);
-      }, tipDelay);
+      }, lastTipDelay);
+      timers.current.push(t);
+      lastTipDelay += 8000;
+    }
+
+    // Feature tip (PWA install, general tips)
+    const isMobile = window.innerWidth <= 640;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const pwaInstalled = localStorage.getItem('musa_pwa_installed') === '1';
+    const applicableTips = FEATURE_TIPS.filter((ft) => {
+      if (ft.condition === 'pwa') return isMobile && !isStandalone && !pwaInstalled;
+      return true;
+    });
+    if (applicableTips.length > 0) {
+      const featureTip = applicableTips[Math.floor(Math.random() * applicableTips.length)];
+      const t = setTimeout(() => {
+        setMessage(featureTip.text);
+        setBubbleVisible(true);
+        setPose('wave');
+        const hideT = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 5500);
+        timers.current.push(hideT);
+      }, lastTipDelay);
       timers.current.push(t);
     }
   }, [section, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -376,8 +507,10 @@ export function MusitoProvider({ children }) {
     <MusitoContext.Provider value={{
       section, message, pose, visible, bubbleVisible, dismissed, visited,
       outfit, userLevel, showQuickMenu, quickSuggestions: QUICK_SUGGESTIONS,
+      musitoX, facing, isRunning, isDragging, isThrown, throwDir,
       dismiss, reactivate, setMessage, setBubbleVisible, setPose,
       handleMusitoClick, toggleQuickMenu, setShowQuickMenu, updateLevel,
+      startDrag, onDrag, endDrag,
     }}>
       {children}
     </MusitoContext.Provider>

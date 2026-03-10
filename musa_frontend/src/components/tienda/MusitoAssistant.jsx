@@ -83,7 +83,7 @@ export default function MusitoAssistant() {
   return (
     <div
       className={`${s.container} ${poseClass} ${isDragging ? s.draggingContainer : ''}`}
-      style={{ left: `${musitoX}%`, bottom: `${musitoY}px` }}
+      style={{ left: `${musitoX}%`, bottom: `${musitoY}%` }}
     >
       {/* Speech bubble */}
       {bubbleVisible && message && !showQuickMenu && (

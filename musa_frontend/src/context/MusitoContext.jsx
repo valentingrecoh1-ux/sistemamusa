@@ -244,9 +244,9 @@ export function MusitoProvider({ children }) {
     catch { return 0; }
   });
   const [userName, setUserName] = useState(() => localStorage.getItem(USERNAME_KEY) || '');
-  // Musito position on screen (follows scroll + drag)
-  const [musitoX, setMusitoX] = useState(88); // % from left
-  const [musitoY, setMusitoY] = useState(72); // px from bottom
+  // Musito position on screen — tracks scroll position like a progress indicator
+  const [musitoX, setMusitoX] = useState(88); // % from left — right edge zone
+  const [musitoY, setMusitoY] = useState(85); // % from bottom (85% = near top)
   const [facing, setFacing] = useState('left'); // left or right
   const [isRunning, setIsRunning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -297,48 +297,52 @@ export function MusitoProvider({ children }) {
     prevItemsRef.current = totalItems;
   }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Scroll following: Musito runs when user scrolls ──
+  // ── Scroll following: Musito tracks page scroll like a progress indicator ──
   const poseRef = useRef(pose);
   poseRef.current = pose;
+  const wobbleDir = useRef(1);
   useEffect(() => {
     if (dismissed) return;
+
+    const updatePosition = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPct = docHeight > 0 ? scrollTop / docHeight : 0; // 0 = top, 1 = bottom
+
+      // Y: map scroll % to bottom %. At top of page → high bottom%, at bottom → low bottom%
+      // Range: 85% (top) down to 8% (bottom)
+      const targetY = 85 - scrollPct * 77;
+      setMusitoY(targetY);
+
+      // X: subtle lateral wobble using sine wave based on scroll position
+      // Oscillates around 88% (right edge) ± 5%
+      const wobble = Math.sin(scrollPct * Math.PI * 4) * 5;
+      setMusitoX(88 + wobble);
+    };
+
     const handleScroll = () => {
       const currentY = window.scrollY;
       const delta = currentY - lastScrollY.current;
       const absDelta = Math.abs(delta);
       lastScrollY.current = currentY;
 
-      // Normal scroll: Musito shuffles subtly
+      updatePosition();
+
       if (absDelta > 20 && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
         const scrollDown = delta > 0;
         setFacing(scrollDown ? 'left' : 'right');
         setIsRunning(true);
-
-        // Small shuffle on X
-        setMusitoX((prev) => {
-          const step = scrollDown ? 1.5 : -1.5;
-          const next = prev + step;
-          if (next < 5) return 5;
-          if (next > 95) return 95;
-          return next;
-        });
-
-        // Small bounce on Y
-        setMusitoY((prev) => {
-          const step = scrollDown ? -3 : 3;
-          const next = prev + step;
-          if (next < 20) return 20;
-          if (next > 200) return 200;
-          return next;
-        });
 
         clearTimeout(runStopTimer.current);
         runStopTimer.current = setTimeout(() => {
           setIsRunning(false);
         }, 400);
       }
-
     };
+
+    // Set initial position
+    updatePosition();
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -411,9 +415,9 @@ export function MusitoProvider({ children }) {
   const onDrag = useCallback((clientX, clientY) => {
     if (!isDragging) return;
     const pctX = (clientX / window.innerWidth) * 100;
-    const bottomPx = window.innerHeight - clientY;
+    const pctY = ((window.innerHeight - clientY) / window.innerHeight) * 100;
     setMusitoX(Math.max(5, Math.min(95, pctX)));
-    setMusitoY(Math.max(20, Math.min(window.innerHeight - 40, bottomPx)));
+    setMusitoY(Math.max(5, Math.min(90, pctY)));
     setFacing(clientX > dragStart.current.x ? 'right' : 'left');
   }, [isDragging]);
 
@@ -442,9 +446,12 @@ export function MusitoProvider({ children }) {
         setIsThrown(false);
         setPose('idle');
         setMessage('Eso dolio... pero aca sigo!');
-        // Drift back to default position
-        setMusitoX(88);
-        setMusitoY(72);
+        // Drift back to scroll-based position
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPct = docHeight > 0 ? scrollTop / docHeight : 0;
+        setMusitoY(85 - scrollPct * 77);
+        setMusitoX(88 + Math.sin(scrollPct * Math.PI * 4) * 5);
         const t2 = setTimeout(() => setBubbleVisible(false), 2500);
         timers.current.push(t2);
       }, 1200);

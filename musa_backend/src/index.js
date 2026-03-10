@@ -630,7 +630,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
 
 app.post(
   "/upload_flujo",

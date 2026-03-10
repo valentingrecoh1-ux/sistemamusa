@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const moment = require("moment-timezone");
 
-module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, mpClient, io }) {
+module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io }) {
   let mpPreference = null;
   let mpPayment = null;
   if (mpClient) {
@@ -1151,6 +1151,23 @@ IMPORTANT RULES:
     } catch (err) {
       console.error("Error token cliente:", err.message);
       res.status(500).json({ error: "Error al obtener token" });
+    }
+  });
+
+  // GET /api/tienda/eventos - Eventos publicos (proximos y en_curso)
+  router.get("/eventos", async (req, res) => {
+    try {
+      const eventos = await Evento.find({
+        estado: { $in: ["proximo", "en_curso"] },
+      })
+        .select("nombre descripcion fecha capacidadMaxima precioPorPersona estado")
+        .sort({ fecha: 1 })
+        .limit(20)
+        .lean();
+      res.json(eventos);
+    } catch (err) {
+      console.error("Error fetch eventos publicos:", err.message);
+      res.json([]);
     }
   });
 

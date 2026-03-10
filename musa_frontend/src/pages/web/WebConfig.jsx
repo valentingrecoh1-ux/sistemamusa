@@ -33,6 +33,10 @@ export default function WebConfig() {
     setConfig((prev) => ({ ...prev, [field]: val }));
   };
 
+  const handleOrigen = (field) => (e) => {
+    setConfig((prev) => ({ ...prev, origenEnvio: { ...prev.origenEnvio, [field]: e.target.value } }));
+  };
+
   const handleSave = () => {
     setSaving(true);
     socket.emit('update-config-tienda', config, (res) => {
@@ -132,6 +136,76 @@ export default function WebConfig() {
             <div className={s.field} style={{ marginTop: 8 }}>
               <label>Costo de envio ($)</label>
               <input type="number" value={config.costoEnvio} onChange={handleField('costoEnvio')} min={0} />
+            </div>
+          )}
+        </div>
+
+        {/* Logistica integrada */}
+        <div className={s.card}>
+          <h3 className={s.cardTitle}><i className="bi bi-box-seam" /> Logistica integrada</h3>
+          <p className={s.cardHint}>Conecta Shipnow y/o Moova para cotizar envios en tiempo real. Si ninguno esta activo, se usa el costo fijo de arriba.</p>
+
+          <h4 className={s.subTitle}>Origen de envios</h4>
+          <div className={s.row}>
+            <div className={s.field}>
+              <label>Direccion de despacho</label>
+              <input type="text" value={config.origenEnvio?.direccion || ''} onChange={handleOrigen('direccion')} placeholder="Araoz 2785" />
+            </div>
+            <div className={s.field}>
+              <label>Codigo postal</label>
+              <input type="text" value={config.origenEnvio?.codigoPostal || ''} onChange={handleOrigen('codigoPostal')} placeholder="1425" />
+            </div>
+          </div>
+          <div className={s.row}>
+            <div className={s.field}>
+              <label>Contacto nombre</label>
+              <input type="text" value={config.origenEnvio?.contactoNombre || ''} onChange={handleOrigen('contactoNombre')} placeholder="MUSA Vinoteca" />
+            </div>
+            <div className={s.field}>
+              <label>Contacto telefono</label>
+              <input type="text" value={config.origenEnvio?.contactoTelefono || ''} onChange={handleOrigen('contactoTelefono')} placeholder="1155551234" />
+            </div>
+          </div>
+
+          <div className={s.divider} />
+
+          <h4 className={s.subTitle}>Shipnow</h4>
+          <p className={s.cardHint}>Shipnow cubre todo el pais via Correo Argentino, OCA, Andreani, etc. Pedí tu token a developers@shipnow.com.ar</p>
+          <div className={s.toggleRow}>
+            <label className={s.toggle}>
+              <input type="checkbox" checked={config.shipnowActivo || false} onChange={handleField('shipnowActivo')} />
+              <span>Shipnow activo</span>
+              <div className={s.toggleTrack} />
+            </label>
+          </div>
+          {config.shipnowActivo && (
+            <div className={s.field} style={{ marginTop: 8 }}>
+              <label>Token de API</label>
+              <input type="password" value={config.shipnowToken || ''} onChange={handleField('shipnowToken')} placeholder="Tu token de Shipnow" />
+            </div>
+          )}
+
+          <div className={s.divider} />
+
+          <h4 className={s.subTitle}>Moova</h4>
+          <p className={s.cardHint}>Moova hace envios express en CABA y GBA (2-3hs). Registrate en moova.io para obtener tu App ID y API Key.</p>
+          <div className={s.toggleRow}>
+            <label className={s.toggle}>
+              <input type="checkbox" checked={config.moovaActivo || false} onChange={handleField('moovaActivo')} />
+              <span>Moova activo</span>
+              <div className={s.toggleTrack} />
+            </label>
+          </div>
+          {config.moovaActivo && (
+            <div className={s.row} style={{ marginTop: 8 }}>
+              <div className={s.field}>
+                <label>App ID</label>
+                <input type="text" value={config.moovaAppId || ''} onChange={handleField('moovaAppId')} placeholder="Tu App ID de Moova" />
+              </div>
+              <div className={s.field}>
+                <label>API Key</label>
+                <input type="password" value={config.moovaApiKey || ''} onChange={handleField('moovaApiKey')} placeholder="Tu API Key de Moova" />
+              </div>
             </div>
           )}
         </div>

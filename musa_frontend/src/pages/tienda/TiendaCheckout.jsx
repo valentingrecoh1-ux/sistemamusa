@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { crearPedido, fetchConfig } from '../../lib/tiendaApi';
+import { crearPedido, fetchConfig, cotizarEnvio } from '../../lib/tiendaApi';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
@@ -11,10 +11,16 @@ export default function TiendaCheckout() {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
   const [config, setConfig] = useState({});
-  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', notas: '' });
+  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', direccion: '', codigoPostal: '', notas: '' });
   const [entrega, setEntrega] = useState('retiro');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Opciones de envio dinamicas
+  const [opcionesEnvio, setOpcionesEnvio] = useState([]);
+  const [opcionElegida, setOpcionElegida] = useState(null);
+  const [cotizando, setCotizando] = useState(false);
+  const tieneLogistica = config.shipnowActivo || config.moovaActivo;
 
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});
@@ -24,7 +30,40 @@ export default function TiendaCheckout() {
     if (items.length === 0) navigate(tiendaPath('/carrito'));
   }, [items, navigate]);
 
-  const costoEnvio = entrega === 'envio' && config.envioHabilitado ? (config.costoEnvio || 0) : 0;
+  // Cotizar cuando cambia la direccion/CP y esta en modo envio
+  const handleCotizar = useCallback(async () => {
+    if (entrega !== 'envio') return;
+    if (!tieneLogistica) return;
+    if (!form.direccion.trim() && !form.codigoPostal.trim()) return;
+
+    setCotizando(true);
+    setOpcionElegida(null);
+    try {
+      const res = await cotizarEnvio({
+        direccion: form.direccion,
+        codigoPostal: form.codigoPostal,
+        ciudad: 'CABA',
+        provincia: 'CABA',
+      });
+      const opts = res.opciones || [];
+      setOpcionesEnvio(opts);
+      if (opts.length > 0) setOpcionElegida(opts[0]);
+    } catch {
+      setOpcionesEnvio([]);
+    } finally {
+      setCotizando(false);
+    }
+  }, [entrega, form.direccion, form.codigoPostal, tieneLogistica]);
+
+  // Costo de envio
+  let costoEnvio = 0;
+  if (entrega === 'envio') {
+    if (tieneLogistica && opcionElegida) {
+      costoEnvio = opcionElegida.precio || 0;
+    } else if (config.envioHabilitado) {
+      costoEnvio = config.costoEnvio || 0;
+    }
+  }
   const montoTotal = totalPrice + costoEnvio;
 
   const handleField = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -48,6 +87,7 @@ export default function TiendaCheckout() {
         items: items.map((i) => ({ productoId: i.productoId, nombre: i.nombre, cantidad: i.cantidad })),
         cliente: form,
         entrega,
+        opcionEnvio: entrega === 'envio' && opcionElegida ? opcionElegida : null,
       });
 
       if (result.error) {
@@ -56,14 +96,12 @@ export default function TiendaCheckout() {
         return;
       }
 
-      // Si hay link de MP, redirigir
       if (result.initPoint) {
         clearCart();
         window.location.href = result.initPoint;
         return;
       }
 
-      // Sin MP, ir a resultado
       clearCart();
       navigate(`${tiendaPath('/checkout/resultado')}?pedidoId=${result.pedidoId}&numeroPedido=${result.numeroPedido}&noMp=1`);
     } catch (err) {
@@ -73,6 +111,12 @@ export default function TiendaCheckout() {
   };
 
   if (items.length === 0) return null;
+
+  const formatEntrega = (opt) => {
+    if (!opt.entregaMin) return '';
+    const d = new Date(opt.entregaMin);
+    return d.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
 
   return (
     <div className={s.checkout}>
@@ -117,21 +161,88 @@ export default function TiendaCheckout() {
                   <span className={s.deliveryPrice}>Gratis</span>
                 </label>
               )}
-              {config.envioHabilitado && (
+              {(config.envioHabilitado || tieneLogistica) && (
                 <label className={`${s.deliveryOption} ${entrega === 'envio' ? s.deliveryActive : ''}`}>
                   <input type="radio" name="entrega" value="envio" checked={entrega === 'envio'} onChange={() => setEntrega('envio')} />
                   <div>
                     <strong>Envio a domicilio</strong>
-                    <span>Recibilo en tu puerta</span>
+                    <span>{tieneLogistica ? 'Cotiza ingresando tu direccion' : 'Recibilo en tu puerta'}</span>
                   </div>
-                  <span className={s.deliveryPrice}>{config.costoEnvio ? money(config.costoEnvio) : 'Gratis'}</span>
+                  {!tieneLogistica && (
+                    <span className={s.deliveryPrice}>{config.costoEnvio ? money(config.costoEnvio) : 'Gratis'}</span>
+                  )}
                 </label>
               )}
             </div>
+
             {entrega === 'envio' && (
-              <div className={s.field} style={{ marginTop: 12 }}>
-                <label>Direccion de envio *</label>
-                <input type="text" value={form.direccion} onChange={handleField('direccion')} placeholder="Calle, numero, piso, depto, localidad" />
+              <div style={{ marginTop: 12 }}>
+                <div className={s.formGrid}>
+                  <div className={s.field}>
+                    <label>Direccion de envio *</label>
+                    <input type="text" value={form.direccion} onChange={handleField('direccion')} placeholder="Calle, numero, piso, depto" />
+                  </div>
+                  {tieneLogistica && (
+                    <div className={s.field}>
+                      <label>Codigo postal</label>
+                      <input type="text" value={form.codigoPostal} onChange={handleField('codigoPostal')} placeholder="1425" />
+                    </div>
+                  )}
+                </div>
+
+                {tieneLogistica && (
+                  <>
+                    <button
+                      type="button"
+                      className={s.cotizarBtn}
+                      onClick={handleCotizar}
+                      disabled={cotizando || (!form.direccion.trim() && !form.codigoPostal.trim())}
+                    >
+                      {cotizando ? (
+                        <><i className="bi bi-hourglass-split" /> Cotizando...</>
+                      ) : (
+                        <><i className="bi bi-calculator" /> Cotizar envio</>
+                      )}
+                    </button>
+
+                    {opcionesEnvio.length > 0 && (
+                      <div className={s.shippingOptions}>
+                        {opcionesEnvio.map((opt, i) => (
+                          <label key={i} className={`${s.shippingOption} ${opcionElegida === opt ? s.shippingOptionActive : ''}`}>
+                            <input
+                              type="radio"
+                              name="opcionEnvio"
+                              checked={opcionElegida === opt}
+                              onChange={() => setOpcionElegida(opt)}
+                            />
+                            <div className={s.shippingOptionInfo}>
+                              <div className={s.shippingOptionTop}>
+                                <span className={s.shippingProvider}>
+                                  {opt.proveedor === 'shipnow' ? 'Shipnow' : opt.proveedor === 'moova' ? 'Moova' : 'Envio'}
+                                </span>
+                                <span className={s.shippingService}>{opt.servicio}</span>
+                              </div>
+                              {opt.entregaMin && (
+                                <span className={s.shippingDate}>
+                                  <i className="bi bi-calendar3" /> Llega {formatEntrega(opt)}
+                                </span>
+                              )}
+                            </div>
+                            <span className={s.shippingPrice}>
+                              {opt.precio > 0 ? money(opt.precio) : 'Gratis'}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {opcionesEnvio.length === 0 && !cotizando && form.direccion.trim() && (
+                      <p className={s.shippingHint}>
+                        <i className="bi bi-info-circle" /> Ingresa tu direccion y presiona "Cotizar envio"
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -160,7 +271,7 @@ export default function TiendaCheckout() {
             </div>
             {costoEnvio > 0 && (
               <div className={s.summaryRow}>
-                <span>Envio</span>
+                <span>Envio ({opcionElegida?.proveedor === 'shipnow' ? 'Shipnow' : opcionElegida?.proveedor === 'moova' ? 'Moova' : 'Domicilio'})</span>
                 <span>{money(costoEnvio)}</span>
               </div>
             )}

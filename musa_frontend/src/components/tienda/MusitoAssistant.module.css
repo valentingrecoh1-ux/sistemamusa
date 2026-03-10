@@ -45,6 +45,45 @@
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ── Quick Menu ── */
+.quickMenu {
+  background: #1e1e2e;
+  border: 1px solid rgba(124,58,237,0.3);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: bubbleIn 0.25s ease-out;
+  min-width: 180px;
+}
+.quickMenuTitle {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c084fc;
+  padding: 2px 6px 6px;
+  border-bottom: 1px solid rgba(124,58,237,0.15);
+  margin-bottom: 2px;
+}
+.quickMenuItem {
+  background: rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.15);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #e2e8f0;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.quickMenuItem:hover {
+  background: rgba(124,58,237,0.2);
+  border-color: #7c3aed;
+  color: #fff;
+}
+
 /* ── Character Container ── */
 .character {
   position: relative;
@@ -82,7 +121,7 @@
   left: 8px;
   width: 8px;
   height: 4px;
-  background: #7c3aed;
+  background: inherit;
   border-radius: 3px 3px 0 0;
 }
 
@@ -153,9 +192,10 @@
   position: absolute;
   width: 6px;
   height: 14px;
-  background: #6d28d9;
+  background: rgba(0,0,0,0.15);
   border-radius: 2px;
   top: 1px;
+  transition: transform 0.3s;
 }
 .armL { left: -7px; transform-origin: top center; }
 .armR { right: -7px; transform-origin: top center; }
@@ -195,6 +235,67 @@
   margin-top: 3px;
   text-shadow: 0 1px 3px rgba(0,0,0,0.6);
   letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════
+   LEVEL ACCESSORIES (on .container)
+   ══════════════════════════════════ */
+
+/* Boina (Catador lvl 2) - beret on top of hair */
+.acc_boina .hair::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -2px;
+  width: 28px;
+  height: 8px;
+  background: #dc2626;
+  border-radius: 50% 50% 0 0;
+  z-index: 2;
+}
+
+/* Lentes (Conocedor lvl 3) - glasses on eyes */
+.acc_lentes .head::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 2px;
+  width: 20px;
+  height: 7px;
+  border: 1.5px solid #374151;
+  border-radius: 3px;
+  background: rgba(59,130,246,0.15);
+  z-index: 2;
+  box-shadow: inset 8px 0 0 0 transparent;
+}
+
+/* Chef hat (Sommelier lvl 4) */
+.acc_chef .hair {
+  background: #f5f5f5 !important;
+  height: 10px;
+  border-radius: 2px 2px 0 0;
+}
+.acc_chef .hair::after {
+  background: #f5f5f5;
+  width: 20px;
+  height: 12px;
+  top: -12px;
+  left: 2px;
+  border-radius: 6px 6px 0 0;
+}
+
+/* Corona (Maestro lvl 5) */
+.acc_corona .hair::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 2px;
+  width: 20px;
+  height: 10px;
+  background: #fbbf24;
+  clip-path: polygon(0% 100%, 10% 30%, 25% 70%, 40% 10%, 55% 70%, 75% 30%, 90% 70%, 100% 100%);
+  z-index: 2;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
 /* ══════════════════════════════════
@@ -247,14 +348,146 @@
   100% { transform: rotate(-45deg); }
 }
 
+/* ── Dizzy: spinning eyes, wobbly body ── */
+.pose_dizzy .sprite {
+  animation: dizzyWobble 0.5s ease-in-out infinite;
+}
+.pose_dizzy .eyeL, .pose_dizzy .eyeR {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid #1e1e1e;
+  animation: dizzyEyes 0.8s linear infinite;
+}
+.pose_dizzy .mouth {
+  width: 8px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid #92400e;
+}
+
+@keyframes dizzyWobble {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes dizzyEyes {
+  0% { transform: rotate(0); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── Sleep: closed eyes, breathing, zzZ ── */
+.pose_sleep .sprite {
+  animation: sleepBreathe 4s ease-in-out infinite;
+}
+.pose_sleep .eyeL, .pose_sleep .eyeR {
+  height: 2px;
+  border-radius: 2px;
+  top: 8px;
+}
+.pose_sleep .mouth {
+  display: none;
+}
+.pose_sleep .head {
+  animation: sleepNod 4s ease-in-out infinite;
+}
+
+.sleepZzz {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 10px;
+  color: #a78bfa;
+  font-weight: 800;
+  animation: zzzFloat 2s ease-in-out infinite;
+  pointer-events: none;
+}
+.sleepZzz::before {
+  content: 'z';
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  font-size: 8px;
+  opacity: 0.6;
+  animation: zzzFloat 2s ease-in-out infinite 0.5s;
+}
+.sleepZzz::after {
+  content: 'Z';
+  position: absolute;
+  top: -18px;
+  right: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+  animation: zzzFloat 2s ease-in-out infinite 1s;
+}
+
+@keyframes sleepBreathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+@keyframes sleepNod {
+  0%, 100% { transform: rotate(0); }
+  30%, 70% { transform: rotate(8deg); }
+}
+@keyframes zzzFloat {
+  0% { transform: translateY(0); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+
+/* ── Dance: full body groove ── */
+.pose_dance .sprite {
+  animation: danceBounce 0.35s ease-in-out infinite;
+}
+.pose_dance .armL {
+  animation: danceArmL 0.35s ease-in-out infinite;
+}
+.pose_dance .armR {
+  animation: danceArmR 0.35s ease-in-out infinite;
+}
+.pose_dance .legL {
+  animation: danceLegL 0.35s ease-in-out infinite;
+}
+.pose_dance .legR {
+  animation: danceLegR 0.35s ease-in-out infinite;
+}
+.pose_dance .head {
+  animation: danceHead 0.7s ease-in-out infinite;
+}
+
+@keyframes danceBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes danceArmL {
+  0%, 100% { transform: rotate(-60deg); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes danceArmR {
+  0%, 100% { transform: rotate(20deg); }
+  50% { transform: rotate(-60deg); }
+}
+@keyframes danceLegL {
+  0%, 100% { transform: rotate(-10deg) translateX(-2px); }
+  50% { transform: rotate(10deg) translateX(2px); }
+}
+@keyframes danceLegR {
+  0%, 100% { transform: rotate(10deg) translateX(2px); }
+  50% { transform: rotate(-10deg) translateX(-2px); }
+}
+@keyframes danceHead {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
 /* ── Moto: on motorcycle for delivery ── */
 .pose_moto .sprite {
   animation: motoVibrate 0.15s infinite alternate;
 }
 .pose_moto .legs { display: none; }
-.pose_moto .body {
-  border-radius: 2px 2px 4px 4px;
-}
+.pose_moto .body { border-radius: 2px 2px 4px 4px; }
 
 @keyframes motoVibrate {
   0% { transform: translateY(0) rotate(-1deg); }
@@ -272,13 +505,10 @@
   border-radius: 6px 14px 4px 4px;
   z-index: -1;
   box-shadow:
-    /* wheels */
     -12px 14px 0 4px #374151,
     12px 14px 0 4px #374151,
-    /* wheel centers */
     -12px 14px 0 2px #9ca3af,
     12px 14px 0 2px #9ca3af,
-    /* headlight */
     22px -2px 0 2px #fbbf24;
 }
 
@@ -302,8 +532,7 @@
 .paqueteOverlay::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 0; right: 0;
+  top: 50%; left: 0; right: 0;
   height: 2px;
   background: #fbbf24;
   transform: translateY(-50%);
@@ -311,8 +540,7 @@
 .paqueteOverlay::after {
   content: '';
   position: absolute;
-  left: 50%;
-  top: 0; bottom: 0;
+  left: 50%; top: 0; bottom: 0;
   width: 2px;
   background: #fbbf24;
   transform: translateX(-50%);
@@ -374,25 +602,39 @@
    CONTROLS
    ══════════════════════════════════ */
 
-.dismissBtn {
+.actionBtns {
+  display: flex;
+  gap: 4px;
   position: absolute;
   top: -4px;
   right: -4px;
-  width: 18px;
-  height: 18px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.container:hover .actionBtns { opacity: 1; }
+
+.actionBtn, .dismissBtn {
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: rgba(0,0,0,0.5);
-  color: #fff;
   border: none;
   cursor: pointer;
   font-size: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
+  transition: transform 0.15s;
 }
-.container:hover .dismissBtn { opacity: 1; }
+.actionBtn {
+  background: #7c3aed;
+  color: #fff;
+}
+.actionBtn:hover { transform: scale(1.15); }
+.dismissBtn {
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+}
+.dismissBtn:hover { transform: scale(1.15); }
 
 /* ── Minimized button ── */
 .minimizedBtn {
@@ -459,6 +701,7 @@
 @media (max-width: 640px) {
   .container { bottom: 85px; right: 12px; }
   .bubble { max-width: 180px; font-size: 10px; padding: 6px 10px; }
+  .quickMenu { min-width: 160px; }
   .minimizedBtn { bottom: 85px; right: 12px; }
   .reactivateBtn { bottom: 85px; right: 12px; }
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos } from '../../lib/tiendaApi';
+import { useMusito } from '../../context/MusitoContext';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaPerfil.module.css';
 
@@ -166,6 +167,7 @@ export default function TiendaPerfil() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { updateLevel } = useMusito();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -228,6 +230,11 @@ export default function TiendaPerfil() {
     setExpandedProv(expandedProv === provId ? null : provId);
     moveMusito(provId);
   }, [expandedProv, moveMusito]);
+
+  // Sync Musito outfit with user level
+  useEffect(() => {
+    if (perfil?.nivelNum != null) updateLevel(perfil.nivelNum);
+  }, [perfil?.nivelNum, updateLevel]);
 
   // Cleanup timers
   useEffect(() => {

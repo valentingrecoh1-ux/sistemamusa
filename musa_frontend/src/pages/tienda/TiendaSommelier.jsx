@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { IP, fotoSrc } from '../../main';
 import { tiendaPath } from '../../tiendaConfig';
 import { dialog } from '../../components/shared/dialog';
@@ -9,6 +9,7 @@ import s from './TiendaSommelier.module.css';
 
 export default function TiendaSommelier() {
   const { addItem } = useCart();
+  const [searchParams] = useSearchParams();
   const [messages, setMessages] = useState([
     { role: 'assistant', text: 'Hola! Soy el sommelier virtual de MUSA. Contame que estas buscando: que vas a comer, para que ocasion, o simplemente que tipo de vino te gusta, y te recomiendo los mejores vinos para vos.\n\nPodes escribirme o usar el microfono para hablarme.' },
   ]);
@@ -19,10 +20,22 @@ export default function TiendaSommelier() {
   const chatEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const autoSentRef = useRef(false);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-send query from Musito quick menu (?q=...)
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && !autoSentRef.current && !loading) {
+      autoSentRef.current = true;
+      // Small delay to let component mount
+      const t = setTimeout(() => handleSend(q), 500);
+      return () => clearTimeout(t);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // MediaRecorder + Whisper API
   const startRecording = async () => {

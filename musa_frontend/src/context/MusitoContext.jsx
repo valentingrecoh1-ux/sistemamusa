@@ -6,6 +6,7 @@ const MusitoContext = createContext();
 
 const VISITED_KEY = 'musito_visited';
 const DISMISSED_KEY = 'musito_dismissed';
+const LEVEL_KEY = 'musito_user_level';
 
 // Map route patterns to section ids
 function getSection(pathname) {
@@ -22,12 +23,51 @@ function getSection(pathname) {
   return 'home';
 }
 
-// Contextual messages Musito says on each page
+// ── Time-of-day messages ──
+function getTimeMessage() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 9) return 'Buen dia! Tempranito eligiendo vinos... me gusta!';
+  if (h >= 9 && h < 12) return 'Linda manana para explorar vinos nuevos!';
+  if (h >= 12 && h < 14) return 'Mediodia... un blanco fresquito para el almuerzo?';
+  if (h >= 14 && h < 18) return 'Tarde perfecta para descubrir tu proximo vino favorito.';
+  if (h >= 18 && h < 21) return 'Arranca la noche... hora de un buen tinto!';
+  if (h >= 21 || h < 2) return 'Noche de vinos! Ideal para un Malbec con buena compania.';
+  return 'Trasnochando con vinos? Me gusta tu estilo!';
+}
+
+// ── Product-specific reactions when adding to cart ──
+const CEPA_REACTIONS = {
+  malbec: ['Malbec! El rey de Argentina!', 'Excelente eleccion, no falla un Malbec!'],
+  cabernet: ['Cabernet Sauvignon, clasico y elegante!', 'Buen Cabernet! Ideal con carnes.'],
+  'cabernet sauvignon': ['Cabernet Sauvignon, clasico y elegante!', 'Buen Cabernet! Ideal con carnes.'],
+  bonarda: ['Bonarda! Subestimada y deliciosa.', 'La Bonarda argentina es unica!'],
+  'pinot noir': ['Pinot Noir, para paladares exigentes!', 'Elegante eleccion!'],
+  syrah: ['Syrah! Especiado y potente.', 'Un gran Syrah, me encanta!'],
+  torrontes: ['Torrontes! Nuestra cepa blanca emblema!', 'Aromatico y fresco, buenisimo!'],
+  chardonnay: ['Chardonnay, siempre un acierto!', 'Clasico y versatil!'],
+  'sauvignon blanc': ['Sauvignon Blanc, fresco y citrico!', 'Ideal para un dia caluroso!'],
+  blend: ['Un blend! Lo mejor de cada cepa.', 'Los blends son pura creatividad!'],
+  rose: ['Rose! Fresco y divertido.', 'Perfecto para el aperitivo!'],
+  espumante: ['Burbujas! Siempre hay algo que celebrar!', 'A brindar se ha dicho!'],
+  merlot: ['Merlot! Suave y amigable.', 'Nunca decepciona un buen Merlot!'],
+};
+
+function getProductReaction(product) {
+  if (!product) return 'Al carrito! Buena eleccion!';
+  const cepa = (product.cepa || '').toLowerCase();
+  for (const [key, msgs] of Object.entries(CEPA_REACTIONS)) {
+    if (cepa.includes(key)) return msgs[Math.floor(Math.random() * msgs.length)];
+  }
+  if (product.bodega) return `${product.bodega}! Gran bodega, buen ojo!`;
+  return 'Al carrito! Buena eleccion!';
+}
+
+// ── Contextual messages per section ──
 const SECTION_MESSAGES = {
   home: [
-    { text: 'Bienvenido a MUSA! Soy Musito, tu guia vinicola.', delay: 2000 },
-    { text: 'Explora nuestros vinos por categoria o busca tu favorito.', delay: 8000 },
-    { text: 'Te recomiendo ver el catalogo completo!', delay: 15000 },
+    { text: null, delay: 2000, useTime: true },
+    { text: 'Explora nuestros vinos por categoria o busca tu favorito.', delay: 9000 },
+    { text: 'Te recomiendo ver el catalogo completo!', delay: 16000 },
   ],
   catalogo: [
     { text: 'Aca vas a encontrar todos nuestros vinos!', delay: 1500 },
@@ -75,7 +115,7 @@ const SECTION_MESSAGES = {
   ],
 };
 
-// Tutorial tips for sections the user hasn't visited yet
+// ── Tutorial tips for unvisited sections ──
 const SECTION_TUTORIALS = {
   catalogo: 'Todavia no visitaste el catalogo. Hay mas de 100 vinos esperandote!',
   sommelier: 'Conoces a nuestro Sommelier IA? Te recomienda vinos con tu voz!',
@@ -85,7 +125,7 @@ const SECTION_TUTORIALS = {
   perfil: 'Crea tu perfil y lleva un registro de tus vinos favoritos.',
 };
 
-// Cart-aware messages
+// ── Cart count messages ──
 function getCartMessage(totalItems) {
   if (totalItems === 1) return 'Tenes 1 vino en el carrito. Buen comienzo!';
   if (totalItems > 1 && totalItems <= 3) return `Llevas ${totalItems} vinos! Linda seleccion.`;
@@ -93,10 +133,29 @@ function getCartMessage(totalItems) {
   return null;
 }
 
+// ── Quick sommelier suggestions ──
+const QUICK_SUGGESTIONS = [
+  { label: 'Recomendame un tinto', query: 'Recomendame un buen tinto para esta noche' },
+  { label: 'Para regalar', query: 'Quiero un vino para regalar, algo especial' },
+  { label: 'Sorprendeme', query: 'Sorprendeme con algo que no conozca' },
+  { label: 'Maridaje', query: 'Que vino va bien con asado?' },
+];
+
+// ── Level outfits: hat/accessory color overrides per level ──
+const LEVEL_OUTFITS = {
+  0: { name: 'Semilla', hair: '#7c3aed', body: '#7c3aed', accessory: null },
+  1: { name: 'Uva', hair: '#7c3aed', body: '#6d28d9', accessory: null },
+  2: { name: 'Catador', hair: '#7c3aed', body: '#4c1d95', accessory: 'boina' },
+  3: { name: 'Conocedor', hair: '#f59e0b', body: '#1e3a5f', accessory: 'lentes' },
+  4: { name: 'Sommelier', hair: '#f5f5f5', body: '#1e1e1e', accessory: 'chef' },
+  5: { name: 'Maestro', hair: '#fbbf24', body: '#7c2d12', accessory: 'corona' },
+};
+
 export function MusitoProvider({ children }) {
   const { pathname } = useLocation();
-  const { totalItems } = useCart();
+  const { totalItems, items } = useCart();
   const section = getSection(pathname);
+  const prevItemsRef = useRef(totalItems);
 
   const [visited, setVisited] = useState(() => {
     try { return JSON.parse(localStorage.getItem(VISITED_KEY)) || []; }
@@ -104,12 +163,24 @@ export function MusitoProvider({ children }) {
   });
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === '1');
   const [message, setMessage] = useState('');
-  const [pose, setPose] = useState('idle'); // idle, walk, moto, paquete, celebrar, wave
+  const [pose, setPose] = useState('idle'); // idle, walk, moto, paquete, celebrar, wave, dizzy, sleep, dance
   const [visible, setVisible] = useState(true);
   const [bubbleVisible, setBubbleVisible] = useState(false);
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [userLevel, setUserLevel] = useState(() => {
+    try { return parseInt(localStorage.getItem(LEVEL_KEY)) || 0; }
+    catch { return 0; }
+  });
   const timers = useRef([]);
+  const idleTimer = useRef(null);
+  const scrollTimer = useRef(null);
+  const lastScrollY = useRef(0);
+  const rapidScrollCount = useRef(0);
 
-  // Track visited sections
+  const outfit = LEVEL_OUTFITS[userLevel] || LEVEL_OUTFITS[0];
+
+  // ── Track visited sections ──
   useEffect(() => {
     if (!visited.includes(section)) {
       const next = [...visited, section];
@@ -118,7 +189,104 @@ export function MusitoProvider({ children }) {
     }
   }, [section]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Clear timers on section change
+  // ── Cart reaction: detect new items added ──
+  useEffect(() => {
+    if (dismissed) return;
+    if (totalItems > prevItemsRef.current) {
+      // A new item was added - find it
+      const lastItem = items[items.length - 1];
+      const reaction = getProductReaction(lastItem);
+      setMessage(reaction);
+      setBubbleVisible(true);
+      setPose('celebrar');
+      const t = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 3500);
+      timers.current.push(t);
+    }
+    prevItemsRef.current = totalItems;
+  }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Easter egg: rapid scroll = dizzy ──
+  useEffect(() => {
+    if (dismissed) return;
+    const handleScroll = () => {
+      const delta = Math.abs(window.scrollY - lastScrollY.current);
+      lastScrollY.current = window.scrollY;
+      if (delta > 200) {
+        rapidScrollCount.current++;
+        if (rapidScrollCount.current >= 5 && pose !== 'dizzy') {
+          setPose('dizzy');
+          setMessage('Uy... para un poco que me mareo!');
+          setBubbleVisible(true);
+          clearTimeout(scrollTimer.current);
+          scrollTimer.current = setTimeout(() => {
+            setPose('idle');
+            setBubbleVisible(false);
+            rapidScrollCount.current = 0;
+          }, 3000);
+        }
+      }
+      clearTimeout(scrollTimer.current);
+      scrollTimer.current = setTimeout(() => { rapidScrollCount.current = 0; }, 1000);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [dismissed, pose]);
+
+  // ── Easter egg: idle too long = sleep ──
+  useEffect(() => {
+    if (dismissed) return;
+    const resetIdle = () => {
+      clearTimeout(idleTimer.current);
+      if (pose === 'sleep') {
+        setPose('idle');
+        setMessage('Ah! Volvi! Me habia dormido...');
+        setBubbleVisible(true);
+        const t = setTimeout(() => setBubbleVisible(false), 3000);
+        timers.current.push(t);
+      }
+      idleTimer.current = setTimeout(() => {
+        if (!dismissed) {
+          setPose('sleep');
+          setMessage('zzZ... zzZ...');
+          setBubbleVisible(true);
+        }
+      }, 45000); // 45s of inactivity
+    };
+    resetIdle();
+    window.addEventListener('mousemove', resetIdle, { passive: true });
+    window.addEventListener('touchstart', resetIdle, { passive: true });
+    window.addEventListener('keydown', resetIdle, { passive: true });
+    return () => {
+      clearTimeout(idleTimer.current);
+      window.removeEventListener('mousemove', resetIdle);
+      window.removeEventListener('touchstart', resetIdle);
+      window.removeEventListener('keydown', resetIdle);
+    };
+  }, [dismissed, pose]);
+
+  // ── Easter egg: multiple clicks = dance ──
+  const handleMusitoClick = useCallback(() => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+    if (newCount >= 5) {
+      setPose('dance');
+      setMessage('Dale que suena el ritmo!');
+      setBubbleVisible(true);
+      setClickCount(0);
+      const t = setTimeout(() => { setPose('idle'); setBubbleVisible(false); }, 4000);
+      timers.current.push(t);
+    }
+    // Reset click count after 2 seconds
+    const t = setTimeout(() => setClickCount(0), 2000);
+    timers.current.push(t);
+  }, [clickCount]);
+
+  // ── Toggle quick sommelier menu ──
+  const toggleQuickMenu = useCallback(() => {
+    setShowQuickMenu((prev) => !prev);
+  }, []);
+
+  // ── Clear timers on section change ──
   useEffect(() => {
     return () => {
       timers.current.forEach(clearTimeout);
@@ -126,11 +294,12 @@ export function MusitoProvider({ children }) {
     };
   }, [section]);
 
-  // Show contextual messages when section changes
+  // ── Show contextual messages when section changes ──
   useEffect(() => {
     if (dismissed) return;
     timers.current.forEach(clearTimeout);
     timers.current = [];
+    setShowQuickMenu(false);
 
     // Entrance animation
     setPose('walk');
@@ -138,9 +307,9 @@ export function MusitoProvider({ children }) {
     timers.current.push(walkTimer);
 
     const messages = SECTION_MESSAGES[section] || [];
-    messages.forEach(({ text, delay, pose: msgPose }) => {
+    messages.forEach(({ text, delay, pose: msgPose, useTime }) => {
       const t = setTimeout(() => {
-        setMessage(text);
+        setMessage(useTime ? getTimeMessage() : text);
         setBubbleVisible(true);
         if (msgPose) setPose(msgPose);
 
@@ -153,8 +322,8 @@ export function MusitoProvider({ children }) {
       timers.current.push(t);
     });
 
-    // Cart-aware message after section messages
-    if (totalItems > 0 && section !== 'carrito' && section !== 'checkout' && section !== 'resultado') {
+    // Cart-aware message
+    if (totalItems > 0 && !['carrito', 'checkout', 'resultado'].includes(section)) {
       const cartMsg = getCartMessage(totalItems);
       if (cartMsg) {
         const lastDelay = messages.length > 0 ? messages[messages.length - 1].delay + 6000 : 5000;
@@ -168,8 +337,8 @@ export function MusitoProvider({ children }) {
       }
     }
 
-    // Tutorial tip for an unvisited section
-    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((s) => !visited.includes(s) && s !== section);
+    // Tutorial tip for unvisited sections
+    const unvisitedSections = Object.keys(SECTION_TUTORIALS).filter((sec) => !visited.includes(sec) && sec !== section);
     if (unvisitedSections.length > 0) {
       const randomSection = unvisitedSections[Math.floor(Math.random() * unvisitedSections.length)];
       const tip = SECTION_TUTORIALS[randomSection];
@@ -184,6 +353,12 @@ export function MusitoProvider({ children }) {
       timers.current.push(t);
     }
   }, [section, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Update level from perfil page data ──
+  const updateLevel = useCallback((level) => {
+    setUserLevel(level);
+    localStorage.setItem(LEVEL_KEY, String(level));
+  }, []);
 
   const dismiss = useCallback(() => {
     setDismissed(true);
@@ -200,7 +375,9 @@ export function MusitoProvider({ children }) {
   return (
     <MusitoContext.Provider value={{
       section, message, pose, visible, bubbleVisible, dismissed, visited,
+      outfit, userLevel, showQuickMenu, quickSuggestions: QUICK_SUGGESTIONS,
       dismiss, reactivate, setMessage, setBubbleVisible, setPose,
+      handleMusitoClick, toggleQuickMenu, setShowQuickMenu, updateLevel,
     }}>
       {children}
     </MusitoContext.Provider>

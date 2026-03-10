@@ -11,29 +11,34 @@ const formatFecha = (f) => {
   return d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
-// Posiciones predefinidas para las fotos flotantes (distribuidas para no solaparse)
+// Posiciones distribuidas por toda la pagina para que las fotos vuelen libres
 const FLOAT_POSITIONS = [
-  { left: '5%', top: '8%', rotate: -8, delay: 0, speed: 6 },
-  { left: '60%', top: '5%', rotate: 5, delay: 1.5, speed: 7 },
-  { left: '30%', top: '55%', rotate: -4, delay: 3, speed: 5.5 },
-  { left: '75%', top: '50%', rotate: 7, delay: 0.8, speed: 8 },
-  { left: '10%', top: '40%', rotate: -6, delay: 2.2, speed: 6.5 },
-  { left: '50%', top: '30%', rotate: 3, delay: 4, speed: 7.5 },
+  { left: '2%',  top: '3%',  rotate: -8,  delay: 0,   speed: 6   },
+  { left: '72%', top: '8%',  rotate: 5,   delay: 1.5, speed: 7   },
+  { left: '15%', top: '30%', rotate: -4,  delay: 3,   speed: 5.5 },
+  { left: '78%', top: '38%', rotate: 7,   delay: 0.8, speed: 8   },
+  { left: '5%',  top: '60%', rotate: -6,  delay: 2.2, speed: 6.5 },
+  { left: '65%', top: '65%', rotate: 3,   delay: 4,   speed: 7.5 },
 ];
 
 function FloatingGallery({ fotos }) {
   const containerRef = useRef(null);
-  const [scrollY, setScrollY] = useState(0);
+  const scrollRef = useRef(0);
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
     const scrollEl = document.querySelector('[class*="tiendaContent"]') || document.querySelector('[class*="content"]') || window;
+    let ticking = false;
+
     const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const viewH = window.innerHeight;
-      // Valor de 0 a 1 basado en cuanto se ve la seccion
-      const progress = 1 - (rect.top / viewH);
-      setScrollY(progress);
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const target = scrollEl === window ? window.scrollY : scrollEl.scrollTop;
+        scrollRef.current = target;
+        forceUpdate((n) => n + 1);
+        ticking = false;
+      });
     };
 
     const target = scrollEl === window ? window : scrollEl;
@@ -44,12 +49,17 @@ function FloatingGallery({ fotos }) {
 
   if (!fotos || fotos.length === 0) return null;
 
+  const sy = scrollRef.current;
+
   return (
     <div className={s.floatingGallery} ref={containerRef}>
       {fotos.slice(0, 6).map((url, i) => {
         const pos = FLOAT_POSITIONS[i % FLOAT_POSITIONS.length];
-        const parallaxY = scrollY * (30 + i * 12);
-        const parallaxRotate = pos.rotate + scrollY * (i % 2 === 0 ? 3 : -3);
+        // Cada foto se mueve a distinta velocidad con el scroll
+        const speed = 0.04 + i * 0.015;
+        const parallaxY = sy * speed * (i % 2 === 0 ? -1 : 1);
+        const parallaxX = sy * (0.01 + i * 0.005) * (i % 2 === 0 ? 1 : -1);
+        const parallaxRotate = pos.rotate + sy * 0.008 * (i % 2 === 0 ? 1 : -1);
 
         return (
           <div
@@ -58,7 +68,7 @@ function FloatingGallery({ fotos }) {
             style={{
               left: pos.left,
               top: pos.top,
-              transform: `translateY(${-parallaxY}px) rotate(${parallaxRotate}deg)`,
+              transform: `translate(${parallaxX}px, ${parallaxY}px) rotate(${parallaxRotate}deg)`,
               animationDelay: `${pos.delay}s`,
               animationDuration: `${pos.speed}s`,
             }}
@@ -99,12 +109,8 @@ export default function TiendaEventos() {
         <p className={s.heroSub}>Vivi experiencias unicas con los mejores vinos</p>
       </section>
 
-      {/* Galeria flotante */}
-      {fotos.length > 0 && (
-        <section className={s.gallerySection}>
-          <FloatingGallery fotos={fotos} />
-        </section>
-      )}
+      {/* Fotos flotando libres por toda la pagina */}
+      {fotos.length > 0 && <FloatingGallery fotos={fotos} />}
 
       {/* Proximos Eventos */}
       <section className={s.section}>

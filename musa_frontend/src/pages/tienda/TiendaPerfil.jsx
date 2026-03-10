@@ -24,19 +24,22 @@ const CHARACTER_DATA = [
   { emoji: '👑', title: 'Maestro', bubbles: ['¡Leyenda del vino argentino!', 'Tu colección es envidiable. ¡Lo lograste!'] },
 ];
 
-// ── Argentina wine map ──
+// ── Argentina wine map (positions as % of map container) ──
 const WINE_PROVINCES = [
-  { id: 'salta', name: 'Salta', col: 3, row: 1, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
-  { id: 'catamarca', name: 'Catamarca', col: 2, row: 2, regions: ['Catamarca'] },
-  { id: 'la_rioja', name: 'La Rioja', col: 2, row: 3, regions: ['La Rioja'] },
-  { id: 'san_juan', name: 'San Juan', col: 1, row: 3, regions: ['San Juan'] },
-  { id: 'cordoba', name: 'Córdoba', col: 3, row: 3, regions: ['Córdoba'] },
-  { id: 'entre_rios', name: 'Entre Ríos', col: 4, row: 3, regions: ['Entre Ríos'] },
-  { id: 'mendoza', name: 'Mendoza', col: 1, row: 4, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
-  { id: 'buenos_aires', name: 'Bs.As.', col: 4, row: 4, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
-  { id: 'neuquen', name: 'Neuquén', col: 1, row: 5, regions: ['Neuquén'] },
-  { id: 'rio_negro', name: 'Río Negro', col: 2, row: 5, regions: ['Río Negro', 'Patagonia'] },
+  { id: 'salta', name: 'Salta', top: 8, left: 55, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
+  { id: 'catamarca', name: 'Catamarca', top: 17, left: 40, regions: ['Catamarca'] },
+  { id: 'la_rioja', name: 'La Rioja', top: 26, left: 35, regions: ['La Rioja'] },
+  { id: 'san_juan', name: 'San Juan', top: 35, left: 27, regions: ['San Juan'] },
+  { id: 'cordoba', name: 'Córdoba', top: 28, left: 58, regions: ['Córdoba'] },
+  { id: 'entre_rios', name: 'Entre Ríos', top: 28, left: 78, regions: ['Entre Ríos'] },
+  { id: 'mendoza', name: 'Mendoza', top: 45, left: 24, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
+  { id: 'buenos_aires', name: 'Bs.As.', top: 44, left: 68, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
+  { id: 'neuquen', name: 'Neuquén', top: 56, left: 26, regions: ['Neuquén'] },
+  { id: 'rio_negro', name: 'Río Negro', top: 62, left: 40, regions: ['Río Negro', 'Patagonia'] },
 ];
+
+// Simplified Argentina SVG outline
+const ARGENTINA_PATH = 'M82,4 L98,2 L118,6 L138,14 L155,24 L168,34 L176,46 L180,58 L174,66 L182,76 L176,86 L166,92 L174,104 L180,120 L184,138 L180,156 L172,170 L162,186 L150,206 L138,228 L126,250 L116,270 L108,290 L102,310 L100,328 L104,342 L112,354 L120,364 L128,374 L134,386 L138,398 L132,408 L120,418 L106,426 L92,432 L80,428 L74,416 L68,400 L62,380 L58,358 L54,335 L52,312 L50,288 L52,265 L48,242 L44,218 L42,195 L45,172 L50,148 L55,125 L62,102 L70,78 L78,55 L84,32 L82,15 Z';
 
 function getCharacterBubble(perfil) {
   const nivel = perfil.nivelNum || 0;
@@ -616,24 +619,30 @@ export default function TiendaPerfil() {
                   </span>
                 </div>
 
-                {/* Argentina Wine Map */}
+                {/* Argentina Wine Map - SVG with pins */}
                 <div className={s.wineMap}>
-                  <div className={s.mapGrid}>
+                  <div className={s.mapContainer}>
+                    {/* Argentina silhouette */}
+                    <svg className={s.mapSvg} viewBox="0 0 220 440" xmlns="http://www.w3.org/2000/svg">
+                      <path d={ARGENTINA_PATH} className={s.mapOutline} />
+                    </svg>
+
+                    {/* Province pins */}
                     {provincesStatus.map((prov) => (
-                      <div
+                      <button
                         key={prov.id}
-                        className={`${s.mapTile} ${prov.probada ? s.mapTileProbada : s.mapTileNoProbada} ${expandedProv === prov.id ? s.mapTileExpanded : ''}`}
-                        style={{ gridColumn: prov.col, gridRow: prov.row }}
+                        className={`${s.mapPin} ${prov.probada ? s.mapPinProbada : s.mapPinLocked} ${expandedProv === prov.id ? s.mapPinActive : ''}`}
+                        style={{ top: `${prov.top}%`, left: `${prov.left}%` }}
                         onClick={() => setExpandedProv(expandedProv === prov.id ? null : prov.id)}
                       >
-                        <span className={s.mapTileIcon}>
-                          {prov.probada ? <i className="bi bi-pin-map-fill" /> : <i className="bi bi-lock-fill" />}
+                        <span className={s.mapPinDot}>
+                          {prov.probada ? <i className="bi bi-check" /> : <i className="bi bi-lock-fill" />}
                         </span>
-                        <span className={s.mapTileName}>{prov.name}</span>
-                        {prov.totalRegions > 1 && (
-                          <span className={s.mapTileCount}>{prov.probadasCount}/{prov.totalRegions}</span>
+                        <span className={s.mapPinLabel}>{prov.name}</span>
+                        {prov.totalRegions > 1 && prov.probada && (
+                          <span className={s.mapPinCount}>{prov.probadasCount}/{prov.totalRegions}</span>
                         )}
-                      </div>
+                      </button>
                     ))}
                   </div>
 

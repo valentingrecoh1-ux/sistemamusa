@@ -27,32 +27,20 @@ const CHARACTER_DATA = [
 
 // ── Argentina wine map (positions as % of map container) ──
 const WINE_PROVINCES = [
-  { id: 'salta', name: 'Salta', top: 6, left: 60, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
-  { id: 'catamarca', name: 'Catamarca', top: 11, left: 50, regions: ['Catamarca'] },
-  { id: 'la_rioja', name: 'La Rioja', top: 16, left: 44, regions: ['La Rioja'] },
-  { id: 'san_juan', name: 'San Juan', top: 18, left: 32, regions: ['San Juan'] },
-  { id: 'cordoba', name: 'Córdoba', top: 18, left: 66, regions: ['Córdoba'] },
-  { id: 'entre_rios', name: 'Entre Ríos', top: 20, left: 84, regions: ['Entre Ríos'] },
-  { id: 'mendoza', name: 'Mendoza', top: 25, left: 38, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
-  { id: 'buenos_aires', name: 'Bs.As.', top: 34, left: 82, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
-  { id: 'neuquen', name: 'Neuquén', top: 44, left: 26, regions: ['Neuquén'] },
-  { id: 'rio_negro', name: 'Río Negro', top: 48, left: 44, regions: ['Río Negro', 'Patagonia'] },
+  { id: 'salta', name: 'Salta', top: 7, left: 56, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
+  { id: 'catamarca', name: 'Catamarca', top: 13, left: 44, regions: ['Catamarca'] },
+  { id: 'la_rioja', name: 'La Rioja', top: 19, left: 37, regions: ['La Rioja'] },
+  { id: 'san_juan', name: 'San Juan', top: 22, left: 28, regions: ['San Juan'] },
+  { id: 'cordoba', name: 'Córdoba', top: 20, left: 62, regions: ['Córdoba'] },
+  { id: 'entre_rios', name: 'Entre Ríos', top: 24, left: 82, regions: ['Entre Ríos'] },
+  { id: 'mendoza', name: 'Mendoza', top: 29, left: 31, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
+  { id: 'buenos_aires', name: 'Bs.As.', top: 38, left: 78, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
+  { id: 'neuquen', name: 'Neuquén', top: 51, left: 37, regions: ['Neuquén'] },
+  { id: 'rio_negro', name: 'Río Negro', top: 57, left: 48, regions: ['Río Negro', 'Patagonia'] },
 ];
 
 // Real Argentina SVG outline (Robinson projection, from world-map-country-shapes)
 const ARGENTINA_PATH = 'M669.8 920.7l.9-3-7.3-1.5-7.7-3.6-4.3-4.6-3-2.8 5.9 13.5h5l2.9.2 3.3 2.1 4.3-.3zm-50.4-208.1l-7.4-1.5-4 5.7.9 1.6-1.1 6.6-5.6 3.2 1.6 10.6-.9 2 2 2.5-3.2 4-2.6 5.9-.9 5.8 1.7 6.2-2.1 6.5 4.9 10.9 1.6 1.2 1.3 5.9-1.6 6.2 1.4 5.4-2.9 4.3 1.5 5.9 3.3 6.3-2.5 2.4.3 5.7.7 6.4 3.3 7.6-1.6 1.2 3.6 7.1 3.1 2.3-.8 2.6 2.8 1.3 1.3 2.3-1.8 1.1 1.8 3.7 1.1 8.2-.7 5.3 1.8 3.2-.1 3.9-2.7 2.7 3.1 6.6 2.6 2.2 3.1-.4 1.8 4.6 3.5 3.6 12 .8 4.8.9 2.2.4-4.7-3.6-4.1-6.3.9-2.9 3.5-2.5.5-7.2 4.7-3.5-.2-5.6-5.2-1.3-6.4-4.5-.1-4.7 2.9-3.1 4.7-.1.2-3.3-1.2-6.1 2.9-3.9 4.1-1.9-2.5-3.2-2.2 2-4-1.9-2.5-6.2 1.5-1.6 5.6 2.3 5-.9 2.5-2.2-1.8-3.1-.1-4.8-2-3.8 5.8.6 10.2-1.3 6.9-3.4 3.3-8.3-.3-3.2-3.9-2.8-.1-4.5-7.8-5.5-.3-3.3-.4-4.2.9-1.4-1.1-6.3.3-6.5.5-5.1 5.9-8.6 5.3-6.2 3.3-2.6 4.2-3.5-.5-5.1-3.1-3.7-2.6 1.2-.3 5.7-4.3 4.8-4.2 1.1-6.2-1-5.7-1.8 4.2-9.6-1.1-2.8-5.9-2.5-7.2-4.7-4.6-1-11.2-10.4-1-1.3-6.3-.3-1.6 5.1-3.7-4.6z';
-
-// Decorative elements scattered on the map (positions as % of container)
-const MAP_DECORATIONS = [
-  { type: 'vine', top: 9, left: 38, flip: false },
-  { type: 'grape', top: 14, left: 72 },
-  { type: 'bush', top: 22, left: 55 },
-  { type: 'vine', top: 30, left: 25, flip: true },
-  { type: 'barrel', top: 28, left: 68 },
-  { type: 'grape', top: 38, left: 55 },
-  { type: 'bush', top: 42, left: 62 },
-  { type: 'vine', top: 50, left: 32, flip: false },
-];
 
 
 function getCharacterBubble(perfil) {
@@ -655,15 +643,6 @@ export default function TiendaPerfil() {
                     <svg className={s.mapSvg} viewBox="595 705 80 225" xmlns="http://www.w3.org/2000/svg">
                       <path d={ARGENTINA_PATH} className={s.mapOutline} />
                     </svg>
-
-                    {/* Decorative vineyard elements */}
-                    {MAP_DECORATIONS.map((dec, i) => (
-                      <span
-                        key={i}
-                        className={`${s.mapDeco} ${s[`mapDeco_${dec.type}`]} ${dec.flip ? s.mapDecoFlip : ''}`}
-                        style={{ top: `${dec.top}%`, left: `${dec.left}%` }}
-                      />
-                    ))}
 
                     {/* Province pins */}
                     {provincesStatus.map((prov) => (

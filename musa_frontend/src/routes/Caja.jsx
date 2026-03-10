@@ -20,6 +20,7 @@ function Caja() {
   const [totales, setTotales] = useState({});
   const [operaciones, setOperaciones] = useState([]);
   const [file, setFile] = useState(null);
+  const [dragging, setDragging] = useState(false);
   const [otroDia, setOtroDia] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -93,6 +94,24 @@ function Caja() {
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragging(false);
   };
 
   const enviar = async () => {
@@ -304,8 +323,23 @@ function Caja() {
           }
           items={nombres}
         />
-        <div className="botones-caja">
-          <input ref={fileInputRef} type="file" onChange={handleFileChange} />
+        <div className="botones-caja file-drop-row">
+          <div
+            className={`file-drop-zone${dragging ? " file-drop-active" : ""}`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+            <i className={`bi ${file ? "bi-file-earmark-check" : "bi-cloud-arrow-up"}`}></i>
+            <span>{file ? file.name : "Arrastrá o hacé click para subir archivo"}</span>
+          </div>
           <button onClick={() => borrarFile(operacion._id)}>X</button>
         </div>
         <div className="botones-caja">

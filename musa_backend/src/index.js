@@ -630,7 +630,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
 
 app.post(
   "/upload_flujo",
@@ -5691,6 +5691,31 @@ Reglas:
     } catch (err) {
       console.error("Error update-config-tienda:", err);
       cb?.({ error: "Error al guardar configuracion" });
+    }
+  });
+
+  socket.on("upload-foto-evento-galeria", async (base64, cb) => {
+    try {
+      if (!base64) return cb?.({ error: "Sin imagen" });
+      const url = await uploadBase64(base64, "musa/eventos-galeria");
+      await ConfigTienda.findByIdAndUpdate("main", { $push: { fotosEventos: url } }, { upsert: true });
+      const config = await ConfigTienda.findById("main").lean();
+      cb?.({ ok: true, fotosEventos: config.fotosEventos });
+    } catch (err) {
+      console.error("Error upload-foto-evento-galeria:", err);
+      cb?.({ error: "Error al subir foto" });
+    }
+  });
+
+  socket.on("borrar-foto-evento-galeria", async (url, cb) => {
+    try {
+      await deleteByUrl(url);
+      await ConfigTienda.findByIdAndUpdate("main", { $pull: { fotosEventos: url } });
+      const config = await ConfigTienda.findById("main").lean();
+      cb?.({ ok: true, fotosEventos: config.fotosEventos });
+    } catch (err) {
+      console.error("Error borrar-foto-evento-galeria:", err);
+      cb?.({ error: "Error al borrar foto" });
     }
   });
 

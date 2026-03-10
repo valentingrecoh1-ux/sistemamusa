@@ -18,6 +18,7 @@ export default function WebConfig() {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
 
   useEffect(() => {
     socket.on('response-config-tienda', (data) => {
@@ -133,6 +134,42 @@ export default function WebConfig() {
               <input type="number" value={config.costoEnvio} onChange={handleField('costoEnvio')} min={0} />
             </div>
           )}
+        </div>
+
+        {/* Fotos galeria eventos */}
+        <div className={s.card}>
+          <h3 className={s.cardTitle}><i className="bi bi-images" /> Fotos de degustaciones / eventos</h3>
+          <p className={s.cardHint}>Estas fotos se muestran animadas en la seccion de eventos de la tienda. Recomendado: 3-6 fotos.</p>
+          <div className={s.galeriaGrid}>
+            {(config.fotosEventos || []).map((url, i) => (
+              <div key={i} className={s.galeriaItem}>
+                <img src={url} alt={`Evento ${i + 1}`} />
+                <button className={s.galeriaDelete} onClick={() => {
+                  socket.emit('borrar-foto-evento-galeria', url, (res) => {
+                    if (res?.ok) setConfig((prev) => ({ ...prev, fotosEventos: res.fotosEventos }));
+                  });
+                }}><i className="bi bi-trash" /></button>
+              </div>
+            ))}
+            <label className={s.galeriaAdd}>
+              <input type="file" accept="image/*" hidden onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setUploadingFoto(true);
+                const reader = new FileReader();
+                reader.onload = () => {
+                  socket.emit('upload-foto-evento-galeria', reader.result, (res) => {
+                    setUploadingFoto(false);
+                    if (res?.ok) setConfig((prev) => ({ ...prev, fotosEventos: res.fotosEventos }));
+                  });
+                };
+                reader.readAsDataURL(file);
+                e.target.value = '';
+              }} />
+              {uploadingFoto ? <i className="bi bi-hourglass-split" /> : <i className="bi bi-plus-lg" />}
+              <span>{uploadingFoto ? 'Subiendo...' : 'Agregar foto'}</span>
+            </label>
+          </div>
         </div>
 
         {/* Tienda activa */}

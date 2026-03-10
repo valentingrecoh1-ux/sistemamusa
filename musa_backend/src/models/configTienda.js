@@ -15,6 +15,7 @@ const configTiendaSchema = new mongoose.Schema(
     horarios: { type: String, default: "" },
     instagramUrl: { type: String, default: "" },
     tiendaActiva: { type: Boolean, default: true },
+    fotosEventos: [{ type: String }],
   },
   { timestamps: true }
 );

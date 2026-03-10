@@ -5,6 +5,7 @@ import Pagination from '../components/shared/Pagination';
 import Modal from '../components/shared/Modal';
 import { dialog } from '../components/shared/dialog';
 import { fetchClienteToken } from '../lib/tiendaApi';
+import { QRCodeSVG } from 'qrcode.react';
 import s from './Clientes.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
@@ -124,6 +125,12 @@ export default function Clientes({ usuario }) {
       socket.off('response-cliente-perfil', handler);
     };
     socket.on('response-cliente-perfil', handler);
+    // Auto-generate QR link
+    fetchClienteToken(c._id).then((res) => {
+      if (res.token) {
+        setQrLink(`${window.location.origin}/tienda/mi-perfil/${res.token}`);
+      }
+    }).catch(() => {});
   }, []);
 
   const openVinoDetalle = (vino) => {
@@ -367,9 +374,7 @@ export default function Clientes({ usuario }) {
               {/* QR Link */}
               <div className={s.qrSection}>
                 {!qrLink ? (
-                  <button className={s.qrBtn} onClick={() => generarQrLink(perfil.cliente?._id)} disabled={qrLoading}>
-                    <i className="bi bi-qr-code" /> {qrLoading ? 'Generando...' : 'Generar link de perfil publico'}
-                  </button>
+                  <span className={s.qrHint}><i className="bi bi-hourglass-split" /> Generando link...</span>
                 ) : (
                   <div className={s.qrResult}>
                     <span className={s.qrLabel}><i className="bi bi-link-45deg" /> Link publico del cliente:</span>
@@ -377,7 +382,9 @@ export default function Clientes({ usuario }) {
                       <input className={s.qrLinkInput} value={qrLink} readOnly onClick={(e) => e.target.select()} />
                       <button className={s.qrCopyBtn} onClick={copiarQrLink}><i className="bi bi-clipboard" /> Copiar</button>
                     </div>
-                    <span className={s.qrHint}>El cliente puede acceder desde este link o escaneando un QR con esta URL</span>
+                    <div className={s.qrCodeWrap}>
+                      <QRCodeSVG value={qrLink} size={160} bgColor="#ffffff" fgColor="#000000" />
+                    </div>
                   </div>
                 )}
               </div>

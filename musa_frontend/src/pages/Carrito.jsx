@@ -881,7 +881,7 @@ const ClienteSearch = ({ clienteSeleccionado, setClienteSeleccionado }) => {
         <input
           type="text"
           className={s.fieldInput}
-          placeholder="Buscar por nombre, DNI, email..."
+          placeholder="Buscar por nombre, DNI, teléfono, email..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => resultados.length > 0 && setShowResults(true)}

@@ -149,6 +149,11 @@ export async function actualizarDatos(token, data) {
   return res.json();
 }
 
+export async function fetchEventos() {
+  const res = await fetch(`${BASE()}/eventos`);
+  return res.json();
+}
+
 export async function fetchClienteToken(clienteId) {
   const res = await fetch(`${BASE()}/perfil/token/${clienteId}`);
   return res.json();

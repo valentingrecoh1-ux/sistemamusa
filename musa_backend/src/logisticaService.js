@@ -2,6 +2,8 @@
  * Servicio de logistica integrada: Shipnow + Moova
  */
 
+const PESO_BOTELLA_GRAMOS = 1300; // Botella de vino ~1.3kg (750ml + vidrio)
+
 // ── Shipnow ──
 const SHIPNOW_BASE = "https://api.shipnow.com.ar";
 
@@ -179,7 +181,7 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
       description: it.nombre || "Vino",
       quantity: it.cantidad || 1,
       price: it.precioUnitario || 0,
-      weight: 1.5,
+      weight: PESO_BOTELLA_GRAMOS / 1000,
     })),
     externalCode: referencia,
   };
@@ -208,16 +210,17 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
 
 // ── Servicio unificado ──
 
-async function cotizarEnvio(config, destino) {
+async function cotizarEnvio(config, destino, { cantidadBotellas = 1 } = {}) {
   const opciones = [];
   const origen = config.origenEnvio || {};
+  const pesoTotal = cantidadBotellas * PESO_BOTELLA_GRAMOS;
 
   // Shipnow
   if (config.shipnowActivo && config.shipnowToken && destino.codigoPostal) {
     try {
       const shipnowOpts = await shipnowCotizar(config.shipnowToken, {
         codigoPostalDestino: destino.codigoPostal,
-        pesoGramos: destino.pesoGramos || 2000,
+        pesoGramos: pesoTotal,
       });
       opciones.push(...shipnowOpts);
     } catch (err) {

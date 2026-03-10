@@ -123,11 +123,11 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
       const config = await ConfigTienda.findById("main").lean();
       if (!config) return res.status(500).json({ error: "Config no encontrada" });
 
-      const { direccion, calle, numero, localidad, codigoPostal, ciudad, provincia } = req.body;
+      const { direccion, calle, numero, localidad, codigoPostal, ciudad, provincia, cantidadBotellas } = req.body;
       if (!direccion && !codigoPostal && !calle) return res.status(400).json({ error: "Direccion o codigo postal requerido" });
 
       const destino = { direccion, calle, numero, localidad, codigoPostal, ciudad: ciudad || localidad || "CABA", provincia: provincia || "CABA" };
-      const opciones = await cotizarEnvio(config, destino);
+      const opciones = await cotizarEnvio(config, destino, { cantidadBotellas: cantidadBotellas || 1 });
       res.json({ opciones });
     } catch (err) {
       console.error("Error cotizar-envio:", err.message);

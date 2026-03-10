@@ -9,7 +9,7 @@ const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currenc
 
 export default function TiendaCheckout() {
   const navigate = useNavigate();
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, totalItems, clearCart } = useCart();
   const [config, setConfig] = useState({});
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', calle: '', numero: '', pisoDepto: '', localidad: '', codigoPostal: '', notas: '' });
   const [entrega, setEntrega] = useState('retiro');
@@ -49,6 +49,7 @@ export default function TiendaCheckout() {
         codigoPostal: form.codigoPostal,
         ciudad: form.localidad || 'CABA',
         provincia: 'CABA',
+        cantidadBotellas: totalItems,
       });
       const opts = res.opciones || [];
       setOpcionesEnvio(opts);

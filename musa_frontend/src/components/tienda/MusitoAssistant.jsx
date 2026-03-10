@@ -156,6 +156,9 @@ export default function MusitoAssistant() {
           </div>
         </div>
 
+        {/* Dust particles when running */}
+        {isRunning && <div className={s.dustParticles}><span /><span /><span /></div>}
+
         {/* Shadow */}
         <div className={s.shadow} />
         <span className={s.nameTag}>Musito</span>

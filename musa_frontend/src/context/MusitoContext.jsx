@@ -7,6 +7,37 @@ const MusitoContext = createContext();
 const VISITED_KEY = 'musito_visited';
 const DISMISSED_KEY = 'musito_dismissed';
 const LEVEL_KEY = 'musito_user_level';
+const USERNAME_KEY = 'musito_username';
+
+// ── Tiny sound effects via Web Audio API ──
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch { return null; }
+  }
+  return audioCtx;
+}
+function playTone(freq, duration = 0.1, type = 'square', vol = 0.08) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.value = vol;
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + duration);
+}
+function sfxClick() { playTone(800, 0.06); }
+function sfxBubble() { playTone(600, 0.08, 'sine', 0.05); playTone(900, 0.08, 'sine', 0.04); }
+function sfxThrow() { playTone(300, 0.2, 'sawtooth', 0.06); }
+function sfxDance() { playTone(523, 0.1); setTimeout(() => playTone(659, 0.1), 100); setTimeout(() => playTone(784, 0.1), 200); }
+function sfxSleep() { playTone(200, 0.3, 'sine', 0.03); }
+function sfxDizzy() { playTone(400, 0.15, 'triangle', 0.05); playTone(350, 0.15, 'triangle', 0.04); }
 
 // Map route patterns to section ids
 function getSection(pathname) {
@@ -144,13 +175,58 @@ function getCartMessage(totalItems) {
   return null;
 }
 
-// ── Quick sommelier suggestions ──
-const QUICK_SUGGESTIONS = [
+// ── Quick sommelier suggestions per section ──
+const QUICK_SUGGESTIONS_DEFAULT = [
   { label: 'Recomendame un tinto', query: 'Recomendame un buen tinto para esta noche' },
   { label: 'Para regalar', query: 'Quiero un vino para regalar, algo especial' },
   { label: 'Sorprendeme', query: 'Sorprendeme con algo que no conozca' },
   { label: 'Maridaje', query: 'Que vino va bien con asado?' },
 ];
+
+const SECTION_SUGGESTIONS = {
+  home: [
+    { label: 'Que hay de nuevo?', query: 'Que vinos nuevos tienen?' },
+    { label: 'Para empezar', query: 'Soy nuevo en vinos, que me recomendas para empezar?' },
+    { label: 'El mas vendido', query: 'Cual es el vino mas vendido?' },
+    { label: 'Ofertas', query: 'Tienen alguna oferta o promocion?' },
+  ],
+  catalogo: [
+    { label: 'Filtrar por cepa', query: 'Que cepas tienen disponibles?' },
+    { label: 'Menos de $10000', query: 'Recomendame un buen vino economico' },
+    { label: 'Vino premium', query: 'Cual es el mejor vino premium que tienen?' },
+    { label: 'Blanco fresco', query: 'Recomendame un blanco fresco para el verano' },
+  ],
+  producto: [
+    { label: 'Con que comida va?', query: 'Con que comida marida bien este vino?' },
+    { label: 'Alternativas', query: 'Que alternativas similares tienen a este vino?' },
+    { label: 'Temperatura ideal', query: 'A que temperatura se sirve este tipo de vino?' },
+    { label: 'Cuanto guardar', query: 'Cuanto tiempo se puede guardar este vino?' },
+  ],
+  carrito: [
+    { label: 'Completar seleccion', query: 'Tengo estos vinos en el carrito, que me falta para una cena completa?' },
+    { label: 'Agregar postre', query: 'Que vino dulce o espumante va bien de postre?' },
+    { label: 'Para acompañar', query: 'Que queso o picada va bien con tintos?' },
+  ],
+  checkout: [
+    { label: 'Envio gratis?', query: 'A partir de cuanto es el envio gratis?' },
+    { label: 'Cuanto tarda?', query: 'Cuanto tarda en llegar el pedido?' },
+  ],
+  club: [
+    { label: 'Beneficios del club', query: 'Cuales son los beneficios del Club MUSA?' },
+    { label: 'Que incluye', query: 'Que vinos incluye la suscripcion mensual?' },
+    { label: 'Cancelar cuando quiera', query: 'Puedo cancelar la suscripcion cuando quiera?' },
+  ],
+  etiqueta: [
+    { label: 'Para cumpleaños', query: 'Quiero una etiqueta para un cumpleaños' },
+    { label: 'Para aniversario', query: 'Necesito una etiqueta romantica para un aniversario' },
+    { label: 'Corporativo', query: 'Hacen etiquetas corporativas para empresas?' },
+  ],
+  eventos: [
+    { label: 'Proxima degustacion', query: 'Cuando es la proxima degustacion?' },
+    { label: 'Eventos privados', query: 'Hacen eventos privados o para empresas?' },
+    { label: 'Cuanto sale', query: 'Cuanto sale una degustacion?' },
+  ],
+};
 
 // ── Level outfits: hat/accessory color overrides per level ──
 const LEVEL_OUTFITS = {
@@ -183,6 +259,7 @@ export function MusitoProvider({ children }) {
     try { return parseInt(localStorage.getItem(LEVEL_KEY)) || 0; }
     catch { return 0; }
   });
+  const [userName, setUserName] = useState(() => localStorage.getItem(USERNAME_KEY) || '');
   // Musito position on screen (follows scroll + drag)
   const [musitoX, setMusitoX] = useState(80); // % from left
   const [facing, setFacing] = useState('left'); // left or right
@@ -208,17 +285,36 @@ export function MusitoProvider({ children }) {
     }
   }, [section]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Cart reaction: detect new items added ──
+  // ── Cart reaction: detect items added/removed ──
   useEffect(() => {
     if (dismissed) return;
     if (totalItems > prevItemsRef.current) {
-      // A new item was added - find it
       const lastItem = items[items.length - 1];
       const reaction = getProductReaction(lastItem);
       setMessage(reaction);
       setBubbleVisible(true);
       setPose('celebrar');
+      sfxClick();
       const t = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 3500);
+      timers.current.push(t);
+    } else if (totalItems === 0 && prevItemsRef.current > 0) {
+      // Cart emptied
+      const cryMsgs = [
+        'Noooo! Se fue todo... Volvemos a llenar?',
+        'Carrito vacio... me pone triste!',
+        'Eh! Donde fueron los vinos?!',
+      ];
+      setMessage(cryMsgs[Math.floor(Math.random() * cryMsgs.length)]);
+      setBubbleVisible(true);
+      setPose('dizzy');
+      sfxDizzy();
+      const t = setTimeout(() => { setBubbleVisible(false); setPose('idle'); }, 4000);
+      timers.current.push(t);
+    } else if (totalItems < prevItemsRef.current && totalItems > 0) {
+      const sadMsgs = ['Sacaste uno... estas seguro?', 'Uno menos? Bueno, vos sabes...'];
+      setMessage(sadMsgs[Math.floor(Math.random() * sadMsgs.length)]);
+      setBubbleVisible(true);
+      const t = setTimeout(() => setBubbleVisible(false), 3000);
       timers.current.push(t);
     }
     prevItemsRef.current = totalItems;
@@ -243,6 +339,7 @@ export function MusitoProvider({ children }) {
           setPose('dizzy');
           setMessage('Uy... para un poco que me mareo!');
           setBubbleVisible(true);
+          sfxDizzy();
           rapidScrollCount.current = 0;
           setIsRunning(false);
           clearTimeout(dizzyTimer.current);
@@ -307,6 +404,7 @@ export function MusitoProvider({ children }) {
           setPose('sleep');
           setMessage('zzZ... zzZ...');
           setBubbleVisible(true);
+          sfxSleep();
         }
       }, 45000); // 45s of inactivity
     };
@@ -331,10 +429,12 @@ export function MusitoProvider({ children }) {
         setPose('dance');
         setMessage('Dale que suena el ritmo!');
         setBubbleVisible(true);
+        sfxDance();
         const t = setTimeout(() => { setPose('idle'); setBubbleVisible(false); }, 4000);
         timers.current.push(t);
         return 0;
       }
+      sfxClick();
       // Reset click count after 2 seconds of no clicks
       clearTimeout(clickResetTimer.current);
       clickResetTimer.current = setTimeout(() => setClickCount(0), 2000);
@@ -371,6 +471,7 @@ export function MusitoProvider({ children }) {
       setPose('dizzy');
       setMessage(velocity > 0 ? 'Aaaaaah!' : 'Nooooo!');
       setBubbleVisible(true);
+      sfxThrow();
 
       // Animate the throw
       const targetX = velocity > 0 ? Math.min(95, musitoX + 40) : Math.max(5, musitoX - 40);
@@ -412,11 +513,16 @@ export function MusitoProvider({ children }) {
     const walkTimer = setTimeout(() => setPose('idle'), 800);
     timers.current.push(walkTimer);
 
+    // Personalized greeting with name
+    const greeting = userName ? `Hola ${userName}! ` : '';
+
     const messages = SECTION_MESSAGES[section] || [];
-    messages.forEach(({ text, delay, pose: msgPose, useTime }) => {
+    messages.forEach(({ text, delay, pose: msgPose, useTime }, idx) => {
       const t = setTimeout(() => {
-        setMessage(useTime ? getTimeMessage() : text);
+        const msgText = useTime ? getTimeMessage() : text;
+        setMessage(idx === 0 && greeting ? greeting + msgText : msgText);
         setBubbleVisible(true);
+        sfxBubble();
         if (msgPose) setPose(msgPose);
 
         const hideT = setTimeout(() => {
@@ -491,6 +597,17 @@ export function MusitoProvider({ children }) {
     localStorage.setItem(LEVEL_KEY, String(level));
   }, []);
 
+  // ── Update user name for personalized greetings ──
+  const updateUserName = useCallback((name) => {
+    const firstName = (name || '').split(' ')[0];
+    setUserName(firstName);
+    if (firstName) localStorage.setItem(USERNAME_KEY, firstName);
+    else localStorage.removeItem(USERNAME_KEY);
+  }, []);
+
+  // ── Contextual quick suggestions based on section ──
+  const quickSuggestions = SECTION_SUGGESTIONS[section] || QUICK_SUGGESTIONS_DEFAULT;
+
   const dismiss = useCallback(() => {
     setDismissed(true);
     setVisible(false);
@@ -506,10 +623,11 @@ export function MusitoProvider({ children }) {
   return (
     <MusitoContext.Provider value={{
       section, message, pose, visible, bubbleVisible, dismissed, visited,
-      outfit, userLevel, showQuickMenu, quickSuggestions: QUICK_SUGGESTIONS,
+      outfit, userLevel, userName, showQuickMenu, quickSuggestions,
       musitoX, facing, isRunning, isDragging, isThrown, throwDir,
       dismiss, reactivate, setMessage, setBubbleVisible, setPose,
-      handleMusitoClick, toggleQuickMenu, setShowQuickMenu, updateLevel,
+      handleMusitoClick, toggleQuickMenu, setShowQuickMenu,
+      updateLevel, updateUserName,
       startDrag, onDrag, endDrag,
     }}>
       {children}

@@ -700,6 +700,41 @@
 }
 .acc_corona .hat::before, .acc_corona .hat::after { display: none; }
 
+/* ── Dust particles when running ── */
+.dustParticles {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  width: 40px;
+  height: 16px;
+}
+.dustParticles span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(180, 160, 140, 0.6);
+  border-radius: 50%;
+  animation: dustPuff 0.5s ease-out forwards;
+}
+.dustParticles span:nth-child(1) {
+  left: 8px; bottom: 0;
+  animation-delay: 0s;
+}
+.dustParticles span:nth-child(2) {
+  left: 18px; bottom: 2px;
+  animation-delay: 0.08s;
+}
+.dustParticles span:nth-child(3) {
+  left: 28px; bottom: 0;
+  animation-delay: 0.15s;
+}
+@keyframes dustPuff {
+  0% { transform: scale(1) translateY(0); opacity: 0.7; }
+  100% { transform: scale(2.5) translateY(-10px); opacity: 0; }
+}
+
 /* ── Dragging: remove container transition for instant follow ── */
 .draggingContainer {
   transition: none !important;

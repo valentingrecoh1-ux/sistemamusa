@@ -150,7 +150,7 @@ export default function TiendaPerfil() {
   const { token } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { updateLevel } = useMusito();
+  const { updateLevel, updateUserName } = useMusito();
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -215,7 +215,8 @@ export default function TiendaPerfil() {
   // Sync Musito outfit with user level
   useEffect(() => {
     if (perfil?.nivelNum != null) updateLevel(perfil.nivelNum);
-  }, [perfil?.nivelNum, updateLevel]);
+    if (perfil?.nombre) updateUserName(perfil.nombre);
+  }, [perfil?.nivelNum, perfil?.nombre, updateLevel, updateUserName]);
 
   // Cleanup timers
   useEffect(() => {

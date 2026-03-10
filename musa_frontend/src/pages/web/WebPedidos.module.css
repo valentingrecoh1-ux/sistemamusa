@@ -346,3 +346,12 @@
   .tableHeader span:nth-child(7),
   .tableRow span:nth-child(7) { display: none; }
 }
+
+.tracking {
+  font-family: monospace;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  user-select: all;
+}

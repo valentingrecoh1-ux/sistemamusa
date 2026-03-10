@@ -24,6 +24,7 @@ const OrdenCompra = require("./models/ordenCompra");
 const PagoProveedor = require("./models/pagoProveedor");
 const PedidoWeb = require("./models/pedidoWeb");
 const ConfigTienda = require("./models/configTienda");
+const { crearEnvioLogistica } = require("./logisticaService");
 const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
 const Notificacion = require("./models/notificacion");
@@ -5662,8 +5663,35 @@ Reglas:
         }
       }
 
+      // Si pasa a "enviado" y tiene logistica integrada, crear envio
+      if (estado === "enviado" && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId) {
+        try {
+          const config = await ConfigTienda.findById("main").lean();
+          if (config) {
+            const resultado = await crearEnvioLogistica(config, {
+              destino: {
+                nombre: pedido.cliente.nombre,
+                direccion: pedido.cliente.direccion,
+                codigoPostal: pedido.opcionEnvio?.meta?.codigoPostal || "",
+                email: pedido.cliente.email,
+                telefono: pedido.cliente.telefono,
+              },
+              items: pedido.items,
+              referencia: String(pedido.numeroPedido),
+              opcionElegida: pedido.opcionEnvio,
+            });
+            pedido.logisticaEnvioId = resultado.envioId;
+            pedido.logisticaTracking = resultado.tracking;
+            pedido.logisticaProveedor = resultado.proveedor;
+          }
+        } catch (logErr) {
+          console.error("Error creando envio logistica:", logErr.message);
+          // No bloquea el cambio de estado
+        }
+      }
+
       await pedido.save();
-      cb?.({ ok: true });
+      cb?.({ ok: true, tracking: pedido.logisticaTracking, proveedor: pedido.logisticaProveedor });
       io.emit("cambios-web");
       io.emit("cambios");
     } catch (err) {

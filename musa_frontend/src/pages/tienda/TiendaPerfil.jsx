@@ -26,20 +26,20 @@ const CHARACTER_DATA = [
 
 // ── Argentina wine map (positions as % of map container) ──
 const WINE_PROVINCES = [
-  { id: 'salta', name: 'Salta', top: 8, left: 55, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
-  { id: 'catamarca', name: 'Catamarca', top: 17, left: 40, regions: ['Catamarca'] },
-  { id: 'la_rioja', name: 'La Rioja', top: 26, left: 35, regions: ['La Rioja'] },
-  { id: 'san_juan', name: 'San Juan', top: 35, left: 27, regions: ['San Juan'] },
-  { id: 'cordoba', name: 'Córdoba', top: 28, left: 58, regions: ['Córdoba'] },
-  { id: 'entre_rios', name: 'Entre Ríos', top: 28, left: 78, regions: ['Entre Ríos'] },
-  { id: 'mendoza', name: 'Mendoza', top: 45, left: 24, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
-  { id: 'buenos_aires', name: 'Bs.As.', top: 44, left: 68, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
-  { id: 'neuquen', name: 'Neuquén', top: 56, left: 26, regions: ['Neuquén'] },
-  { id: 'rio_negro', name: 'Río Negro', top: 62, left: 40, regions: ['Río Negro', 'Patagonia'] },
+  { id: 'salta', name: 'Salta', top: 6, left: 60, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
+  { id: 'catamarca', name: 'Catamarca', top: 11, left: 50, regions: ['Catamarca'] },
+  { id: 'la_rioja', name: 'La Rioja', top: 16, left: 44, regions: ['La Rioja'] },
+  { id: 'san_juan', name: 'San Juan', top: 18, left: 32, regions: ['San Juan'] },
+  { id: 'cordoba', name: 'Córdoba', top: 18, left: 66, regions: ['Córdoba'] },
+  { id: 'entre_rios', name: 'Entre Ríos', top: 20, left: 84, regions: ['Entre Ríos'] },
+  { id: 'mendoza', name: 'Mendoza', top: 25, left: 38, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
+  { id: 'buenos_aires', name: 'Bs.As.', top: 34, left: 82, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
+  { id: 'neuquen', name: 'Neuquén', top: 44, left: 26, regions: ['Neuquén'] },
+  { id: 'rio_negro', name: 'Río Negro', top: 48, left: 44, regions: ['Río Negro', 'Patagonia'] },
 ];
 
-// Simplified Argentina SVG outline
-const ARGENTINA_PATH = 'M82,4 L98,2 L118,6 L138,14 L155,24 L168,34 L176,46 L180,58 L174,66 L182,76 L176,86 L166,92 L174,104 L180,120 L184,138 L180,156 L172,170 L162,186 L150,206 L138,228 L126,250 L116,270 L108,290 L102,310 L100,328 L104,342 L112,354 L120,364 L128,374 L134,386 L138,398 L132,408 L120,418 L106,426 L92,432 L80,428 L74,416 L68,400 L62,380 L58,358 L54,335 L52,312 L50,288 L52,265 L48,242 L44,218 L42,195 L45,172 L50,148 L55,125 L62,102 L70,78 L78,55 L84,32 L82,15 Z';
+// Real Argentina SVG outline (Robinson projection, from world-map-country-shapes)
+const ARGENTINA_PATH = 'M669.8 920.7l.9-3-7.3-1.5-7.7-3.6-4.3-4.6-3-2.8 5.9 13.5h5l2.9.2 3.3 2.1 4.3-.3zm-50.4-208.1l-7.4-1.5-4 5.7.9 1.6-1.1 6.6-5.6 3.2 1.6 10.6-.9 2 2 2.5-3.2 4-2.6 5.9-.9 5.8 1.7 6.2-2.1 6.5 4.9 10.9 1.6 1.2 1.3 5.9-1.6 6.2 1.4 5.4-2.9 4.3 1.5 5.9 3.3 6.3-2.5 2.4.3 5.7.7 6.4 3.3 7.6-1.6 1.2 3.6 7.1 3.1 2.3-.8 2.6 2.8 1.3 1.3 2.3-1.8 1.1 1.8 3.7 1.1 8.2-.7 5.3 1.8 3.2-.1 3.9-2.7 2.7 3.1 6.6 2.6 2.2 3.1-.4 1.8 4.6 3.5 3.6 12 .8 4.8.9 2.2.4-4.7-3.6-4.1-6.3.9-2.9 3.5-2.5.5-7.2 4.7-3.5-.2-5.6-5.2-1.3-6.4-4.5-.1-4.7 2.9-3.1 4.7-.1.2-3.3-1.2-6.1 2.9-3.9 4.1-1.9-2.5-3.2-2.2 2-4-1.9-2.5-6.2 1.5-1.6 5.6 2.3 5-.9 2.5-2.2-1.8-3.1-.1-4.8-2-3.8 5.8.6 10.2-1.3 6.9-3.4 3.3-8.3-.3-3.2-3.9-2.8-.1-4.5-7.8-5.5-.3-3.3-.4-4.2.9-1.4-1.1-6.3.3-6.5.5-5.1 5.9-8.6 5.3-6.2 3.3-2.6 4.2-3.5-.5-5.1-3.1-3.7-2.6 1.2-.3 5.7-4.3 4.8-4.2 1.1-6.2-1-5.7-1.8 4.2-9.6-1.1-2.8-5.9-2.5-7.2-4.7-4.6-1-11.2-10.4-1-1.3-6.3-.3-1.6 5.1-3.7-4.6z';
 
 function getCharacterBubble(perfil) {
   const nivel = perfil.nivelNum || 0;
@@ -623,7 +623,7 @@ export default function TiendaPerfil() {
                 <div className={s.wineMap}>
                   <div className={s.mapContainer}>
                     {/* Argentina silhouette */}
-                    <svg className={s.mapSvg} viewBox="0 0 220 440" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={s.mapSvg} viewBox="595 705 80 225" xmlns="http://www.w3.org/2000/svg">
                       <path d={ARGENTINA_PATH} className={s.mapOutline} />
                     </svg>
 
@@ -639,7 +639,7 @@ export default function TiendaPerfil() {
                           {prov.probada ? <i className="bi bi-check" /> : <i className="bi bi-lock-fill" />}
                         </span>
                         <span className={s.mapPinLabel}>{prov.name}</span>
-                        {prov.totalRegions > 1 && prov.probada && (
+                        {prov.totalRegions > 1 && (
                           <span className={s.mapPinCount}>{prov.probadasCount}/{prov.totalRegions}</span>
                         )}
                       </button>

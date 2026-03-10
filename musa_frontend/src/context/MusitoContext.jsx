@@ -174,7 +174,7 @@ export function MusitoProvider({ children }) {
   });
   const [dismissed, setDismissed] = useState(() => localStorage.getItem(DISMISSED_KEY) === '1');
   const [message, setMessage] = useState('');
-  const [pose, setPose] = useState('idle'); // idle, walk, moto, paquete, celebrar, wave, dizzy, sleep, dance
+  const [pose, setPose] = useState('idle'); // idle, walk, run, moto, paquete, celebrar, wave, dizzy, sleep, dance
   const [visible, setVisible] = useState(true);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [showQuickMenu, setShowQuickMenu] = useState(false);
@@ -183,11 +183,19 @@ export function MusitoProvider({ children }) {
     try { return parseInt(localStorage.getItem(LEVEL_KEY)) || 0; }
     catch { return 0; }
   });
+  // Musito position on screen (follows scroll + drag)
+  const [musitoX, setMusitoX] = useState(80); // % from left
+  const [facing, setFacing] = useState('left'); // left or right
+  const [isRunning, setIsRunning] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isThrown, setIsThrown] = useState(false);
+  const [throwDir, setThrowDir] = useState(0); // velocity for throw
   const timers = useRef([]);
   const idleTimer = useRef(null);
   const scrollTimer = useRef(null);
   const lastScrollY = useRef(0);
   const rapidScrollCount = useRef(0);
+  const runStopTimer = useRef(null);
 
   const outfit = LEVEL_OUTFITS[userLevel] || LEVEL_OUTFITS[0];
 
@@ -216,29 +224,61 @@ export function MusitoProvider({ children }) {
     prevItemsRef.current = totalItems;
   }, [totalItems, dismissed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Easter egg: rapid scroll = dizzy ──
+  // ── Scroll following: Musito runs when user scrolls ──
   const dizzyTimer = useRef(null);
+  const poseRef = useRef(pose);
+  poseRef.current = pose;
   useEffect(() => {
     if (dismissed) return;
     const handleScroll = () => {
-      const delta = Math.abs(window.scrollY - lastScrollY.current);
-      lastScrollY.current = window.scrollY;
-      if (delta > 200) {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollY.current;
+      const absDelta = Math.abs(delta);
+      lastScrollY.current = currentY;
+
+      // Rapid scroll = dizzy easter egg
+      if (absDelta > 80) {
         rapidScrollCount.current++;
-        if (rapidScrollCount.current >= 5 && pose !== 'dizzy') {
+        if (rapidScrollCount.current >= 4 && poseRef.current !== 'dizzy') {
           setPose('dizzy');
           setMessage('Uy... para un poco que me mareo!');
           setBubbleVisible(true);
           rapidScrollCount.current = 0;
+          setIsRunning(false);
           clearTimeout(dizzyTimer.current);
           dizzyTimer.current = setTimeout(() => {
             setPose('idle');
             setBubbleVisible(false);
           }, 3000);
-          return; // don't reset scroll count while dizzy
+          return;
         }
       }
-      // Reset rapid scroll count if no rapid scrolls for 1s
+
+      // Normal scroll: Musito runs to follow
+      if (absDelta > 15 && poseRef.current !== 'dizzy' && poseRef.current !== 'sleep' && poseRef.current !== 'dance') {
+        // Move horizontally based on scroll direction
+        const scrollDown = delta > 0;
+        setFacing(scrollDown ? 'right' : 'left');
+        setIsRunning(true);
+
+        // Move Musito across the screen as user scrolls
+        setMusitoX((prev) => {
+          const step = scrollDown ? -3 : 3;
+          const next = prev + step;
+          // Bounce between 10% and 90%
+          if (next <= 10) return 10;
+          if (next >= 90) return 90;
+          return next;
+        });
+
+        // Stop running after scroll stops
+        clearTimeout(runStopTimer.current);
+        runStopTimer.current = setTimeout(() => {
+          setIsRunning(false);
+        }, 300);
+      }
+
+      // Reset rapid scroll count
       clearTimeout(scrollTimer.current);
       scrollTimer.current = setTimeout(() => { rapidScrollCount.current = 0; }, 1000);
     };
@@ -246,8 +286,9 @@ export function MusitoProvider({ children }) {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(dizzyTimer.current);
+      clearTimeout(runStopTimer.current);
     };
-  }, [dismissed, pose]);
+  }, [dismissed]);
 
   // ── Easter egg: idle too long = sleep ──
   useEffect(() => {
@@ -286,7 +327,7 @@ export function MusitoProvider({ children }) {
   const handleMusitoClick = useCallback(() => {
     setClickCount((prev) => {
       const newCount = prev + 1;
-      if (newCount >= 5) {
+      if (newCount >= 3) {
         setPose('dance');
         setMessage('Dale que suena el ritmo!');
         setBubbleVisible(true);
@@ -300,6 +341,51 @@ export function MusitoProvider({ children }) {
       return newCount;
     });
   }, []);
+
+  // ── Drag and throw ──
+  const dragStart = useRef({ x: 0, time: 0 });
+  const startDrag = useCallback((clientX) => {
+    setIsDragging(true);
+    dragStart.current = { x: clientX, time: Date.now() };
+  }, []);
+
+  const onDrag = useCallback((clientX) => {
+    if (!isDragging) return;
+    const pct = (clientX / window.innerWidth) * 100;
+    setMusitoX(Math.max(5, Math.min(95, pct)));
+    setFacing(clientX > dragStart.current.x ? 'right' : 'left');
+  }, [isDragging]);
+
+  const endDrag = useCallback((clientX) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    const dt = Date.now() - dragStart.current.time;
+    const dx = clientX - dragStart.current.x;
+    const velocity = dx / Math.max(dt, 1);
+
+    // If thrown with enough velocity
+    if (Math.abs(velocity) > 0.5) {
+      setIsThrown(true);
+      setThrowDir(velocity > 0 ? 1 : -1);
+      setFacing(velocity > 0 ? 'right' : 'left');
+      setPose('dizzy');
+      setMessage(velocity > 0 ? 'Aaaaaah!' : 'Nooooo!');
+      setBubbleVisible(true);
+
+      // Animate the throw
+      const targetX = velocity > 0 ? Math.min(95, musitoX + 40) : Math.max(5, musitoX - 40);
+      setMusitoX(targetX);
+
+      const t = setTimeout(() => {
+        setIsThrown(false);
+        setPose('idle');
+        setMessage('Eso dolio... pero aca sigo!');
+        const t2 = setTimeout(() => setBubbleVisible(false), 2500);
+        timers.current.push(t2);
+      }, 1200);
+      timers.current.push(t);
+    }
+  }, [isDragging, musitoX]);
 
   // ── Toggle quick sommelier menu ──
   const toggleQuickMenu = useCallback(() => {
@@ -421,8 +507,10 @@ export function MusitoProvider({ children }) {
     <MusitoContext.Provider value={{
       section, message, pose, visible, bubbleVisible, dismissed, visited,
       outfit, userLevel, showQuickMenu, quickSuggestions: QUICK_SUGGESTIONS,
+      musitoX, facing, isRunning, isDragging, isThrown, throwDir,
       dismiss, reactivate, setMessage, setBubbleVisible, setPose,
       handleMusitoClick, toggleQuickMenu, setShowQuickMenu, updateLevel,
+      startDrag, onDrag, endDrag,
     }}>
       {children}
     </MusitoContext.Provider>

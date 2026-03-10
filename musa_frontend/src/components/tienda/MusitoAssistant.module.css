@@ -1,47 +1,52 @@
-/* ══════════════════════════════════════════
-   Musito Assistant - Global floating helper
-   ══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   Musito Assistant - RPG pixel art + scroll follow
+   ══════════════════════════════════════════════ */
 
+/* ── Container: follows user along bottom ── */
 .container {
   position: fixed;
-  bottom: 90px;
-  right: 18px;
+  bottom: 72px;
   z-index: 9998;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
   pointer-events: none;
+  transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .container > * { pointer-events: auto; }
 
+/* Facing */
+.facingLeft .sprite { transform: scaleX(-1); }
+.facingLeft .bubble { transform: none; }
+
 /* ── Speech Bubble ── */
 .bubble {
-  max-width: 220px;
+  max-width: 230px;
   background: #fff;
   color: #1e1e1e;
   font-size: 11px;
   font-weight: 600;
   line-height: 1.4;
   padding: 8px 12px;
-  border-radius: 12px 12px 4px 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-  animation: bubbleIn 0.35s ease-out;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  animation: bubbleIn 0.3s ease-out;
   position: relative;
+  text-align: center;
 }
 .bubble::after {
   content: '';
   position: absolute;
   bottom: -6px;
-  right: 16px;
-  width: 0; height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #fff;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #fff;
 }
-
 @keyframes bubbleIn {
-  0% { opacity: 0; transform: translateY(8px) scale(0.85); }
+  0% { opacity: 0; transform: translateY(6px) scale(0.9); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -81,449 +86,549 @@
 .quickMenuItem:hover {
   background: rgba(124,58,237,0.2);
   border-color: #7c3aed;
-  color: #fff;
 }
 
-/* ── Character Container ── */
+/* ── Character wrapper ── */
 .character {
   position: relative;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.2s;
+  transition: transform 0.15s;
 }
-.character:hover { transform: scale(1.1); }
-.character:active { transform: scale(0.95); }
+.character:hover { transform: scale(1.05); }
 
-/* ── Pixel Art Sprite ── */
+/* ══════════════════════════════════
+   PIXEL ART SPRITE (Ash/RPG style)
+   ~48x64 effective px
+   ══════════════════════════════════ */
 .sprite {
   display: flex;
   flex-direction: column;
   align-items: center;
   image-rendering: pixelated;
-  width: 36px;
+  image-rendering: crisp-edges;
   position: relative;
 }
 
-/* Hair/hat */
-.hair {
-  width: 24px;
-  height: 6px;
+/* ── Hat (beret/cap) ── */
+.hat {
+  width: 32px;
+  height: 10px;
   background: #7c3aed;
-  border-radius: 4px 4px 0 0;
+  border-radius: 8px 8px 2px 2px;
   position: relative;
+  z-index: 2;
 }
-.hair::after {
+.hat::before {
   content: '';
   position: absolute;
-  top: -2px;
-  left: 8px;
-  width: 8px;
+  bottom: 0;
+  left: -2px;
+  right: -2px;
   height: 4px;
-  background: inherit;
-  border-radius: 3px 3px 0 0;
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px;
 }
-
-/* Head */
-.head {
-  width: 24px;
-  height: 20px;
-  background: #fbbf24;
-  border-radius: 3px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Eyes */
-.eyeL, .eyeR {
+/* Brim/visor */
+.hat::after {
+  content: '';
   position: absolute;
-  width: 4px;
-  height: 5px;
-  background: #1e1e1e;
-  border-radius: 1px;
-  top: 6px;
+  top: 4px;
+  right: -6px;
+  width: 10px;
+  height: 6px;
+  background: inherit;
+  border-radius: 0 6px 6px 0;
+  filter: brightness(0.85);
 }
-.eyeL { left: 5px; }
-.eyeR { right: 5px; }
 
-/* Blink animation */
+/* ── Head ── */
+.head {
+  width: 30px;
+  height: 26px;
+  background: #fbbf24;
+  border-radius: 4px 4px 6px 6px;
+  position: relative;
+  margin-top: -2px;
+  z-index: 1;
+}
+
+/* Hair on sides */
+.hairSide {
+  position: absolute;
+  top: 0;
+  left: -3px;
+  right: -3px;
+  height: 8px;
+  background: #7c3aed;
+  border-radius: 3px 3px 0 0;
+  z-index: 0;
+}
+.hairSide::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 4px;
+  height: 12px;
+  background: inherit;
+  border-radius: 0 0 0 3px;
+}
+.hairSide::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 0;
+  width: 4px;
+  height: 12px;
+  background: inherit;
+  border-radius: 0 0 3px 0;
+}
+
+/* Face area */
+.face {
+  position: absolute;
+  top: 8px;
+  left: 4px;
+  right: 4px;
+  bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.eyeRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.eye {
+  width: 5px;
+  height: 6px;
+  background: #1e1e1e;
+  border-radius: 50%;
+  position: relative;
+}
+/* Eye shine */
+.eye::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+/* Blink */
 .head::before {
   content: '';
   position: absolute;
-  top: 6px; left: 5px; right: 5px;
-  height: 5px;
+  top: 10px;
+  left: 6px;
+  right: 6px;
+  height: 6px;
   background: #fbbf24;
   opacity: 0;
-  z-index: 1;
-  animation: blink 4s infinite;
+  z-index: 3;
+  animation: blink 5s infinite;
 }
 @keyframes blink {
-  0%, 95%, 100% { opacity: 0; }
-  97% { opacity: 1; }
+  0%, 93%, 100% { opacity: 0; }
+  95%, 97% { opacity: 1; }
 }
 
-/* Mouth */
+.nose {
+  width: 3px;
+  height: 2px;
+  background: #e5a800;
+  border-radius: 1px;
+  margin-top: 2px;
+}
+
 .mouth {
+  width: 8px;
+  height: 4px;
+  background: #92400e;
+  border-radius: 0 0 4px 4px;
+  margin-top: 1px;
+}
+
+/* ── Torso ── */
+.torso {
+  width: 28px;
+  height: 20px;
+  background: #7c3aed;
+  border-radius: 3px 3px 2px 2px;
+  margin-top: -2px;
+  position: relative;
+}
+
+.collar {
   position: absolute;
-  bottom: 3px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 3px;
-  background: #92400e;
-  border-radius: 0 0 3px 3px;
-}
-
-/* Body / torso */
-.body {
-  width: 22px;
-  height: 16px;
-  background: #7c3aed;
-  border-radius: 2px;
-  margin-top: -1px;
-  position: relative;
+  width: 12px;
+  height: 5px;
+  background: #f5f5f5;
+  border-radius: 0 0 4px 4px;
 }
 
 /* Arms */
 .armL, .armR {
   position: absolute;
-  width: 6px;
-  height: 14px;
-  background: rgba(0,0,0,0.15);
-  border-radius: 2px;
-  top: 1px;
-  transition: transform 0.3s;
+  width: 8px;
+  height: 18px;
+  background: inherit;
+  filter: brightness(0.85);
+  border-radius: 3px;
+  top: 2px;
+  transition: transform 0.2s;
+  transform-origin: top center;
 }
-.armL { left: -7px; transform-origin: top center; }
-.armR { right: -7px; transform-origin: top center; }
+.armL { left: -9px; }
+.armR { right: -9px; }
 
-/* Legs */
+/* Hands */
+.armL::after, .armR::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 6px;
+  background: #fbbf24;
+  border-radius: 3px;
+}
+
+/* ── Legs ── */
 .legs {
   display: flex;
   gap: 4px;
   margin-top: -1px;
+  position: relative;
 }
+
 .legL, .legR {
-  display: block;
-  width: 8px;
-  height: 12px;
+  width: 10px;
+  height: 14px;
   background: #1e3a5f;
   border-radius: 0 0 2px 2px;
+  position: relative;
+  transition: transform 0.1s;
 }
 
 /* Shoes */
-.legL::after, .legR::after {
-  content: '';
-  display: block;
-  width: 10px;
-  height: 4px;
-  background: #78350f;
-  border-radius: 2px;
-  margin-top: -1px;
+.shoeL, .shoeR {
+  position: absolute;
+  bottom: -4px;
+  width: 13px;
+  height: 6px;
+  background: #dc2626;
+  border-radius: 3px;
 }
-.legL::after { margin-left: -1px; }
-.legR::after { margin-left: -1px; }
+.shoeL { left: -2px; }
+.shoeR { left: -1px; }
+/* Shoe sole */
+.shoeL::after, .shoeR::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #991b1b;
+  border-radius: 0 0 3px 3px;
+}
 
-/* Name tag */
+/* ── Shadow ── */
+.shadow {
+  width: 36px;
+  height: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 50%;
+  margin-top: 4px;
+}
+
+/* ── Name tag ── */
 .nameTag {
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
   color: #c084fc;
-  margin-top: 3px;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
   letter-spacing: 0.5px;
+  margin-top: 2px;
 }
 
 /* ══════════════════════════════════
-   LEVEL ACCESSORIES (on .container)
+   ANIMATIONS & POSES
    ══════════════════════════════════ */
 
-/* Boina (Catador lvl 2) - beret on top of hair */
-.acc_boina .hair::before {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: -2px;
-  width: 28px;
-  height: 8px;
-  background: #dc2626;
-  border-radius: 50% 50% 0 0;
-  z-index: 2;
-}
-
-/* Lentes (Conocedor lvl 3) - glasses on eyes */
-.acc_lentes .head::after {
-  content: '';
-  position: absolute;
-  top: 5px;
-  left: 2px;
-  width: 20px;
-  height: 7px;
-  border: 1.5px solid #374151;
-  border-radius: 3px;
-  background: rgba(59,130,246,0.15);
-  z-index: 2;
-  box-shadow: inset 8px 0 0 0 transparent;
-}
-
-/* Chef hat (Sommelier lvl 4) */
-.acc_chef .hair {
-  background: #f5f5f5 !important;
-  height: 10px;
-  border-radius: 2px 2px 0 0;
-}
-.acc_chef .hair::after {
-  background: #f5f5f5;
-  width: 20px;
-  height: 12px;
-  top: -12px;
-  left: 2px;
-  border-radius: 6px 6px 0 0;
-}
-
-/* Corona (Maestro lvl 5) */
-.acc_corona .hair::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: 2px;
-  width: 20px;
-  height: 10px;
-  background: #fbbf24;
-  clip-path: polygon(0% 100%, 10% 30%, 25% 70%, 40% 10%, 55% 70%, 75% 30%, 90% 70%, 100% 100%);
-  z-index: 2;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-}
-
-/* ══════════════════════════════════
-   POSE ANIMATIONS
-   ══════════════════════════════════ */
-
-/* ── Idle: subtle breathing ── */
+/* ── Idle: breathing + slight sway ── */
 .pose_idle .sprite {
   animation: idleBreathe 3s ease-in-out infinite;
 }
+.pose_idle .armL { animation: idleArmL 3s ease-in-out infinite; }
+.pose_idle .armR { animation: idleArmR 3s ease-in-out infinite; }
+
 @keyframes idleBreathe {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-2px); }
 }
-
-/* ── Walk: entrance from right ── */
-.pose_walk .character {
-  animation: walkSlide 0.8s ease-out;
+@keyframes idleArmL {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-3deg); }
 }
-.pose_walk .legL { animation: stepL 0.25s steps(1) infinite; }
-.pose_walk .legR { animation: stepR 0.25s steps(1) infinite; }
-.pose_walk .sprite { animation: walkBounce 0.25s steps(1) infinite; }
+@keyframes idleArmR {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(3deg); }
+}
 
-@keyframes walkSlide {
-  0% { transform: translateX(60px); opacity: 0; }
+/* ── Running: triggered by scroll ── */
+.running .sprite {
+  animation: runBounce 0.22s steps(2) infinite;
+}
+.running .legL { animation: runLegL 0.22s steps(2) infinite; }
+.running .legR { animation: runLegR 0.22s steps(2) infinite; }
+.running .armL { animation: runArmL 0.22s ease-in-out infinite; }
+.running .armR { animation: runArmR 0.22s ease-in-out infinite; }
+.running .shadow { animation: runShadow 0.22s steps(2) infinite; }
+
+@keyframes runBounce {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes runLegL {
+  0% { transform: rotate(-25deg) translateY(0); }
+  50% { transform: rotate(25deg) translateY(-3px); }
+  100% { transform: rotate(-25deg) translateY(0); }
+}
+@keyframes runLegR {
+  0% { transform: rotate(25deg) translateY(-3px); }
+  50% { transform: rotate(-25deg) translateY(0); }
+  100% { transform: rotate(25deg) translateY(-3px); }
+}
+@keyframes runArmL {
+  0%, 100% { transform: rotate(30deg); }
+  50% { transform: rotate(-30deg); }
+}
+@keyframes runArmR {
+  0%, 100% { transform: rotate(-30deg); }
+  50% { transform: rotate(30deg); }
+}
+@keyframes runShadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.2; }
+  50% { transform: scaleX(0.7); opacity: 0.1; }
+}
+
+/* ── Walk: entrance ── */
+.pose_walk .character {
+  animation: walkSlideIn 0.8s ease-out;
+}
+.pose_walk .legL { animation: runLegL 0.35s steps(2) infinite; }
+.pose_walk .legR { animation: runLegR 0.35s steps(2) infinite; }
+.pose_walk .armL { animation: runArmL 0.35s ease-in-out infinite; }
+.pose_walk .armR { animation: runArmR 0.35s ease-in-out infinite; }
+
+@keyframes walkSlideIn {
+  0% { transform: translateX(80px); opacity: 0; }
   100% { transform: translateX(0); opacity: 1; }
 }
-@keyframes stepL {
-  0% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(-4px) rotate(-15deg); }
-}
-@keyframes stepR {
-  0% { transform: translateY(-4px) rotate(15deg); }
-  50% { transform: translateY(0) rotate(0); }
-}
-@keyframes walkBounce {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
 
-/* ── Wave: arm wave for tips ── */
+/* ── Wave ── */
+.pose_wave .sprite { animation: idleBreathe 3s ease-in-out infinite; }
 .pose_wave .armR {
-  animation: waveArm 0.5s ease-in-out infinite alternate;
+  animation: waveHand 0.4s ease-in-out infinite alternate !important;
 }
-.pose_wave .sprite {
-  animation: idleBreathe 3s ease-in-out infinite;
-}
-@keyframes waveArm {
-  0% { transform: rotate(0); }
-  100% { transform: rotate(-45deg); }
+@keyframes waveHand {
+  0% { transform: rotate(-20deg); }
+  100% { transform: rotate(-70deg); }
 }
 
-/* ── Dizzy: spinning eyes, wobbly body ── */
+/* ── Dizzy ── */
 .pose_dizzy .sprite {
   animation: dizzyWobble 0.5s ease-in-out infinite;
 }
-.pose_dizzy .eyeL, .pose_dizzy .eyeR {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
+.pose_dizzy .eye {
   background: transparent;
-  border: 1.5px solid #1e1e1e;
-  animation: dizzyEyes 0.8s linear infinite;
+  border: 2px solid #1e1e1e;
+  animation: dizzyEye 0.6s linear infinite;
 }
+.pose_dizzy .eye::after { display: none; }
 .pose_dizzy .mouth {
-  width: 8px;
-  height: 4px;
+  width: 10px;
+  height: 6px;
   border-radius: 50%;
   background: transparent;
-  border: 1.5px solid #92400e;
+  border: 2px solid #92400e;
 }
-
 @keyframes dizzyWobble {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
 }
-@keyframes dizzyEyes {
-  0% { transform: rotate(0); }
-  100% { transform: rotate(360deg); }
+@keyframes dizzyEye {
+  to { transform: rotate(360deg); }
 }
 
-/* ── Sleep: closed eyes, breathing, zzZ ── */
-.pose_sleep .sprite {
-  animation: sleepBreathe 4s ease-in-out infinite;
-}
-.pose_sleep .eyeL, .pose_sleep .eyeR {
+/* ── Sleep ── */
+.pose_sleep .sprite { animation: sleepBob 4s ease-in-out infinite; }
+.pose_sleep .eye {
   height: 2px;
   border-radius: 2px;
-  top: 8px;
 }
-.pose_sleep .mouth {
-  display: none;
-}
-.pose_sleep .head {
-  animation: sleepNod 4s ease-in-out infinite;
-}
+.pose_sleep .eye::after { display: none; }
+.pose_sleep .mouth { display: none; }
+.pose_sleep .head { animation: sleepNod 4s ease-in-out infinite; }
 
 .sleepZzz {
   position: absolute;
-  top: -8px;
-  right: -4px;
-  font-size: 10px;
+  top: -12px;
+  right: -8px;
+  font-size: 14px;
+  font-weight: 900;
   color: #a78bfa;
-  font-weight: 800;
-  animation: zzzFloat 2s ease-in-out infinite;
+  animation: zzz 2s ease-in-out infinite;
   pointer-events: none;
 }
 .sleepZzz::before {
   content: 'z';
   position: absolute;
-  top: -8px;
-  right: 8px;
-  font-size: 8px;
+  top: -10px;
+  right: 10px;
+  font-size: 10px;
   opacity: 0.6;
-  animation: zzzFloat 2s ease-in-out infinite 0.5s;
+  animation: zzz 2s ease-in-out infinite 0.5s;
 }
 .sleepZzz::after {
   content: 'Z';
   position: absolute;
-  top: -18px;
+  top: -24px;
   right: 4px;
-  font-size: 12px;
-  opacity: 0.8;
-  animation: zzzFloat 2s ease-in-out infinite 1s;
+  font-size: 16px;
+  opacity: 0.4;
+  animation: zzz 2s ease-in-out infinite 1s;
 }
-
-@keyframes sleepBreathe {
+@keyframes sleepBob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(2px); }
 }
 @keyframes sleepNod {
   0%, 100% { transform: rotate(0); }
-  30%, 70% { transform: rotate(8deg); }
+  30%, 70% { transform: rotate(10deg); }
 }
-@keyframes zzzFloat {
+@keyframes zzz {
   0% { transform: translateY(0); opacity: 0; }
   50% { opacity: 1; }
-  100% { transform: translateY(-10px); opacity: 0; }
+  100% { transform: translateY(-14px); opacity: 0; }
 }
 
-/* ── Dance: full body groove ── */
-.pose_dance .sprite {
-  animation: danceBounce 0.35s ease-in-out infinite;
-}
-.pose_dance .armL {
-  animation: danceArmL 0.35s ease-in-out infinite;
-}
-.pose_dance .armR {
-  animation: danceArmR 0.35s ease-in-out infinite;
-}
-.pose_dance .legL {
-  animation: danceLegL 0.35s ease-in-out infinite;
-}
-.pose_dance .legR {
-  animation: danceLegR 0.35s ease-in-out infinite;
-}
-.pose_dance .head {
-  animation: danceHead 0.7s ease-in-out infinite;
-}
+/* ── Dance ── */
+.pose_dance .sprite { animation: danceBounce 0.3s ease-in-out infinite; }
+.pose_dance .armL { animation: danceArmL 0.3s ease-in-out infinite !important; }
+.pose_dance .armR { animation: danceArmR 0.3s ease-in-out infinite !important; }
+.pose_dance .legL { animation: danceLegL 0.3s ease-in-out infinite !important; }
+.pose_dance .legR { animation: danceLegR 0.3s ease-in-out infinite !important; }
+.pose_dance .head { animation: danceHead 0.6s ease-in-out infinite; }
 
 @keyframes danceBounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); }
 }
 @keyframes danceArmL {
-  0%, 100% { transform: rotate(-60deg); }
+  0%, 100% { transform: rotate(-70deg); }
   50% { transform: rotate(20deg); }
 }
 @keyframes danceArmR {
   0%, 100% { transform: rotate(20deg); }
-  50% { transform: rotate(-60deg); }
+  50% { transform: rotate(-70deg); }
 }
 @keyframes danceLegL {
-  0%, 100% { transform: rotate(-10deg) translateX(-2px); }
-  50% { transform: rotate(10deg) translateX(2px); }
+  0%, 100% { transform: translateX(-3px) rotate(-15deg); }
+  50% { transform: translateX(3px) rotate(15deg); }
 }
 @keyframes danceLegR {
-  0%, 100% { transform: rotate(10deg) translateX(2px); }
-  50% { transform: rotate(-10deg) translateX(-2px); }
+  0%, 100% { transform: translateX(3px) rotate(15deg); }
+  50% { transform: translateX(-3px) rotate(-15deg); }
 }
 @keyframes danceHead {
   0%, 100% { transform: rotate(0); }
-  25% { transform: rotate(-8deg); }
-  75% { transform: rotate(8deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
 }
 
-/* ── Moto: on motorcycle for delivery ── */
-.pose_moto .sprite {
-  animation: motoVibrate 0.15s infinite alternate;
+/* ── Celebrar ── */
+.pose_celebrar .sprite { animation: danceBounce 0.5s ease-in-out infinite; }
+.pose_celebrar .armL { animation: danceArmL 0.5s ease-in-out infinite !important; }
+.pose_celebrar .armR { animation: danceArmR 0.5s ease-in-out infinite !important; }
+
+.confetti {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 40px;
+  pointer-events: none;
+  overflow: visible;
 }
+.confetti::before, .confetti::after {
+  content: '';
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  animation: confettiFall 1.2s ease-in infinite;
+}
+.confetti::before { background: #fbbf24; left: 8px; }
+.confetti::after { background: #ec4899; right: 8px; animation-delay: 0.4s; }
+
+@keyframes confettiFall {
+  0% { transform: translateY(-15px) rotate(0); opacity: 1; }
+  100% { transform: translateY(60px) rotate(400deg); opacity: 0; }
+}
+
+/* ── Moto ── */
+.pose_moto .sprite { animation: motoVib 0.12s infinite alternate; }
 .pose_moto .legs { display: none; }
-.pose_moto .body { border-radius: 2px 2px 4px 4px; }
-
-@keyframes motoVibrate {
+.motoOverlay {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 52px;
+  height: 22px;
+  background: #dc2626;
+  border-radius: 6px 16px 4px 4px;
+  z-index: -1;
+  box-shadow:
+    -14px 16px 0 5px #374151,
+    14px 16px 0 5px #374151,
+    -14px 16px 0 2px #9ca3af,
+    14px 16px 0 2px #9ca3af,
+    26px -2px 0 3px #fbbf24;
+}
+@keyframes motoVib {
   0% { transform: translateY(0) rotate(-1deg); }
   100% { transform: translateY(-1px) rotate(1deg); }
 }
 
-.motoOverlay {
-  position: absolute;
-  bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 44px;
-  height: 20px;
-  background: #dc2626;
-  border-radius: 6px 14px 4px 4px;
-  z-index: -1;
-  box-shadow:
-    -12px 14px 0 4px #374151,
-    12px 14px 0 4px #374151,
-    -12px 14px 0 2px #9ca3af,
-    12px 14px 0 2px #9ca3af,
-    22px -2px 0 2px #fbbf24;
-}
-
-/* ── Paquete: holding a box ── */
-.pose_paquete .armL { transform: rotate(30deg); }
-.pose_paquete .armR { transform: rotate(-30deg); }
+/* ── Paquete ── */
+.pose_paquete .armL { transform: rotate(25deg) !important; }
+.pose_paquete .armR { transform: rotate(-25deg) !important; }
 .pose_paquete .sprite { animation: idleBreathe 3s ease-in-out infinite; }
-
 .paqueteOverlay {
   position: absolute;
-  bottom: 30px;
+  bottom: 38px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 16px;
+  width: 22px;
+  height: 18px;
   background: #92400e;
   border: 2px solid #78350f;
   border-radius: 2px;
@@ -546,56 +651,86 @@
   transform: translateX(-50%);
 }
 
-/* ── Celebrar: confetti + jump ── */
-.pose_celebrar .sprite {
-  animation: celebrateJump 0.6s ease-in-out infinite;
-}
-.pose_celebrar .armL { animation: celebrateArmL 0.6s ease-in-out infinite; }
-.pose_celebrar .armR { animation: celebrateArmR 0.6s ease-in-out infinite; }
+/* ══════════════════════════════════
+   LEVEL ACCESSORIES
+   ══════════════════════════════════ */
 
-@keyframes celebrateJump {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+/* Boina (Catador) */
+.acc_boina .hat {
+  background: #dc2626 !important;
+  border-radius: 50% 50% 2px 2px;
+  height: 12px;
 }
-@keyframes celebrateArmL {
-  0%, 100% { transform: rotate(0); }
-  50% { transform: rotate(-60deg); }
-}
-@keyframes celebrateArmR {
-  0%, 100% { transform: rotate(0); }
-  50% { transform: rotate(60deg); }
-}
+.acc_boina .hat::after { display: none; }
 
-.confetti {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 30px;
-  pointer-events: none;
-}
-.confetti::before, .confetti::after {
+/* Lentes (Conocedor) */
+.acc_lentes .face::before {
   content: '';
   position: absolute;
-  width: 5px; height: 5px;
-  border-radius: 1px;
-  animation: confettiFall 1s ease-in infinite;
-}
-.confetti::before {
-  background: #fbbf24;
-  left: 5px;
-  animation-delay: 0s;
-}
-.confetti::after {
-  background: #ec4899;
-  right: 5px;
-  animation-delay: 0.3s;
+  top: 2px;
+  left: -1px;
+  right: -1px;
+  height: 8px;
+  border: 2px solid #374151;
+  border-radius: 4px;
+  background: rgba(59,130,246,0.1);
+  z-index: 10;
 }
 
-@keyframes confettiFall {
-  0% { transform: translateY(-10px) rotate(0); opacity: 1; }
-  100% { transform: translateY(50px) rotate(360deg); opacity: 0; }
+/* Chef (Sommelier) */
+.acc_chef .hat {
+  background: #f5f5f5 !important;
+  height: 18px;
+  border-radius: 4px 4px 2px 2px;
+}
+.acc_chef .hat::after {
+  display: none;
+}
+.acc_chef .hat::before {
+  height: 3px;
+  background: #e5e5e5;
+}
+
+/* Corona (Maestro) */
+.acc_corona .hat {
+  background: #fbbf24 !important;
+  height: 14px;
+  clip-path: polygon(0% 100%, 5% 20%, 20% 60%, 35% 0%, 50% 60%, 65% 0%, 80% 60%, 95% 20%, 100% 100%);
+  border-radius: 0;
+}
+.acc_corona .hat::before, .acc_corona .hat::after { display: none; }
+
+/* ── Dragging: remove container transition for instant follow ── */
+.draggingContainer {
+  transition: none !important;
+}
+.dragging {
+  cursor: grabbing !important;
+  transform: scale(1.1) !important;
+}
+.dragging .shadow {
+  transform: scaleX(1.4);
+  opacity: 0.1;
+}
+
+/* ── Thrown ── */
+.thrown {
+  pointer-events: none;
+}
+.thrown .sprite {
+  animation: thrownSpin 0.4s linear infinite !important;
+}
+.thrown .armL, .thrown .armR {
+  animation: none !important;
+  transform: rotate(90deg) !important;
+}
+.thrown .legL, .thrown .legR {
+  animation: none !important;
+  transform: rotate(45deg) !important;
+}
+@keyframes thrownSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ══════════════════════════════════
@@ -607,9 +742,10 @@
   gap: 4px;
   position: absolute;
   top: -4px;
-  right: -4px;
+  right: -20px;
   opacity: 0;
   transition: opacity 0.2s;
+  flex-direction: column;
 }
 .container:hover .actionBtns { opacity: 1; }
 @media (hover: none) {
@@ -617,8 +753,8 @@
 }
 
 .actionBtn, .dismissBtn {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -628,25 +764,18 @@
   justify-content: center;
   transition: transform 0.15s;
 }
-.actionBtn {
-  background: #7c3aed;
-  color: #fff;
-}
-.actionBtn:hover { transform: scale(1.15); }
-.dismissBtn {
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-}
-.dismissBtn:hover { transform: scale(1.15); }
+.actionBtn { background: #7c3aed; color: #fff; }
+.dismissBtn { background: rgba(0,0,0,0.5); color: #fff; }
+.actionBtn:hover, .dismissBtn:hover { transform: scale(1.2); }
 
-/* ── Minimized button ── */
+/* ── Minimized ── */
 .minimizedBtn {
   position: fixed;
-  bottom: 90px;
+  bottom: 80px;
   right: 18px;
   z-index: 9998;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #7c3aed;
   border: 2px solid #a78bfa;
@@ -655,36 +784,34 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(124,58,237,0.4);
-  transition: transform 0.2s;
-  animation: minimizedPulse 2s ease-in-out infinite;
+  animation: pulse 2s ease-in-out infinite;
 }
-.minimizedBtn:hover { transform: scale(1.15); }
+.minimizedBtn:hover { transform: scale(1.1); }
 
-.miniSprite { display: flex; align-items: center; justify-content: center; }
 .miniHead {
-  width: 16px;
-  height: 14px;
+  width: 18px;
+  height: 16px;
   background: #fbbf24;
-  border-radius: 2px;
+  border-radius: 3px;
   box-shadow:
-    inset 3px 4px 0 0 #1e1e1e,
-    inset -3px 4px 0 0 #1e1e1e,
-    inset 0 -2px 0 0 #92400e;
+    inset 4px 5px 0 0 #1e1e1e,
+    inset -4px 5px 0 0 #1e1e1e,
+    inset 0 -3px 0 0 #92400e;
 }
 
-@keyframes minimizedPulse {
+@keyframes pulse {
   0%, 100% { box-shadow: 0 4px 12px rgba(124,58,237,0.4); }
-  50% { box-shadow: 0 4px 20px rgba(124,58,237,0.7); }
+  50% { box-shadow: 0 4px 22px rgba(124,58,237,0.7); }
 }
 
-/* ── Reactivate button (when dismissed) ── */
+/* ── Reactivate ── */
 .reactivateBtn {
   position: fixed;
-  bottom: 90px;
+  bottom: 80px;
   right: 18px;
   z-index: 9998;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: rgba(124,58,237,0.15);
   border: 1px solid rgba(124,58,237,0.3);
@@ -693,18 +820,17 @@
   align-items: center;
   justify-content: center;
   opacity: 0.4;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: all 0.2s;
 }
 .reactivateBtn:hover { opacity: 1; transform: scale(1.1); }
-.reactivateEmoji { font-size: 14px; }
+.reactivateEmoji { font-size: 16px; }
 
 /* ══════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════ */
 @media (max-width: 640px) {
-  .container { bottom: 85px; right: 12px; }
-  .bubble { max-width: 180px; font-size: 10px; padding: 6px 10px; }
-  .quickMenu { min-width: 160px; }
-  .minimizedBtn { bottom: 85px; right: 12px; }
-  .reactivateBtn { bottom: 85px; right: 12px; }
+  .container { bottom: 68px; }
+  .bubble { max-width: 190px; font-size: 10px; }
+  .minimizedBtn { bottom: 75px; right: 12px; }
+  .reactivateBtn { bottom: 75px; right: 12px; }
 }

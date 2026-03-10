@@ -7,13 +7,14 @@ import s from './MusitoAssistant.module.css';
 export default function MusitoAssistant() {
   const {
     message, pose, visible, bubbleVisible, dismissed, outfit,
-    showQuickMenu, quickSuggestions,
+    showQuickMenu, quickSuggestions, musitoX, facing, isRunning,
+    isDragging, isThrown,
     dismiss, reactivate, handleMusitoClick, toggleQuickMenu, setShowQuickMenu,
+    startDrag, onDrag, endDrag,
   } = useMusito();
   const navigate = useNavigate();
   const [minimized, setMinimized] = useState(false);
 
-  // Show reactivate button when dismissed
   if (dismissed) {
     return (
       <button className={s.reactivateBtn} onClick={reactivate} title="Traer a Musito">
@@ -27,31 +28,51 @@ export default function MusitoAssistant() {
   if (minimized) {
     return (
       <button className={s.minimizedBtn} onClick={() => setMinimized(false)} title="Ver a Musito">
-        <div className={s.miniSprite}>
-          <div className={s.miniHead} />
-        </div>
+        <div className={s.miniHead} />
       </button>
     );
   }
 
   const poseClass = s[`pose_${pose}`] || '';
   const accessoryClass = outfit.accessory ? s[`acc_${outfit.accessory}`] : '';
+  const runClass = isRunning ? s.running : '';
+  const facingClass = facing === 'left' ? s.facingLeft : '';
 
-  // Short click = easter egg count, long press = minimize
+  // Drag & long press logic
   const pressTimer = useRef(null);
   const wasLongPress = useRef(false);
+  const dragging = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
 
-  const handlePointerDown = () => {
+  const handlePointerDown = (e) => {
     wasLongPress.current = false;
+    dragging.current = false;
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    e.currentTarget.setPointerCapture(e.pointerId);
     pressTimer.current = setTimeout(() => {
-      wasLongPress.current = true;
-      setMinimized(true);
+      if (!dragging.current) { wasLongPress.current = true; setMinimized(true); }
     }, 600);
   };
 
-  const handlePointerUp = () => {
+  const handlePointerMove = (e) => {
+    const dx = Math.abs(e.clientX - dragStartPos.current.x);
+    const dy = Math.abs(e.clientY - dragStartPos.current.y);
+    if (!dragging.current && (dx > 8 || dy > 8)) {
+      dragging.current = true;
+      clearTimeout(pressTimer.current);
+      startDrag(e.clientX);
+    }
+    if (dragging.current) {
+      onDrag(e.clientX);
+    }
+  };
+
+  const handlePointerUp = (e) => {
     clearTimeout(pressTimer.current);
-    if (!wasLongPress.current) {
+    if (dragging.current) {
+      endDrag(e.clientX);
+      dragging.current = false;
+    } else if (!wasLongPress.current) {
       handleMusitoClick();
     }
   };
@@ -62,23 +83,10 @@ export default function MusitoAssistant() {
   };
 
   return (
-    <div className={`${s.container} ${poseClass} ${accessoryClass}`}>
-      {/* Quick sommelier menu */}
-      {showQuickMenu && (
-        <div className={s.quickMenu}>
-          <div className={s.quickMenuTitle}>Preguntame algo!</div>
-          {quickSuggestions.map((sug) => (
-            <button
-              key={sug.label}
-              className={s.quickMenuItem}
-              onClick={() => handleQuickSuggestion(sug.query)}
-            >
-              {sug.label}
-            </button>
-          ))}
-        </div>
-      )}
-
+    <div
+      className={`${s.container} ${poseClass} ${accessoryClass} ${runClass} ${facingClass} ${isDragging ? s.draggingContainer : ''}`}
+      style={{ left: `${musitoX}%` }}
+    >
       {/* Speech bubble */}
       {bubbleVisible && message && !showQuickMenu && (
         <div className={s.bubble}>
@@ -86,51 +94,77 @@ export default function MusitoAssistant() {
         </div>
       )}
 
+      {/* Quick sommelier menu */}
+      {showQuickMenu && (
+        <div className={s.quickMenu}>
+          <div className={s.quickMenuTitle}>Preguntame algo!</div>
+          {quickSuggestions.map((sug) => (
+            <button key={sug.label} className={s.quickMenuItem} onClick={() => handleQuickSuggestion(sug.query)}>
+              {sug.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Character */}
       <div
-        className={s.character}
+        className={`${s.character} ${isDragging ? s.dragging : ''} ${isThrown ? s.thrown : ''}`}
         onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={() => clearTimeout(pressTimer.current)}
-        title="Click para interactuar, manten presionado para minimizar"
+        onPointerLeave={(e) => { clearTimeout(pressTimer.current); if (dragging.current) { endDrag(e.clientX); dragging.current = false; } }}
+        style={{ touchAction: 'none' }}
       >
-        {/* Pose-specific overlays */}
+        {/* Pose overlays */}
         {pose === 'moto' && <div className={s.motoOverlay} />}
         {pose === 'paquete' && <div className={s.paqueteOverlay} />}
         {pose === 'celebrar' && <div className={s.confetti} />}
-        {pose === 'sleep' && <div className={s.sleepZzz} />}
+        {pose === 'sleep' && <div className={s.sleepZzz}>Z</div>}
 
         <div className={s.sprite}>
-          {/* Hat / hair / accessory */}
-          <div className={s.hair} style={{ background: outfit.hair }} />
+          {/* Hat */}
+          <div className={s.hat} style={outfit.accessory ? undefined : { background: outfit.hair }} />
+
           {/* Head */}
           <div className={s.head}>
-            <span className={s.eyeL} />
-            <span className={s.eyeR} />
-            <span className={s.mouth} />
+            <div className={s.hairSide} style={{ background: outfit.hair }} />
+            <div className={s.face}>
+              <div className={s.eyeRow}>
+                <span className={s.eye} />
+                <span className={s.eye} />
+              </div>
+              <span className={s.nose} />
+              <span className={s.mouth} />
+            </div>
           </div>
+
           {/* Body */}
-          <div className={s.body} style={{ background: outfit.body }}>
-            <span className={s.armL} />
-            <span className={s.armR} />
+          <div className={s.torso} style={{ background: outfit.body }}>
+            <div className={s.collar} />
+            <div className={s.armL} />
+            <div className={s.armR} />
           </div>
+
           {/* Legs */}
           <div className={s.legs}>
-            <span className={s.legL} />
-            <span className={s.legR} />
+            <div className={s.legL}>
+              <span className={s.shoeL} />
+            </div>
+            <div className={s.legR}>
+              <span className={s.shoeR} />
+            </div>
           </div>
         </div>
+
+        {/* Shadow */}
+        <div className={s.shadow} />
         <span className={s.nameTag}>Musito</span>
       </div>
 
       {/* Action buttons */}
       <div className={s.actionBtns}>
-        <button className={s.actionBtn} onClick={toggleQuickMenu} title="Preguntar a Musito">
-          <i className="bi bi-chat-dots" />
-        </button>
-        <button className={s.dismissBtn} onClick={dismiss} title="Ocultar a Musito">
-          <i className="bi bi-x" />
-        </button>
+        <button className={s.actionBtn} onClick={toggleQuickMenu} title="Preguntar"><i className="bi bi-chat-dots" /></button>
+        <button className={s.dismissBtn} onClick={dismiss} title="Ocultar"><i className="bi bi-x" /></button>
       </div>
     </div>
   );

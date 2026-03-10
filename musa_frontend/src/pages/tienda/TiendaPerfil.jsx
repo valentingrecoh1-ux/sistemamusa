@@ -14,6 +14,96 @@ const PREMIO_LABELS = { descuento: 'Descuento', vino_gratis: 'Vino gratis', degu
 
 const PERFIL_TOKEN_KEY = 'musa_perfil_token';
 
+// ── Character evolution ──
+const CHARACTER_DATA = [
+  { emoji: '🌱', title: 'Semilla', bubbles: ['¡Bienvenido! Tu aventura vinícola comienza aquí.', 'Hacé tu primera compra y empezá a crecer.'] },
+  { emoji: '🍇', title: 'Uva', bubbles: ['¡Estás brotando! Seguí descubriendo vinos.', '¡Cada vino nuevo te acerca al siguiente nivel!'] },
+  { emoji: '🍷', title: 'Catador', bubbles: ['¡Tu paladar se está refinando!', '¡Explorá nuevas regiones y pintá tu mapa!'] },
+  { emoji: '🧐', title: 'Conocedor', bubbles: ['Tus amigos te piden recomendaciones.', '¡Tu colección impresiona! ¿Vas por todas las cepas?'] },
+  { emoji: '🎩', title: 'Sommelier', bubbles: ['Paladar privilegiado. ¡Pocos llegan hasta acá!', '¡Casi maestro! Completá tu mapa de Argentina.'] },
+  { emoji: '👑', title: 'Maestro', bubbles: ['¡Leyenda del vino argentino!', 'Tu colección es envidiable. ¡Lo lograste!'] },
+];
+
+// ── Argentina wine map ──
+const WINE_PROVINCES = [
+  { id: 'salta', name: 'Salta', col: 3, row: 1, regions: ['Salta', 'Cafayate', 'Valles Calchaquíes'] },
+  { id: 'catamarca', name: 'Catamarca', col: 2, row: 2, regions: ['Catamarca'] },
+  { id: 'la_rioja', name: 'La Rioja', col: 2, row: 3, regions: ['La Rioja'] },
+  { id: 'san_juan', name: 'San Juan', col: 1, row: 3, regions: ['San Juan'] },
+  { id: 'cordoba', name: 'Córdoba', col: 3, row: 3, regions: ['Córdoba'] },
+  { id: 'entre_rios', name: 'Entre Ríos', col: 4, row: 3, regions: ['Entre Ríos'] },
+  { id: 'mendoza', name: 'Mendoza', col: 1, row: 4, regions: ['Mendoza', 'Valle de Uco', 'Luján de Cuyo', 'Maipú', 'San Rafael', 'Tupungato', 'Tunuyán', 'San Carlos', 'La Consulta', 'San Martín'] },
+  { id: 'buenos_aires', name: 'Bs.As.', col: 4, row: 4, regions: ['Buenos Aires', 'Chapadmalal', 'Sierra de la Ventana'] },
+  { id: 'neuquen', name: 'Neuquén', col: 1, row: 5, regions: ['Neuquén'] },
+  { id: 'rio_negro', name: 'Río Negro', col: 2, row: 5, regions: ['Río Negro', 'Patagonia'] },
+];
+
+function getCharacterBubble(perfil) {
+  const nivel = perfil.nivelNum || 0;
+  const data = CHARACTER_DATA[nivel] || CHARACTER_DATA[0];
+  const idx = (perfil.metricas?.cantCompras || 0) % data.bubbles.length;
+  return data.bubbles[idx];
+}
+
+function generarDesafios(perfil) {
+  const desafios = [];
+  const regionesProbadas = new Set(
+    (perfil.coleccionRegiones || []).filter((r) => r.probada).map((r) => r.region)
+  );
+
+  // Region challenge - find an unexplored province
+  for (const prov of WINE_PROVINCES) {
+    if (prov.regions.every((r) => !regionesProbadas.has(r))) {
+      desafios.push({
+        icono: 'bi-geo-alt-fill',
+        titulo: `Explorá ${prov.name}`,
+        desc: `Probá un vino de ${prov.name} y pintá una nueva zona en tu mapa`,
+        color: '#f59e0b',
+      });
+      break;
+    }
+  }
+
+  // Cepa challenge
+  const cepasNoProbadas = (perfil.coleccionCepas || []).filter((c) => !c.probada);
+  if (cepasNoProbadas.length > 0) {
+    desafios.push({
+      icono: 'bi-droplet-fill',
+      titulo: `Probá ${cepasNoProbadas[0].cepa}`,
+      desc: 'Sumá una nueva cepa a tu colección',
+      color: '#8b5cf6',
+    });
+  }
+
+  // Level up challenge
+  const nivelNames = Object.keys(NIVEL_COLORS);
+  if (perfil.nivelNum < 5) {
+    const nextThreshold = NIVEL_PROGRESS[perfil.nivelNum + 1];
+    const remaining = nextThreshold - (perfil.metricas?.cantCompras || 0);
+    desafios.push({
+      icono: 'bi-lightning-fill',
+      titulo: `Subí a ${nivelNames[perfil.nivelNum + 1]}`,
+      desc: remaining === 1 ? '¡Te falta solo 1 compra!' : `Te faltan ${remaining} compras`,
+      color: NIVEL_COLORS[nivelNames[perfil.nivelNum + 1]],
+    });
+  }
+
+  // Bodega challenge
+  if (desafios.length < 3) {
+    const bodegasNoProbadas = (perfil.coleccionBodegas || []).filter((b) => !b.probada);
+    if (bodegasNoProbadas.length > 0) {
+      desafios.push({
+        icono: 'bi-building',
+        titulo: `Conocé ${bodegasNoProbadas[0].bodega}`,
+        desc: 'Sumá una nueva bodega a tu recorrido',
+        color: '#3b82f6',
+      });
+    }
+  }
+
+  return desafios.slice(0, 3);
+}
+
 // Format phone: strips non-digits, normalizes to 10-digit AR mobile, displays formatted
 const formatWhatsapp = (raw) => {
   let d = raw.replace(/\D/g, '');
@@ -41,7 +131,7 @@ export default function TiendaPerfil() {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [tab, setTab] = useState('resumen');
+  const [tab, setTab] = useState('coleccion');
   const [colTab, setColTab] = useState('cepas');
   const [busqueda, setBusqueda] = useState('');
   const [mode, setMode] = useState(token ? 'token' : 'search'); // 'token' or 'search'
@@ -54,6 +144,9 @@ export default function TiendaPerfil() {
   const [completeForm, setCompleteForm] = useState({ nombre: '', apellido: '', whatsapp: '' });
   const [completeLoading, setCompleteLoading] = useState(false);
   const [completeMsg, setCompleteMsg] = useState('');
+
+  // Map interaction
+  const [expandedProv, setExpandedProv] = useState(null);
 
   // Suggestion form
   const [sugTipo, setSugTipo] = useState('sugerencia');
@@ -174,6 +267,18 @@ export default function TiendaPerfil() {
 
   const premiosGanados = (perfil?.logros || []).filter((l) => l.premio);
   const premiosPendientes = (perfil?.todosLogros || []).filter((l) => !l.req && l.premio);
+  const charData = CHARACTER_DATA[perfil?.nivelNum || 0] || CHARACTER_DATA[0];
+  const desafios = perfil ? generarDesafios(perfil) : [];
+
+  // Compute province probada status for map
+  const regionesProbadas = new Set(
+    (perfil?.coleccionRegiones || []).filter((r) => r.probada).map((r) => r.region)
+  );
+  const provincesStatus = WINE_PROVINCES.map((prov) => {
+    const probadasCount = prov.regions.filter((r) => regionesProbadas.has(r)).length;
+    return { ...prov, probada: probadasCount > 0, probadasCount, totalRegions: prov.regions.length };
+  });
+  const totalProvsProbadas = provincesStatus.filter((p) => p.probada).length;
 
   return (
     <div className={s.page}>
@@ -295,15 +400,23 @@ export default function TiendaPerfil() {
       {perfil && (
         <div className={s.profileWrap}>
 
-          {/* Header card */}
+          {/* Header card with character */}
           <div className={s.profileHeader}>
-            <div className={s.nivelBadge} style={{ background: NIVEL_COLORS[perfil.nivel] || '#94a3b8' }}>
-              <span className={s.nivelNum}>Nv.{perfil.nivelNum}</span>
-              <span className={s.nivelNombre}>{perfil.nivel}</span>
+            <div className={s.character} style={{ '--nivel-color': NIVEL_COLORS[perfil.nivel] || '#94a3b8' }}>
+              <div className={s.characterAvatar}>
+                <span className={s.characterEmoji}>{charData.emoji}</span>
+                <span className={s.characterLevel}>Nv.{perfil.nivelNum}</span>
+              </div>
+              <div className={s.characterBubble}>
+                <span className={s.characterBubbleText}>{getCharacterBubble(perfil)}</span>
+              </div>
             </div>
             <div className={s.headerInfo}>
               <div className={s.headerTop}>
-                <h2 className={s.clienteName}>{perfil.cliente?.nombre}{perfil.cliente?.apellido ? ` ${perfil.cliente.apellido}` : ''}</h2>
+                <div>
+                  <h2 className={s.clienteName}>{perfil.cliente?.nombre}{perfil.cliente?.apellido ? ` ${perfil.cliente.apellido}` : ''}</h2>
+                  <span className={s.nivelTag} style={{ background: NIVEL_COLORS[perfil.nivel] }}>{perfil.nivel}</span>
+                </div>
                 <button className={s.logoutBtn} onClick={handleLogout} title="Cerrar sesion">
                   <i className="bi bi-box-arrow-right" /> Salir
                 </button>
@@ -312,6 +425,7 @@ export default function TiendaPerfil() {
                 <div className={s.kpi}><span className={s.kpiVal}>{perfil.metricas?.cantCompras || 0}</span><span className={s.kpiLabel}>Compras</span></div>
                 <div className={s.kpi}><span className={s.kpiVal}>{perfil.metricas?.vinosUnicos || 0}</span><span className={s.kpiLabel}>Vinos</span></div>
                 <div className={s.kpi}><span className={s.kpiVal}>{perfil.preferencias?.cepasProbadas || 0}/{perfil.preferencias?.totalCepas || 0}</span><span className={s.kpiLabel}>Cepas</span></div>
+                <div className={s.kpi}><span className={s.kpiVal}>{totalProvsProbadas}/{WINE_PROVINCES.length}</span><span className={s.kpiLabel}>Zonas</span></div>
               </div>
               {(perfil.preferencias?.cepaFavorita || perfil.preferencias?.bodegaFavorita) && (
                 <div className={s.prefChips}>
@@ -341,12 +455,30 @@ export default function TiendaPerfil() {
             </div>
           </div>
 
+          {/* Desafios */}
+          {desafios.length > 0 && (
+            <div className={s.desafiosSection}>
+              <h3 className={s.desafiosTitle}><i className="bi bi-fire" /> Desafios activos</h3>
+              <div className={s.desafiosGrid}>
+                {desafios.map((d, i) => (
+                  <div key={i} className={s.desafioCard} style={{ '--desafio-color': d.color }}>
+                    <div className={s.desafioIcon}><i className={`bi ${d.icono}`} /></div>
+                    <div className={s.desafioInfo}>
+                      <span className={s.desafioTitulo}>{d.titulo}</span>
+                      <span className={s.desafioDesc}>{d.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tabs */}
           <div className={s.tabs}>
             {[
+              { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
               { key: 'resumen', label: 'Logros', icon: 'bi-trophy' },
               { key: 'premios', label: 'Premios', icon: 'bi-gift' },
-              { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
               { key: 'sugerencias', label: 'Comentarios', icon: 'bi-chat-dots' },
             ].map((t) => (
               <button key={t.key} className={`${s.tab} ${tab === t.key ? s.tabActive : ''}`} onClick={() => setTab(t.key)}>
@@ -478,11 +610,60 @@ export default function TiendaPerfil() {
 
               {colTab === 'regiones' && (<>
                 <div className={s.coleccionHeader}>
-                  <h3 className={s.sectionTitle}>Coleccion de Regiones</h3>
+                  <h3 className={s.sectionTitle}>Mapa Vinícola</h3>
                   <span className={s.coleccionProgress}>
-                    {perfil.coleccionRegiones?.filter((r) => r.probada).length || 0} / {perfil.coleccionRegiones?.length || 0} probadas
+                    {totalProvsProbadas} / {WINE_PROVINCES.length} zonas
                   </span>
                 </div>
+
+                {/* Argentina Wine Map */}
+                <div className={s.wineMap}>
+                  <div className={s.mapGrid}>
+                    {provincesStatus.map((prov) => (
+                      <div
+                        key={prov.id}
+                        className={`${s.mapTile} ${prov.probada ? s.mapTileProbada : s.mapTileNoProbada} ${expandedProv === prov.id ? s.mapTileExpanded : ''}`}
+                        style={{ gridColumn: prov.col, gridRow: prov.row }}
+                        onClick={() => setExpandedProv(expandedProv === prov.id ? null : prov.id)}
+                      >
+                        <span className={s.mapTileIcon}>
+                          {prov.probada ? <i className="bi bi-pin-map-fill" /> : <i className="bi bi-lock-fill" />}
+                        </span>
+                        <span className={s.mapTileName}>{prov.name}</span>
+                        {prov.totalRegions > 1 && (
+                          <span className={s.mapTileCount}>{prov.probadasCount}/{prov.totalRegions}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Expanded province detail */}
+                  {expandedProv && (() => {
+                    const prov = provincesStatus.find((p) => p.id === expandedProv);
+                    if (!prov || prov.totalRegions <= 1) return null;
+                    return (
+                      <div className={s.mapDetail}>
+                        <h4 className={s.mapDetailTitle}>
+                          <i className={`bi ${prov.probada ? 'bi-pin-map-fill' : 'bi-geo-alt'}`} /> Regiones de {prov.name}
+                        </h4>
+                        <div className={s.mapDetailList}>
+                          {prov.regions.map((r) => {
+                            const probada = regionesProbadas.has(r);
+                            return (
+                              <div key={r} className={`${s.mapDetailItem} ${probada ? s.mapDetailProbada : ''}`}>
+                                <i className={`bi ${probada ? 'bi-check-circle-fill' : 'bi-circle'}`} />
+                                <span>{r}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Full region list below map */}
+                <h4 className={s.sectionTitle} style={{ marginTop: 8 }}>Todas las regiones</h4>
                 <div className={s.cepaGrid}>
                   {(perfil.coleccionRegiones || []).map((r) => (
                     <div key={r.region} className={`${s.cepaCard} ${r.probada ? s.cepaProbada : s.cepaNoProbada}`}>

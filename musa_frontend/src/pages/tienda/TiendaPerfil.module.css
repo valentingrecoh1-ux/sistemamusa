@@ -1195,3 +1195,96 @@
     font-size: 8px;
   }
 }
+
+/* ── Mis Pedidos ── */
+.pedidosList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pedidoCard {
+  background: var(--tienda-surface, var(--card-bg));
+  border: 1px solid var(--tienda-border, var(--card-border));
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pedidoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pedidoNum {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pedidoNum span:first-child {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--tienda-text, var(--text-primary));
+}
+.pedidoFecha {
+  font-size: 11px;
+  color: var(--tienda-text-muted, var(--text-muted));
+}
+.pedidoEstado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+}
+.pedidoItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pedidoItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--tienda-text-secondary, var(--text-secondary));
+}
+.pedidoItemFoto {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.pedidoFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid var(--tienda-border, var(--card-border));
+}
+.pedidoEntrega {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--tienda-text-muted, var(--text-muted));
+}
+.pedidoTotal {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--tienda-text, var(--text-primary));
+}
+.pedidoTracking {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tienda-primary, var(--primary-light));
+  text-decoration: none;
+}
+.pedidoTracking:hover { text-decoration: underline; }

@@ -221,9 +221,56 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
 
       const montoTotal = montoSubtotal + costoEnvio;
 
+      // Buscar o crear perfil de cliente para vincular al pedido
+      let clienteId = null;
+      try {
+        const email = (cliente.email || "").trim().toLowerCase();
+        const tel = (cliente.telefono || "").trim();
+        const dni = (cliente.dni || "").trim();
+        let clienteDoc = await Cliente.findOne({
+          $or: [
+            ...(email ? [{ email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } }] : []),
+            ...(tel ? [{ telefono: tel }, { whatsapp: tel }] : []),
+            ...(dni ? [{ dni }] : []),
+          ],
+        });
+        if (clienteDoc) {
+          // Actualizar datos si cambiaron
+          const [nombre, ...apellidoParts] = (cliente.nombre || "").split(" ");
+          const apellido = apellidoParts.join(" ");
+          if (nombre) clienteDoc.nombre = nombre;
+          if (apellido) clienteDoc.apellido = apellido;
+          if (email) clienteDoc.email = email;
+          if (tel) { clienteDoc.telefono = tel; clienteDoc.whatsapp = tel; }
+          if (dni) clienteDoc.dni = dni;
+          if (cliente.localidad) clienteDoc.localidad = cliente.localidad;
+          if (cliente.provincia) clienteDoc.provincia = cliente.provincia;
+          if (cliente.direccion) clienteDoc.domicilio = cliente.direccion;
+          await clienteDoc.save();
+        } else {
+          const [nombre, ...apellidoParts] = (cliente.nombre || "").split(" ");
+          clienteDoc = await new Cliente({
+            nombre: nombre || cliente.nombre,
+            apellido: apellidoParts.join(" ") || "",
+            email,
+            telefono: tel,
+            whatsapp: tel,
+            dni,
+            domicilio: cliente.direccion || "",
+            localidad: cliente.localidad || "",
+            provincia: cliente.provincia || "",
+            autoRegistro: true,
+          }).save();
+        }
+        clienteId = clienteDoc._id;
+      } catch (clienteErr) {
+        console.error("Error auto-crear cliente:", clienteErr.message);
+      }
+
       const pedido = new PedidoWeb({
         items: itemsDocs,
         cliente,
+        clienteId,
         entrega: entrega || "retiro",
         montoSubtotal,
         costoEnvio,
@@ -1283,6 +1330,63 @@ IMPORTANT RULES:
     }
   });
 
+  // GET /api/tienda/perfil/:token/pedidos - Mis pedidos
+  router.get("/perfil/:token/pedidos", async (req, res) => {
+    try {
+      const cliente = await Cliente.findOne({ tokenAcceso: req.params.token }).lean();
+      if (!cliente) return res.status(404).json({ error: "Perfil no encontrado" });
+
+      const pedidos = await PedidoWeb.find({ clienteId: cliente._id })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean();
+
+      // Tambien buscar pedidos sin clienteId pero con mismo email/telefono
+      const emailTel = [
+        ...(cliente.email ? [{ "cliente.email": new RegExp(`^${cliente.email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") }] : []),
+        ...(cliente.telefono ? [{ "cliente.telefono": cliente.telefono }] : []),
+      ];
+      let pedidosSinVincular = [];
+      if (emailTel.length > 0) {
+        pedidosSinVincular = await PedidoWeb.find({
+          clienteId: null,
+          $or: emailTel,
+        }).sort({ createdAt: -1 }).limit(20).lean();
+
+        // Vincularlos para futuras consultas
+        if (pedidosSinVincular.length > 0) {
+          await PedidoWeb.updateMany(
+            { _id: { $in: pedidosSinVincular.map((p) => p._id) } },
+            { $set: { clienteId: cliente._id } }
+          );
+        }
+      }
+
+      const todos = [...pedidos, ...pedidosSinVincular]
+        .filter((p, i, arr) => arr.findIndex((x) => x._id.toString() === p._id.toString()) === i)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 20);
+
+      res.json({
+        pedidos: todos.map((p) => ({
+          id: p._id,
+          numeroPedido: p.numeroPedido,
+          estado: p.estado,
+          entrega: p.entrega,
+          items: p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, foto: i.foto })),
+          montoTotal: p.montoTotal,
+          costoEnvio: p.costoEnvio,
+          tracking: p.logisticaTracking || null,
+          transportista: p.logisticaProveedor || null,
+          fecha: p.createdAt,
+        })),
+      });
+    } catch (err) {
+      console.error("Error pedidos perfil:", err.message);
+      res.status(500).json({ error: "Error al obtener pedidos" });
+    }
+  });
+
   // POST /api/tienda/perfil/buscar - Search client by DNI or email
   router.post("/perfil/buscar", async (req, res) => {
     try {
@@ -1454,6 +1558,42 @@ IMPORTANT RULES:
     } catch (err) {
       console.error("Error fetch eventos publicos:", err.message);
       res.json([]);
+    }
+  });
+
+  // GET /api/tienda/cliente/buscar?q=email|telefono - Buscar perfil de cliente
+  router.get("/cliente/buscar", async (req, res) => {
+    try {
+      const q = (req.query.q || "").trim();
+      if (q.length < 3) return res.json({ cliente: null });
+
+      // Buscar por email, telefono, whatsapp o DNI
+      const cliente = await Cliente.findOne({
+        $or: [
+          { email: { $regex: new RegExp(`^${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") } },
+          { telefono: q },
+          { whatsapp: q },
+          { dni: q },
+        ],
+      }).lean();
+
+      if (!cliente) return res.json({ cliente: null });
+
+      res.json({
+        cliente: {
+          id: cliente._id,
+          nombre: [cliente.nombre, cliente.apellido].filter(Boolean).join(" "),
+          email: cliente.email || "",
+          telefono: cliente.telefono || cliente.whatsapp || "",
+          dni: cliente.dni || "",
+          domicilio: cliente.domicilio || "",
+          localidad: cliente.localidad || "",
+          provincia: cliente.provincia || "",
+        },
+      });
+    } catch (err) {
+      console.error("Error buscar cliente:", err.message);
+      res.json({ cliente: null });
     }
   });
 

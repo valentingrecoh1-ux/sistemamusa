@@ -35,6 +35,11 @@ const productSchema = new mongoose.Schema({
     historialPrecios: [historialPrecioSchema],
 }, { timestamps: true });
 
+productSchema.index({ cepa: 1 });
+productSchema.index({ cantidad: 1 });
+productSchema.index({ bodega: 1 });
+productSchema.index({ origen: 1 });
+
 const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;

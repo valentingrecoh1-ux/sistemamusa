@@ -236,8 +236,8 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
         });
         if (clienteDoc) {
           // Actualizar datos si cambiaron
-          const [nombre, ...apellidoParts] = (cliente.nombre || "").split(" ");
-          const apellido = apellidoParts.join(" ");
+          const nombre = (cliente.nombre || "").trim();
+          const apellido = (cliente.apellido || "").trim();
           if (nombre) clienteDoc.nombre = nombre;
           if (apellido) clienteDoc.apellido = apellido;
           if (email) clienteDoc.email = email;
@@ -248,10 +248,9 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
           if (cliente.direccion) clienteDoc.domicilio = cliente.direccion;
           await clienteDoc.save();
         } else {
-          const [nombre, ...apellidoParts] = (cliente.nombre || "").split(" ");
           clienteDoc = await new Cliente({
-            nombre: nombre || cliente.nombre,
-            apellido: apellidoParts.join(" ") || "",
+            nombre: (cliente.nombre || "").trim(),
+            apellido: (cliente.apellido || "").trim(),
             email,
             telefono: tel,
             whatsapp: tel,

@@ -20,6 +20,7 @@ const pedidoWebSchema = new mongoose.Schema(
     items: [itemPedidoSchema],
     cliente: {
       nombre: { type: String, required: true },
+      apellido: { type: String },
       email: { type: String, required: true },
       telefono: { type: String, required: true },
       direccion: { type: String },

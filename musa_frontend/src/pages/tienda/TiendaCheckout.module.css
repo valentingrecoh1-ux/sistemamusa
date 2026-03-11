@@ -90,14 +90,11 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-.formGrid {
+/* ── Datos grid: 2 cols ── */
+.datosGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-}
-
-.formGrid .field:first-child {
-  grid-column: 1 / -1;
 }
 
 .field {
@@ -124,6 +121,23 @@
 .field input:focus {
   outline: none;
   border-color: var(--input-focus-border);
+}
+
+/* Phone field */
+.phoneWrap {
+  position: relative;
+}
+.phonePrefix {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 14px;
+  pointer-events: none;
+}
+.phoneInput {
+  padding-left: 42px !important;
 }
 
 .textarea {
@@ -175,6 +189,13 @@
 .deliveryOption strong {
   font-size: 14px;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.deliveryOption strong i {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .deliveryOption span {
@@ -193,26 +214,41 @@
   color: var(--text-primary);
 }
 
-/* ── Address grid ── */
-.addressGrid {
+/* ── Envio section ── */
+.envioSection {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* CP row: 3 cols */
+.cpRow {
   display: grid;
-  grid-template-columns: 120px 1fr 1fr;
+  grid-template-columns: 110px 1fr 1fr;
   gap: 10px;
 }
 
-/* Calle ocupa 2 columnas, Numero y Piso 1 cada uno */
-.addressGrid .field:nth-child(4) {
-  grid-column: 1 / 3;
+/* Address section (solo domicilio) */
+.addressSection {
+  margin-top: 4px;
 }
-
-@media (max-width: 768px) {
-  .addressGrid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .addressGrid .field:first-child,
-  .addressGrid .field:nth-child(4) {
-    grid-column: 1 / -1;
-  }
+.addressLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.addressRow {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px;
+  gap: 10px;
+}
+.fieldWide {
+  /* ya ocupa 1fr que es la mas ancha */
 }
 
 /* ── Cotizar envio ── */
@@ -221,7 +257,6 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  margin-top: 12px;
   border-radius: var(--border-radius);
   background: rgba(59, 130, 246, 0.08);
   color: var(--primary-light);
@@ -239,7 +274,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .shippingOption {
@@ -310,14 +344,13 @@
 .shippingHint {
   font-size: 12px;
   color: var(--text-muted);
-  margin-top: 8px;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .sucursalSelect {
-  margin-top: 10px;
+  margin-top: 2px;
 }
 .sucursalSelect > label {
   display: flex;
@@ -364,27 +397,99 @@
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* ── Summary ── */
+/* ── Summary column ── */
 .summaryCol {
   position: sticky;
   top: calc(var(--tienda-navbar-height) + 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.summary {
+/* Product cards */
+.summaryProducts {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--border-radius-lg);
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .summaryTitle {
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  margin-bottom: 4px;
+}
+
+.productCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+.productCard:last-child { border-bottom: none; padding-bottom: 0; }
+
+.productInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.productName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.productMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.productMeta span {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.productMeta i {
+  font-size: 10px;
+}
+
+.productRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.productQty {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.productPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* Totals card */
+.summary {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .summaryItem {
@@ -448,15 +553,24 @@
 }
 
 .payBtn:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.payHint {
+  text-align: center;
+  font-size: 12px;
+  color: #f59e0b;
 }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .layout { grid-template-columns: 1fr; }
-  .formGrid { grid-template-columns: 1fr; }
-  .formGrid .field:first-child { grid-column: 1; }
+  .datosGrid { grid-template-columns: 1fr; }
+  .cpRow { grid-template-columns: 1fr 1fr; }
+  .cpRow .field:first-child { grid-column: 1 / -1; }
+  .addressRow { grid-template-columns: 1fr 1fr; }
+  .addressRow .field:first-child { grid-column: 1 / -1; }
   .summaryCol { position: static; }
 }

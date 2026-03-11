@@ -19,7 +19,7 @@ const WA_MENSAJES_ENVIO = {
     `Hola ${pedido.cliente.nombre},\nTu envio del pedido #${pedido.numeroPedido} fue cancelado.\nSi tenes dudas contactanos por este medio.`,
 };
 
-module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io, getWA }) {
+module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient, io, getWA }) {
 
   // Envia WhatsApp de notificacion de envio al cliente
   async function notificarEnvioWA(pedido, tipoMensaje) {
@@ -386,6 +386,34 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
       }
 
       await pedido.save();
+
+      // Sincronizar pago a PagoMp y auto-vincular a Venta
+      if (PagoMp && mpRawToDoc && payment.status === "approved") {
+        try {
+          const ownId = getOwnMpCollectorId ? await getOwnMpCollectorId() : null;
+          const doc = mpRawToDoc(payment, ownId);
+          await PagoMp.updateOne({ mpId: payment.id }, { $set: doc }, { upsert: true });
+
+          // Buscar Venta con monto similar al total del pedido, misma fecha, sin pago MP vinculado
+          const fecha = doc.fecha;
+          const montoTotal = pedido.montoTotal;
+          if (montoTotal && fecha) {
+            const ventaCandidata = await Venta.findOne({
+              fecha,
+              monto: { $gte: montoTotal - 1, $lte: montoTotal + 1 },
+              $or: [{ mpPaymentIds: { $size: 0 } }, { mpPaymentIds: { $exists: false } }],
+            });
+            if (ventaCandidata) {
+              ventaCandidata.mpPaymentIds.push(payment.id);
+              ventaCandidata.mpLinkedAt = new Date();
+              await ventaCandidata.save();
+              io.emit("cambios-mp");
+            }
+          }
+        } catch (linkErr) {
+          console.error("Error auto-link MP pago tienda:", linkErr.message);
+        }
+      }
     } catch (err) {
       console.error("Error webhook MP tienda:", err.message);
     }

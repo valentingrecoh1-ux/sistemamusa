@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { crearPedido, fetchConfig, cotizarEnvio, fetchSucursales } from '../../lib/tiendaApi';
+import { crearPedido, fetchConfig, cotizarEnvio } from '../../lib/tiendaApi';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
@@ -20,13 +20,10 @@ export default function TiendaCheckout() {
   const [opcionesEnvio, setOpcionesEnvio] = useState([]);
   const [opcionElegida, setOpcionElegida] = useState(null);
   const [cotizando, setCotizando] = useState(false);
-  const [sucursales, setSucursales] = useState([]);
-  const [sucursalElegida, setSucursalElegida] = useState(null);
   const tieneLogistica = config.shipnowActivo || config.moovaActivo || config.pedidosyaActivo;
 
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});
-    fetchSucursales().then((r) => setSucursales(r.sucursales || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -100,13 +97,9 @@ export default function TiendaCheckout() {
         ...form,
         direccion: direccionCompleta,
       };
-      // Si eligio opcion de sucursal, agregar postOfficeId
       let opcionFinal = null;
       if (entrega === 'envio' && opcionElegida) {
         opcionFinal = { ...opcionElegida };
-        if (opcionFinal.tipo === 'sucursal' && sucursalElegida) {
-          opcionFinal.meta = { ...opcionFinal.meta, postOfficeId: sucursalElegida.id };
-        }
       }
 
       const result = await crearPedido({
@@ -167,8 +160,28 @@ export default function TiendaCheckout() {
                 <input type="email" value={form.email} onChange={handleField('email')} placeholder="tu@email.com" />
               </div>
               <div className={s.field}>
-                <label>Telefono *</label>
-                <input type="tel" value={form.telefono} onChange={handleField('telefono')} placeholder="1155551234" />
+                <label>WhatsApp *</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#888', fontSize: 14, pointerEvents: 'none' }}>+54</span>
+                  <input
+                    type="tel"
+                    value={form.telefono}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^\d]/g, '');
+                      setForm((prev) => ({ ...prev, telefono: val }));
+                    }}
+                    placeholder="11 5555 1234"
+                    style={{ paddingLeft: 42 }}
+                    maxLength={13}
+                  />
+                </div>
+                {form.telefono && (form.telefono.length < 10 || form.telefono.length > 13) && (
+                  <span style={{ color: '#f87171', fontSize: 12, marginTop: 2 }}>El numero debe tener entre 10 y 13 digitos</span>
+                )}
+                <span style={{ color: '#999', fontSize: 11, marginTop: 3, display: 'block' }}>
+                  <i className="bi bi-whatsapp" style={{ color: '#25D366', marginRight: 4 }} />
+                  Te notificaremos el estado de tu envio por WhatsApp
+                </span>
               </div>
             </div>
           </div>
@@ -256,8 +269,13 @@ export default function TiendaCheckout() {
                                 <span className={s.shippingProvider}>
                                   {opt.transportista || (opt.proveedor === 'moova' ? 'Moova' : opt.proveedor === 'pedidosya' ? 'PedidosYa' : 'Envío')}
                                 </span>
-                                <span className={s.shippingService}>{opt.servicio}{opt.tipo === 'sucursal' ? ' (a sucursal)' : ''}</span>
+                                <span className={s.shippingService}>{opt.servicio}{opt.tipo === 'sucursal' ? ' (retiro en sucursal)' : ''}</span>
                               </div>
+                              {opt.sucursal && (
+                                <span className={s.shippingDate}>
+                                  <i className="bi bi-geo-alt" /> {opt.sucursal.nombre} - {opt.sucursal.direccion}{opt.sucursal.ciudad ? `, ${opt.sucursal.ciudad}` : ''}
+                                </span>
+                              )}
                               {opt.entregaMin && (
                                 <span className={s.shippingDate}>
                                   <i className="bi bi-calendar3" /> Llega {formatEntrega(opt)}
@@ -272,26 +290,6 @@ export default function TiendaCheckout() {
                       </div>
                     )}
 
-                    {/* Selector de sucursal si eligio opcion tipo sucursal */}
-                    {opcionElegida?.tipo === 'sucursal' && sucursales.length > 0 && (
-                      <div className={s.sucursalSelect}>
-                        <label>Elegí la sucursal de retiro:</label>
-                        <select
-                          value={sucursalElegida?.id || ''}
-                          onChange={(e) => {
-                            const suc = sucursales.find((s) => String(s.id) === e.target.value);
-                            setSucursalElegida(suc || null);
-                          }}
-                        >
-                          <option value="">Seleccionar sucursal...</option>
-                          {sucursales.map((suc) => (
-                            <option key={suc.id} value={suc.id}>
-                              {suc.nombre} - {suc.direccion}, {suc.ciudad}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
 
                     {opcionesEnvio.length === 0 && !cotizando && form.calle.trim() && (
                       <p className={s.shippingHint}>

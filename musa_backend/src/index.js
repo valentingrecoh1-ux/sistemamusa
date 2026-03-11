@@ -1648,13 +1648,14 @@ io.on("connection", (socket) => {
           Product.find(query)
             .select("-foto -fotos -fotoIA -descripcionGenerada")
             .sort(sortOption)
+            .collation({ locale: "es", strength: 1 })
             .skip((page - 1) * pageSize)
             .limit(pageSize),
           Product.countDocuments(query),
           Product.aggregate([
             { $match: { $and: [query, { $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }] }] } },
             { $group: { _id: null, total: { $sum: { $toInt: "$cantidad" } } } },
-          ]),
+          ]).allowDiskUse(true),
         ]);
 
         let totalPages = Math.ceil(totalProductos / pageSize);

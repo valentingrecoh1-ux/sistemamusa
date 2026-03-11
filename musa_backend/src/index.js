@@ -1667,13 +1667,18 @@ io.on("connection", (socket) => {
           ...(!ordenadoCepa && !ordenadoCantidad && { _id: -1 }),
         };
 
-        const [productos, totalProductos, stockTotal] = await Promise.all([
-          Product.find(query)
+        let productsQuery = Product.find(query)
             .select("-foto -fotos -fotoIA -descripcionGenerada")
-            .sort(sortOption)
-            .collation({ locale: "es", strength: 1 })
+            .sort(sortOption);
+        if (ordenadoCepa) {
+          productsQuery = productsQuery.collation({ locale: "es", strength: 1 });
+        }
+        productsQuery = productsQuery
             .skip((page - 1) * pageSize)
-            .limit(pageSize),
+            .limit(pageSize);
+
+        const [productos, totalProductos, stockTotal] = await Promise.all([
+          productsQuery,
           Product.countDocuments(query),
           Product.aggregate([
             { $match: { $and: [query, { $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }] }] } },

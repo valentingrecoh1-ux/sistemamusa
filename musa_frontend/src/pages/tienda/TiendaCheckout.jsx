@@ -22,7 +22,7 @@ export default function TiendaCheckout() {
   const [cotizando, setCotizando] = useState(false);
   const [sucursales, setSucursales] = useState([]);
   const [sucursalElegida, setSucursalElegida] = useState(null);
-  const tieneLogistica = config.shipnowActivo || config.moovaActivo;
+  const tieneLogistica = config.shipnowActivo || config.moovaActivo || config.pedidosyaActivo;
 
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});
@@ -254,7 +254,7 @@ export default function TiendaCheckout() {
                             <div className={s.shippingOptionInfo}>
                               <div className={s.shippingOptionTop}>
                                 <span className={s.shippingProvider}>
-                                  {opt.proveedor === 'shipnow' ? 'Shipnow' : opt.proveedor === 'moova' ? 'Moova' : 'Envio'}
+                                  {opt.proveedor === 'shipnow' ? 'Shipnow' : opt.proveedor === 'moova' ? 'Moova' : opt.proveedor === 'pedidosya' ? 'PedidosYa' : 'Envio'}
                                 </span>
                                 <span className={s.shippingService}>{opt.servicio}{opt.tipo === 'sucursal' ? ' (a sucursal)' : ''}</span>
                               </div>

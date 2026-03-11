@@ -502,16 +502,19 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
         return res.json({ sucursales: [] });
       }
       const postOffices = await shipnowGetPostOffices(config.shipnowToken);
-      const sucursales = postOffices.map((po) => ({
-        id: po.id,
-        nombre: po.name,
-        direccion: po.address,
-        ciudad: po.city,
-        provincia: po.state,
-        codigoPostal: po.zip_code,
-        lat: po.latitude,
-        lng: po.longitude,
-      }));
+      const sucursales = postOffices.map((po) => {
+        const addr = po.address || {};
+        return {
+          id: po.id,
+          nombre: po.description || addr.name || "Sucursal",
+          direccion: [addr.street_name, addr.street_number].filter(Boolean).join(" ") || "",
+          ciudad: addr.city || "",
+          provincia: addr.state || "",
+          codigoPostal: addr.zip_code || "",
+          lat: addr.lat || null,
+          lng: addr.lon || null,
+        };
+      });
       res.json({ sucursales });
     } catch (err) {
       console.error("Error fetch sucursales:", err.message);

@@ -48,6 +48,8 @@ const pedidoWebSchema = new mongoose.Schema(
     opcionEnvio: { type: mongoose.Schema.Types.Mixed, default: null },
     logisticaEnvioId: { type: String, default: null },
     logisticaTracking: { type: String, default: null },
+    logisticaEstado: { type: String, default: null }, // estado en el proveedor (e.g. "shipped", "delivered")
+    logisticaTipo: { type: String, enum: ["domicilio", "sucursal", null], default: null },
   },
   { timestamps: true }
 );

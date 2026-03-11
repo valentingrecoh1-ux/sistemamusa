@@ -49,6 +49,16 @@ export async function fetchEstadoPedido(id) {
   return res.json();
 }
 
+export async function fetchTracking(id) {
+  const res = await fetch(`${BASE()}/pedido/${id}/tracking`);
+  return res.json();
+}
+
+export async function fetchSucursales() {
+  const res = await fetch(`${BASE()}/sucursales`);
+  return res.json();
+}
+
 export async function fetchPlanesClub() {
   const res = await fetch(`${BASE()}/club/planes`);
   return res.json();

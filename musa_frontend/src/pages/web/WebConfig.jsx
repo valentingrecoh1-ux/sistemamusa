@@ -179,10 +179,36 @@ export default function WebConfig() {
             </label>
           </div>
           {config.shipnowActivo && (
-            <div className={s.field} style={{ marginTop: 8 }}>
-              <label>Token de API</label>
-              <input type="password" value={config.shipnowToken || ''} onChange={handleField('shipnowToken')} placeholder="Tu token de Shipnow" />
-            </div>
+            <>
+              <div className={s.field} style={{ marginTop: 8 }}>
+                <label>Token de API</label>
+                <input type="password" value={config.shipnowToken || ''} onChange={handleField('shipnowToken')} placeholder="Tu token de Shipnow" />
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <p className={s.cardHint} style={{ marginBottom: 6 }}>
+                  {config.shipnowWebhookId
+                    ? `Webhook registrado (ID: ${config.shipnowWebhookId}). Shipnow notificara cambios de estado automaticamente.`
+                    : 'Registra un webhook para recibir actualizaciones de estado de envios automaticamente.'}
+                </p>
+                {!config.shipnowWebhookId && (
+                  <button
+                    className={s.actionBtn}
+                    onClick={() => {
+                      const webhookUrl = `${window.location.origin}/api/tienda/shipnow/webhook`;
+                      socket.emit('registrar-shipnow-webhook', { webhookUrl }, (res) => {
+                        if (res?.ok) {
+                          setConfig((prev) => ({ ...prev, shipnowWebhookId: String(res.webhookId) }));
+                        } else {
+                          alert(res?.error || 'Error al registrar webhook');
+                        }
+                      });
+                    }}
+                  >
+                    <i className="bi bi-bell" /> Registrar webhook
+                  </button>
+                )}
+              </div>
+            </>
           )}
 
           <div className={s.divider} />

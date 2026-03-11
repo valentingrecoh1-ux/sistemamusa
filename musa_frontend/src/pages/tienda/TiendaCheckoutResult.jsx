@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { fetchEstadoPedido, fetchConfig } from '../../lib/tiendaApi';
+import { fetchEstadoPedido, fetchTracking, fetchConfig } from '../../lib/tiendaApi';
 import { tiendaPath, TIENDA_BASE } from '../../tiendaConfig';
 import s from './TiendaCheckoutResult.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
+
+const ESTADO_LABELS = {
+  pendiente: 'Pendiente',
+  confirmado: 'Confirmado',
+  preparando: 'Preparando',
+  listo: 'Listo para envio',
+  enviado: 'En camino',
+  entregado: 'Entregado',
+  cancelado: 'Cancelado',
+};
+
+const TRACKING_STEPS = ['confirmado', 'preparando', 'listo', 'enviado', 'entregado'];
 
 export default function TiendaCheckoutResult() {
   const [searchParams] = useSearchParams();
@@ -25,6 +37,20 @@ export default function TiendaCheckoutResult() {
       setLoading(false);
     }
   }, [pedidoId]);
+
+  // Refresh tracking periodically if order is in transit
+  useEffect(() => {
+    if (!pedidoId || !pedido?.entrega || pedido?.entrega !== 'envio') return;
+    if (['entregado', 'cancelado'].includes(pedido?.estado)) return;
+
+    const interval = setInterval(() => {
+      fetchTracking(pedidoId).then((data) => {
+        if (data && !data.error) setPedido(data);
+      }).catch(() => {});
+    }, 30000); // cada 30s
+
+    return () => clearInterval(interval);
+  }, [pedidoId, pedido?.estado, pedido?.entrega]);
 
   const isSuccess = status === 'approved' || pedido?.mpStatus === 'approved' || pedido?.estado === 'confirmado';
   const isPending = status === 'pending' || status === 'in_process' || pedido?.estado === 'pendiente';
@@ -75,6 +101,39 @@ export default function TiendaCheckoutResult() {
 
         {pedido?.montoTotal && (
           <div className={s.orderTotal}>Total: {money(pedido.montoTotal)}</div>
+        )}
+
+        {/* Tracking timeline para envios */}
+        {pedido?.entrega === 'envio' && pedido?.estado !== 'cancelado' && pedido?.estado !== 'pendiente' && (
+          <div className={s.trackingSection}>
+            <h3 className={s.trackingTitle}><i className="bi bi-truck" /> Seguimiento del envio</h3>
+            <div className={s.timeline}>
+              {TRACKING_STEPS.map((step, i) => {
+                const currentIdx = TRACKING_STEPS.indexOf(pedido.estado);
+                const isDone = i <= currentIdx;
+                const isCurrent = i === currentIdx;
+                return (
+                  <div key={step} className={`${s.timelineStep} ${isDone ? s.timelineDone : ''} ${isCurrent ? s.timelineCurrent : ''}`}>
+                    <div className={s.timelineDot} />
+                    {i < TRACKING_STEPS.length - 1 && <div className={s.timelineLine} />}
+                    <span className={s.timelineLabel}>{ESTADO_LABELS[step]}</span>
+                  </div>
+                );
+              })}
+            </div>
+            {pedido.logisticaTracking && (
+              <div className={s.trackingCode}>
+                <span>Codigo de seguimiento:</span>
+                <strong>{pedido.logisticaTracking}</strong>
+              </div>
+            )}
+            {pedido.opcionEnvio?.servicio && (
+              <div className={s.trackingMeta}>
+                Servicio: {pedido.opcionEnvio.servicio}
+                {pedido.logisticaProveedor && ` (${pedido.logisticaProveedor})`}
+              </div>
+            )}
+          </div>
         )}
 
         <div className={s.actions}>

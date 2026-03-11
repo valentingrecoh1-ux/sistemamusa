@@ -3,7 +3,7 @@ const router = express.Router();
 const moment = require("moment-timezone");
 const multer = require("multer");
 const uploadAudio = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-const { cotizarEnvio, crearEnvioLogistica } = require("../logisticaService");
+const { cotizarEnvio, crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowGetPostOffices, shipnowCreateWebhook, SHIPNOW_ESTADO_MAP } = require("../logisticaService");
 
 module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io }) {
   let mpPreference = null;
@@ -196,6 +196,7 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
         montoTotal,
         logisticaProveedor: logisticaProveedor || null,
         opcionEnvio: opcionEnvio || null,
+        logisticaTipo: opcionEnvio?.tipo || null,
       });
 
       await pedido.save();
@@ -314,12 +315,115 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
   router.get("/pedido/:id/estado", async (req, res) => {
     try {
       const pedido = await PedidoWeb.findById(req.params.id)
-        .select("numeroPedido estado mpStatus montoTotal items cliente.nombre")
+        .select("numeroPedido estado mpStatus montoTotal items cliente.nombre entrega logisticaProveedor logisticaTracking logisticaEstado logisticaTipo costoEnvio opcionEnvio")
         .lean();
       if (!pedido) return res.status(404).json({ error: "Pedido no encontrado" });
       res.json(pedido);
     } catch (err) {
       res.status(500).json({ error: "Error al obtener estado del pedido" });
+    }
+  });
+
+  // GET /api/tienda/pedido/:id/tracking - Tracking publico para clientes
+  router.get("/pedido/:id/tracking", async (req, res) => {
+    try {
+      const pedido = await PedidoWeb.findById(req.params.id)
+        .select("numeroPedido estado entrega logisticaProveedor logisticaTracking logisticaEstado logisticaTipo costoEnvio opcionEnvio cliente.nombre createdAt")
+        .lean();
+      if (!pedido) return res.status(404).json({ error: "Pedido no encontrado" });
+
+      // Si tiene envio con ShipNow, consultar estado actual
+      if (pedido.logisticaProveedor === "shipnow" && pedido.logisticaEnvioId) {
+        try {
+          const config = await ConfigTienda.findById("main").lean();
+          if (config?.shipnowToken) {
+            const estadoEnvio = await consultarEstadoEnvio(config, pedido);
+            if (estadoEnvio) {
+              return res.json({ ...pedido, envioDetalle: estadoEnvio });
+            }
+          }
+        } catch (logErr) {
+          console.error("Error consultando estado envio:", logErr.message);
+        }
+      }
+
+      res.json(pedido);
+    } catch (err) {
+      res.status(500).json({ error: "Error al obtener tracking" });
+    }
+  });
+
+  // POST /api/tienda/shipnow/webhook - Recibir notificaciones de ShipNow
+  router.post("/shipnow/webhook", async (req, res) => {
+    try {
+      res.sendStatus(200); // Responder rapido
+
+      const payload = req.body;
+      if (!payload?.id) return;
+
+      // ShipNow envia el order completo como payload
+      const shipnowOrderId = String(payload.id);
+      const shipnowStatus = payload.status;
+
+      const pedido = await PedidoWeb.findOne({ logisticaEnvioId: shipnowOrderId, logisticaProveedor: "shipnow" });
+      if (!pedido) {
+        console.log(`[Shipnow Webhook] Order ${shipnowOrderId} no encontrada localmente`);
+        return;
+      }
+
+      console.log(`[Shipnow Webhook] Order ${shipnowOrderId} status=${shipnowStatus} pedido=#${pedido.numeroPedido}`);
+
+      // Actualizar tracking si vino en el payload
+      const newTracking = payload.shipments?.[0]?.tracking_number;
+      if (newTracking && !pedido.logisticaTracking) {
+        pedido.logisticaTracking = newTracking;
+      }
+
+      // Guardar estado del proveedor
+      pedido.logisticaEstado = shipnowStatus;
+
+      // Actualizar estado interno del pedido segun el mapa
+      const estadoInterno = SHIPNOW_ESTADO_MAP[shipnowStatus];
+      if (estadoInterno && pedido.estado !== "cancelado") {
+        // Solo avanzar el estado, nunca retroceder (excepto a cancelado/entregado)
+        const ESTADO_ORDER = ["pendiente", "confirmado", "preparando", "listo", "enviado", "entregado"];
+        const currentIdx = ESTADO_ORDER.indexOf(pedido.estado);
+        const newIdx = ESTADO_ORDER.indexOf(estadoInterno);
+        if (newIdx > currentIdx || estadoInterno === "entregado") {
+          pedido.estado = estadoInterno;
+        }
+      }
+
+      await pedido.save();
+      io.emit("cambios-web");
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error shipnow webhook:", err.message);
+    }
+  });
+
+  // GET /api/tienda/sucursales - Obtener sucursales de retiro (ShipNow post offices)
+  router.get("/sucursales", async (req, res) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.shipnowActivo || !config?.shipnowToken) {
+        return res.json({ sucursales: [] });
+      }
+      const postOffices = await shipnowGetPostOffices(config.shipnowToken);
+      const sucursales = postOffices.map((po) => ({
+        id: po.id,
+        nombre: po.name,
+        direccion: po.address,
+        ciudad: po.city,
+        provincia: po.state,
+        codigoPostal: po.zip_code,
+        lat: po.latitude,
+        lng: po.longitude,
+      }));
+      res.json({ sucursales });
+    } catch (err) {
+      console.error("Error fetch sucursales:", err.message);
+      res.json({ sucursales: [] });
     }
   });
 

@@ -254,7 +254,7 @@ export default function TiendaCheckout() {
                             <div className={s.shippingOptionInfo}>
                               <div className={s.shippingOptionTop}>
                                 <span className={s.shippingProvider}>
-                                  {opt.proveedor === 'shipnow' ? 'Shipnow' : opt.proveedor === 'moova' ? 'Moova' : opt.proveedor === 'pedidosya' ? 'PedidosYa' : 'Envio'}
+                                  {opt.transportista || (opt.proveedor === 'moova' ? 'Moova' : opt.proveedor === 'pedidosya' ? 'PedidosYa' : 'Envío')}
                                 </span>
                                 <span className={s.shippingService}>{opt.servicio}{opt.tipo === 'sucursal' ? ' (a sucursal)' : ''}</span>
                               </div>
@@ -328,7 +328,7 @@ export default function TiendaCheckout() {
             </div>
             {costoEnvio > 0 && (
               <div className={s.summaryRow}>
-                <span>Envio ({opcionElegida?.proveedor === 'shipnow' ? 'Shipnow' : opcionElegida?.proveedor === 'moova' ? 'Moova' : 'Domicilio'})</span>
+                <span>Envío ({opcionElegida?.transportista || (opcionElegida?.proveedor === 'moova' ? 'Moova' : opcionElegida?.proveedor === 'pedidosya' ? 'PedidosYa' : 'Domicilio')})</span>
                 <span>{money(costoEnvio)}</span>
               </div>
             )}

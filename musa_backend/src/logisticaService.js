@@ -37,11 +37,12 @@ async function shipnowCotizar(token, { codigoPostalDestino, pesoGramos }) {
   const data = await res.json();
   return (data.results || []).map((r) => ({
     proveedor: "shipnow",
-    servicio: r.shipping_service?.name || "Shipnow",
+    servicio: r.shipping_service?.name || "Envío",
     precio: r.price || 0,
     entregaMin: r.minimum_delivery,
     entregaMax: r.maximum_delivery,
     tipo: r.shipping_service?.code?.includes("pas") ? "sucursal" : "domicilio",
+    transportista: r.shipping_contract?.carrier?.name || null,
     meta: {
       serviceCode: r.shipping_service?.code,
       carrierCode: r.shipping_contract?.carrier?.code,

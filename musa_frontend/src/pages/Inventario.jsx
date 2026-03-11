@@ -37,6 +37,7 @@ function Inventario({ usuario }) {
   const [totalProductos, setTotalProductos] = useState(0);
   const [stockTotal, setStockTotal] = useState(0);
   const [search, setSearch] = useState("");
+  const [loadingProductos, setLoadingProductos] = useState(false);
   const [installedPrinters, setInstalledPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState("");
   const [useQZ, setUseQZ] = useState(false);
@@ -98,6 +99,7 @@ function Inventario({ usuario }) {
   };
 
   const fetchProductos = () => {
+    setLoadingProductos(true);
     socket.emit("request-productos", {
       page,
       search,
@@ -159,6 +161,7 @@ function Inventario({ usuario }) {
       socket.emit("request-filtros-productos");
     };
     const onProductos = (data) => {
+      setLoadingProductos(false);
       if (data.status === "error") {
         console.error(data.message);
         return;
@@ -790,7 +793,7 @@ E
       )}
 
       {/* ── Table ── */}
-      <div className={s.tableWrapper}>
+      <div className={s.tableWrapper} style={loadingProductos ? { opacity: 0.5, pointerEvents: "none" } : undefined}>
         <table className={s.table}>
           <thead>
             <tr>

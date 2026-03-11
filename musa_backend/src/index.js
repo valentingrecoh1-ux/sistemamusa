@@ -4931,6 +4931,7 @@ Reglas:
   socket.on("marcar-notificacion-leida", async (id) => {
     try {
       await Notificacion.findByIdAndUpdate(id, { leida: true });
+      io.emit("cambios-notificaciones");
     } catch (err) {
       console.error("Error marcar-notificacion-leida:", err);
     }
@@ -4944,6 +4945,7 @@ Reglas:
         { leida: false, $or: [{ destinatarioId: _id }, { destinatarioRol: rol }, { destinatarioRol: "todos" }] },
         { leida: true }
       );
+      io.emit("cambios-notificaciones");
     } catch (err) {
       console.error("Error marcar-todas-leidas:", err);
     }

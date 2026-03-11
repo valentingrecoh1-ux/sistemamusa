@@ -280,6 +280,25 @@
   gap: 4px;
 }
 
+.sucursalSelect {
+  margin-top: 10px;
+}
+.sucursalSelect label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.sucursalSelect select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+}
+
 /* ── Summary ── */
 .summaryCol {
   position: sticky;

@@ -7,6 +7,19 @@ const PESO_BOTELLA_GRAMOS = 1300; // Botella de vino ~1.3kg (750ml + vidrio)
 // ── Shipnow ──
 const SHIPNOW_BASE = "https://api.shipnow.com.ar";
 
+// Mapa de estados ShipNow -> estados internos de pedido
+const SHIPNOW_ESTADO_MAP = {
+  new: "confirmado",
+  ready_to_pick: "preparando",
+  picking_list: "preparando",
+  packing_slip: "preparando",
+  ready_to_ship: "listo",
+  shipped: "enviado",
+  delivered: "entregado",
+  not_delivered: "enviado", // fallo entrega pero sigue en transito
+  cancelled: "cancelado",
+};
+
 async function shipnowCotizar(token, { codigoPostalDestino, pesoGramos }) {
   const params = new URLSearchParams({
     to_zip_code: codigoPostalDestino,
@@ -28,6 +41,7 @@ async function shipnowCotizar(token, { codigoPostalDestino, pesoGramos }) {
     precio: r.price || 0,
     entregaMin: r.minimum_delivery,
     entregaMax: r.maximum_delivery,
+    tipo: r.shipping_service?.code?.includes("pas") ? "sucursal" : "domicilio",
     meta: {
       serviceCode: r.shipping_service?.code,
       carrierCode: r.shipping_contract?.carrier?.code,
@@ -36,18 +50,36 @@ async function shipnowCotizar(token, { codigoPostalDestino, pesoGramos }) {
 }
 
 async function shipnowCrearEnvio(token, { referencia, destino, items, opcionElegida }) {
+  const shipTo = {
+    name: destino.nombre,
+    last_name: destino.apellido || "",
+    zip_code: parseInt(destino.codigoPostal, 10),
+    address_line: destino.direccion,
+    city: destino.ciudad || destino.localidad || "CABA",
+    state: destino.provincia || "CABA",
+    email: destino.email || "",
+    phone: destino.telefono || "",
+  };
+  // Campos separados si estan disponibles
+  if (destino.calle) shipTo.street_name = destino.calle;
+  if (destino.numero) shipTo.street_number = destino.numero;
+  if (destino.pisoDepto) {
+    const match = destino.pisoDepto.match(/^(\d+)\s*(.*)/);
+    if (match) {
+      shipTo.floor = match[1];
+      shipTo.unit = match[2] || "";
+    } else {
+      shipTo.unit = destino.pisoDepto;
+    }
+  }
+  // Sucursal de retiro
+  if (opcionElegida.meta?.postOfficeId) {
+    shipTo.post_office_id = opcionElegida.meta.postOfficeId;
+  }
+
   const body = {
     external_reference: referencia,
-    ship_to: {
-      name: destino.nombre,
-      last_name: destino.apellido || "",
-      zip_code: parseInt(destino.codigoPostal, 10),
-      address_line: destino.direccion,
-      city: destino.ciudad || "CABA",
-      state: destino.provincia || "CABA",
-      email: destino.email || "",
-      phone: destino.telefono || "",
-    },
+    ship_to: shipTo,
     shipping_option: {
       service_code: opcionElegida.meta?.serviceCode,
       carrier_code: opcionElegida.meta?.carrierCode,
@@ -79,6 +111,78 @@ async function shipnowCrearEnvio(token, { referencia, destino, items, opcionEleg
     tracking: data.shipments?.[0]?.tracking_number || null,
     estado: data.status || "created",
   };
+}
+
+async function shipnowGetOrder(token, orderId) {
+  const res = await fetch(`${SHIPNOW_BASE}/orders/${orderId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("Shipnow getOrder error:", res.status, txt);
+    return null;
+  }
+  return res.json();
+}
+
+async function shipnowGetShipments(token, orderId) {
+  const res = await fetch(`${SHIPNOW_BASE}/orders/${orderId}/shipments`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("Shipnow getShipments error:", res.status, txt);
+    return [];
+  }
+  const data = await res.json();
+  return data.results || [];
+}
+
+async function shipnowCancelOrder(token, orderId) {
+  const res = await fetch(`${SHIPNOW_BASE}/orders/${orderId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status: "cancelled" }),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("Shipnow cancel error:", res.status, txt);
+    throw new Error("Error al cancelar envio en Shipnow");
+  }
+  return res.json();
+}
+
+async function shipnowGetPostOffices(token) {
+  const res = await fetch(`${SHIPNOW_BASE}/post_offices`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("Shipnow postOffices error:", res.status, txt);
+    return [];
+  }
+  const data = await res.json();
+  return data.results || [];
+}
+
+async function shipnowCreateWebhook(token, url) {
+  const res = await fetch(`${SHIPNOW_BASE}/webhooks`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url, active: true }),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("Shipnow createWebhook error:", res.status, txt);
+    throw new Error("Error al registrar webhook en Shipnow");
+  }
+  return res.json();
 }
 
 // ── Moova ──
@@ -138,6 +242,7 @@ async function moovaCotizar(appId, apiKey, { origen, destino }) {
       precio: o.price || 0,
       entregaMin: o.estimatedDeliveryDate || null,
       entregaMax: null,
+      tipo: "domicilio",
       meta: { shippingTypeId: o.shippingTypeId },
     }));
 }
@@ -249,6 +354,7 @@ async function cotizarEnvio(config, destino, { cantidadBotellas = 1 } = {}) {
       precio: config.costoEnvio || 0,
       entregaMin: null,
       entregaMax: null,
+      tipo: "domicilio",
       meta: {},
     });
   }
@@ -281,4 +387,41 @@ async function crearEnvioLogistica(config, { destino, items, referencia, opcionE
   return { proveedor: "fijo", envioId: null, tracking: null, estado: "manual" };
 }
 
-module.exports = { cotizarEnvio, crearEnvioLogistica };
+async function cancelarEnvioLogistica(config, pedido) {
+  if (pedido.logisticaProveedor === "shipnow" && pedido.logisticaEnvioId && config.shipnowToken) {
+    return shipnowCancelOrder(config.shipnowToken, pedido.logisticaEnvioId);
+  }
+  // Moova y fijo no tienen cancelacion automatica
+  return null;
+}
+
+async function consultarEstadoEnvio(config, pedido) {
+  if (pedido.logisticaProveedor === "shipnow" && pedido.logisticaEnvioId && config.shipnowToken) {
+    const order = await shipnowGetOrder(config.shipnowToken, pedido.logisticaEnvioId);
+    if (!order) return null;
+    const shipments = await shipnowGetShipments(config.shipnowToken, pedido.logisticaEnvioId);
+    return {
+      proveedor: "shipnow",
+      estadoShipnow: order.status,
+      estadoInterno: SHIPNOW_ESTADO_MAP[order.status] || null,
+      tracking: shipments[0]?.tracking_number || order.shipments?.[0]?.tracking_number || null,
+      shipments: shipments.map((s) => ({
+        id: s.id,
+        tracking: s.tracking_number,
+        carrier: s.carrier?.name,
+        status: s.status,
+      })),
+    };
+  }
+  return null;
+}
+
+module.exports = {
+  cotizarEnvio,
+  crearEnvioLogistica,
+  cancelarEnvioLogistica,
+  consultarEstadoEnvio,
+  shipnowGetPostOffices,
+  shipnowCreateWebhook,
+  SHIPNOW_ESTADO_MAP,
+};

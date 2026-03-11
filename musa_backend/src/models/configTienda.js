@@ -15,6 +15,7 @@ const configTiendaSchema = new mongoose.Schema(
     // Logistica integrada
     shipnowToken: { type: String, default: "" },
     shipnowActivo: { type: Boolean, default: false },
+    shipnowWebhookId: { type: String, default: "" },
     moovaAppId: { type: String, default: "" },
     moovaApiKey: { type: String, default: "" },
     moovaActivo: { type: Boolean, default: false },

@@ -293,6 +293,25 @@
   font-weight: 500;
 }
 
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.actionBtn:hover {
+  background: var(--primary-light);
+  color: #fff;
+  border-color: var(--primary-light);
+}
+
 @media (max-width: 640px) {
   .row { grid-template-columns: 1fr; }
   .header { flex-direction: column; align-items: flex-start; }

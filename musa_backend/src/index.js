@@ -24,7 +24,7 @@ const OrdenCompra = require("./models/ordenCompra");
 const PagoProveedor = require("./models/pagoProveedor");
 const PedidoWeb = require("./models/pedidoWeb");
 const ConfigTienda = require("./models/configTienda");
-const { crearEnvioLogistica } = require("./logisticaService");
+const { crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowCreateWebhook } = require("./logisticaService");
 const { normalizar, NORMALIZAR_CEPAS, NORMALIZAR_REGIONES } = require("./migracionNormalizacion");
 const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
@@ -5669,6 +5669,20 @@ Reglas:
         }
       }
 
+      // Si se cancela y tiene envio logistico, cancelar en el proveedor
+      if (estado === "cancelado" && pedido.logisticaEnvioId && pedido.logisticaProveedor !== "fijo") {
+        try {
+          const config = await ConfigTienda.findById("main").lean();
+          if (config) {
+            await cancelarEnvioLogistica(config, pedido);
+            pedido.logisticaEstado = "cancelled";
+            console.log(`[Logistica] Cancelado envio ${pedido.logisticaEnvioId} en ${pedido.logisticaProveedor}`);
+          }
+        } catch (cancelErr) {
+          console.error("Error cancelando envio logistica:", cancelErr.message);
+        }
+      }
+
       // Si pasa a "enviado" y tiene logistica integrada, crear envio
       if (estado === "enviado" && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId) {
         try {
@@ -5677,8 +5691,15 @@ Reglas:
             const resultado = await crearEnvioLogistica(config, {
               destino: {
                 nombre: pedido.cliente.nombre,
+                apellido: pedido.cliente.apellido || "",
                 direccion: pedido.cliente.direccion,
-                codigoPostal: pedido.opcionEnvio?.meta?.codigoPostal || "",
+                calle: pedido.cliente.calle,
+                numero: pedido.cliente.numero,
+                pisoDepto: pedido.cliente.pisoDepto,
+                localidad: pedido.cliente.localidad,
+                codigoPostal: pedido.cliente.codigoPostal,
+                ciudad: pedido.cliente.localidad || "CABA",
+                provincia: "CABA",
                 email: pedido.cliente.email,
                 telefono: pedido.cliente.telefono,
               },
@@ -5689,6 +5710,7 @@ Reglas:
             pedido.logisticaEnvioId = resultado.envioId;
             pedido.logisticaTracking = resultado.tracking;
             pedido.logisticaProveedor = resultado.proveedor;
+            pedido.logisticaEstado = resultado.estado;
           }
         } catch (logErr) {
           console.error("Error creando envio logistica:", logErr.message);
@@ -5703,6 +5725,48 @@ Reglas:
     } catch (err) {
       console.error("Error update-estado-pedido-web:", err);
       cb?.({ error: "Error al actualizar estado" });
+    }
+  });
+
+  // Consultar estado de envio en el proveedor logistico
+  socket.on("consultar-estado-envio", async ({ pedidoId }, cb) => {
+    try {
+      const pedido = await PedidoWeb.findById(pedidoId);
+      if (!pedido) return cb?.({ error: "Pedido no encontrado" });
+      if (!pedido.logisticaEnvioId || pedido.logisticaProveedor === "fijo") {
+        return cb?.({ error: "Este pedido no tiene envio logistico" });
+      }
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config) return cb?.({ error: "Config no encontrada" });
+
+      const estado = await consultarEstadoEnvio(config, pedido);
+      if (!estado) return cb?.({ error: "No se pudo consultar el estado" });
+
+      // Actualizar tracking si cambio
+      if (estado.tracking && estado.tracking !== pedido.logisticaTracking) {
+        pedido.logisticaTracking = estado.tracking;
+      }
+      pedido.logisticaEstado = estado.estadoShipnow;
+      await pedido.save();
+
+      cb?.({ ok: true, estado });
+    } catch (err) {
+      console.error("Error consultar-estado-envio:", err);
+      cb?.({ error: "Error al consultar estado" });
+    }
+  });
+
+  // Registrar webhook de ShipNow
+  socket.on("registrar-shipnow-webhook", async ({ webhookUrl }, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.shipnowToken) return cb?.({ error: "Token de Shipnow no configurado" });
+      const result = await shipnowCreateWebhook(config.shipnowToken, webhookUrl);
+      await ConfigTienda.findByIdAndUpdate("main", { $set: { shipnowWebhookId: String(result.id) } });
+      cb?.({ ok: true, webhookId: result.id });
+    } catch (err) {
+      console.error("Error registrar-shipnow-webhook:", err);
+      cb?.({ error: err.message });
     }
   });
 

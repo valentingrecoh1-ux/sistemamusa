@@ -355,3 +355,32 @@
   font-size: 13px;
   user-select: all;
 }
+
+.logEstado {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.logActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.logBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.logBtn:hover {
+  background: var(--card-bg-hover, #f3f4f6);
+}

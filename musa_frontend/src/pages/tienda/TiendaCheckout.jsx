@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { crearPedido, fetchConfig, cotizarEnvio } from '../../lib/tiendaApi';
+import { crearPedido, fetchConfig, cotizarEnvio, fetchSucursales } from '../../lib/tiendaApi';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
@@ -20,10 +20,13 @@ export default function TiendaCheckout() {
   const [opcionesEnvio, setOpcionesEnvio] = useState([]);
   const [opcionElegida, setOpcionElegida] = useState(null);
   const [cotizando, setCotizando] = useState(false);
+  const [sucursales, setSucursales] = useState([]);
+  const [sucursalElegida, setSucursalElegida] = useState(null);
   const tieneLogistica = config.shipnowActivo || config.moovaActivo;
 
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});
+    fetchSucursales().then((r) => setSucursales(r.sucursales || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -97,11 +100,20 @@ export default function TiendaCheckout() {
         ...form,
         direccion: direccionCompleta,
       };
+      // Si eligio opcion de sucursal, agregar postOfficeId
+      let opcionFinal = null;
+      if (entrega === 'envio' && opcionElegida) {
+        opcionFinal = { ...opcionElegida };
+        if (opcionFinal.tipo === 'sucursal' && sucursalElegida) {
+          opcionFinal.meta = { ...opcionFinal.meta, postOfficeId: sucursalElegida.id };
+        }
+      }
+
       const result = await crearPedido({
         items: items.map((i) => ({ productoId: i.productoId, nombre: i.nombre, cantidad: i.cantidad })),
         cliente: clienteData,
         entrega,
-        opcionEnvio: entrega === 'envio' && opcionElegida ? opcionElegida : null,
+        opcionEnvio: opcionFinal,
       });
 
       if (result.error) {
@@ -244,7 +256,7 @@ export default function TiendaCheckout() {
                                 <span className={s.shippingProvider}>
                                   {opt.proveedor === 'shipnow' ? 'Shipnow' : opt.proveedor === 'moova' ? 'Moova' : 'Envio'}
                                 </span>
-                                <span className={s.shippingService}>{opt.servicio}</span>
+                                <span className={s.shippingService}>{opt.servicio}{opt.tipo === 'sucursal' ? ' (a sucursal)' : ''}</span>
                               </div>
                               {opt.entregaMin && (
                                 <span className={s.shippingDate}>
@@ -257,6 +269,27 @@ export default function TiendaCheckout() {
                             </span>
                           </label>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Selector de sucursal si eligio opcion tipo sucursal */}
+                    {opcionElegida?.tipo === 'sucursal' && sucursales.length > 0 && (
+                      <div className={s.sucursalSelect}>
+                        <label>Elegí la sucursal de retiro:</label>
+                        <select
+                          value={sucursalElegida?.id || ''}
+                          onChange={(e) => {
+                            const suc = sucursales.find((s) => String(s.id) === e.target.value);
+                            setSucursalElegida(suc || null);
+                          }}
+                        >
+                          <option value="">Seleccionar sucursal...</option>
+                          {sucursales.map((suc) => (
+                            <option key={suc.id} value={suc.id}>
+                              {suc.nombre} - {suc.direccion}, {suc.ciudad}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     )}
 

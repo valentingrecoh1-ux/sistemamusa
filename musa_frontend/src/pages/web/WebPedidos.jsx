@@ -1,6 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { socket } from '../../main';
 import s from './WebPedidos.module.css';
+
+const LOGISTICA_ESTADO_LABELS = {
+  new: 'Nuevo',
+  ready_to_pick: 'Listo para recoger',
+  picking_list: 'En picking',
+  packing_slip: 'Empaquetando',
+  ready_to_ship: 'Listo para enviar',
+  shipped: 'En camino',
+  delivered: 'Entregado',
+  not_delivered: 'No entregado',
+  cancelled: 'Cancelado',
+  on_hold: 'En espera',
+  created: 'Creado',
+};
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
 
@@ -232,16 +246,52 @@ export default function WebPedidos() {
               )}
 
               {/* Logistica */}
-              {selected.entrega === 'envio' && selected.logisticaProveedor && (
+              {selected.entrega === 'envio' && (
                 <div className={s.modalSection}>
                   <h4><i className="bi bi-truck" /> Logistica</h4>
                   <div className={s.modalGrid}>
-                    <div><label>Proveedor</label><span style={{ textTransform: 'capitalize' }}>{selected.logisticaProveedor}</span></div>
+                    {selected.logisticaProveedor && <div><label>Proveedor</label><span style={{ textTransform: 'capitalize' }}>{selected.logisticaProveedor}</span></div>}
                     {selected.logisticaEnvioId && <div><label>ID Envio</label><span>{selected.logisticaEnvioId}</span></div>}
                     {selected.logisticaTracking && <div><label>Tracking</label><span className={s.tracking}>{selected.logisticaTracking}</span></div>}
+                    {selected.logisticaEstado && (
+                      <div><label>Estado logistica</label><span className={s.logEstado}>{LOGISTICA_ESTADO_LABELS[selected.logisticaEstado] || selected.logisticaEstado}</span></div>
+                    )}
                     {selected.opcionEnvio?.servicio && <div><label>Servicio</label><span>{selected.opcionEnvio.servicio}</span></div>}
+                    {selected.opcionEnvio?.tipo === 'sucursal' && <div><label>Tipo</label><span>Retiro en sucursal</span></div>}
                     {selected.costoEnvio > 0 && <div><label>Costo envio</label><span>{money(selected.costoEnvio)}</span></div>}
                   </div>
+                  {selected.logisticaProveedor && selected.logisticaProveedor !== 'fijo' && selected.logisticaEnvioId && (
+                    <div className={s.logActions}>
+                      <button
+                        className={s.logBtn}
+                        onClick={() => {
+                          socket.emit('consultar-estado-envio', { pedidoId: selected._id }, (res) => {
+                            if (res?.ok) {
+                              setSelected((prev) => prev ? {
+                                ...prev,
+                                logisticaEstado: res.estado.estadoShipnow,
+                                logisticaTracking: res.estado.tracking || prev.logisticaTracking,
+                              } : null);
+                              fetchPedidos();
+                            }
+                          });
+                        }}
+                      >
+                        <i className="bi bi-arrow-clockwise" /> Actualizar estado
+                      </button>
+                      <button
+                        className={s.logBtn}
+                        onClick={() => {
+                          const trackingUrl = selected.logisticaProveedor === 'shipnow'
+                            ? `https://app.shipnow.com.ar/orders/${selected.logisticaEnvioId}`
+                            : null;
+                          if (trackingUrl) window.open(trackingUrl, '_blank');
+                        }}
+                      >
+                        <i className="bi bi-box-arrow-up-right" /> Ver en {selected.logisticaProveedor}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 

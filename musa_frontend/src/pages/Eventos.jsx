@@ -68,6 +68,10 @@ function Eventos({ usuario }) {
     turno: "PRIMER TURNO",
   });
 
+  // Edit reserva inline
+  const [editReservaId, setEditReservaId] = useState(null);
+  const [editReservaData, setEditReservaData] = useState({ nombre: "", cantidad: "", telefono: "", total: 0, turno: "PRIMER TURNO" });
+
   // Cobrar modal
   const [showCobrar, setShowCobrar] = useState(false);
   const [cobrarTarget, setCobrarTarget] = useState(null);
@@ -510,6 +514,52 @@ function Eventos({ usuario }) {
     if (await dialog.confirm("¿Eliminar esta reserva?")) {
       socket.emit("borrar-turno", turnoId);
     }
+  };
+
+  // ── Editar reserva ──
+  const iniciarEditReserva = (r) => {
+    setEditReservaId(r._id);
+    setEditReservaData({
+      nombre: r.nombre || "",
+      cantidad: r.cantidad || "",
+      telefono: r.telefono || "",
+      total: r.total || 0,
+      turno: r.turno || "PRIMER TURNO",
+    });
+  };
+
+  const handleEditReservaChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "cantidad" || name === "telefono") {
+      const cleanVal = value.replace(/[^0-9]/g, "");
+      if (name === "cantidad" && detailData?.precioPorPersona) {
+        const total = (parseInt(cleanVal) || 0) * detailData.precioPorPersona;
+        setEditReservaData((prev) => ({ ...prev, cantidad: cleanVal, total }));
+      } else {
+        setEditReservaData((prev) => ({ ...prev, [name]: cleanVal }));
+      }
+    } else {
+      setEditReservaData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const guardarEditReserva = () => {
+    if (!editReservaData.nombre) return;
+    socket.emit("guardar-turno", {
+      _id: editReservaId,
+      fecha: detailData.fecha ? new Date(`${detailData.fecha}T00:00:00-03:00`) : null,
+      turno: editReservaData.turno,
+      nombre: editReservaData.nombre,
+      cantidad: parseInt(editReservaData.cantidad) || 0,
+      telefono: editReservaData.telefono,
+      total: editReservaData.total || 0,
+      eventoId: detailData._id,
+    });
+    setEditReservaId(null);
+  };
+
+  const cancelarEditReserva = () => {
+    setEditReservaId(null);
   };
 
   // ── Cobrar ──
@@ -1047,49 +1097,112 @@ function Eventos({ usuario }) {
                 {/* Reservas list */}
                 {detailData.reservas?.length > 0 && (
                   <div className={s.modalList}>
-                    {detailData.reservas.map((r) => (
-                      <div key={r._id} className={s.reservaRow}>
-                        <div className={s.reservaInfo}>
-                          <span className={s.reservaNombre}>
-                            {r.nombre}
-                            {r.telefono && (
-                              <>
-                                <button
-                                  style={{ marginLeft: 6, background: "none", border: "none", color: "var(--success)", cursor: "pointer", fontSize: 13 }}
-                                  onClick={() => window.open(`https://wa.me/549${r.telefono}`, "_blank")}
-                                  title="WhatsApp"
-                                >
-                                  <i className="bi bi-whatsapp"></i>
-                                </button>
-                                <button
-                                  style={{ marginLeft: 4, background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 13 }}
-                                  onClick={() => {
-                                    const link = `${window.location.origin}/feedback/${detailData._id}/${r._id}`;
-                                    const msg = `Hola ${r.nombre}! 🍷 Gracias por haber venido a "${detailData.nombre}". Nos encantaría saber qué te pareció la degustación. Tu opinión nos importa mucho para seguir mejorando! Podés dejarnos tu feedback acá: ${link}`;
-                                    window.open(`https://wa.me/549${r.telefono}?text=${encodeURIComponent(msg)}`, "_blank");
-                                  }}
-                                  title="Pedir reseña"
-                                >
-                                  <i className="bi bi-star"></i>
-                                </button>
-                              </>
-                            )}
-                          </span>
-                          <span className={s.reservaDetail}>
-                            {r.cantidad} pers. — {r.turno === "PRIMER TURNO" ? "1er turno" : "2do turno"}
-                            {r.total > 0 && <> — Total: {money(r.total)}</>}
-                            {r.cobrado > 0 && <> — Cobrado: {money(r.cobrado)}</>}
-                          </span>
+                    {detailData.reservas.map((r) =>
+                      editReservaId === r._id ? (
+                        <div key={r._id} className={s.reservaEditRow}>
+                          <div className={s.reservaEditFields}>
+                            <input
+                              className={s.miniInput}
+                              type="text"
+                              placeholder="Nombre"
+                              name="nombre"
+                              value={editReservaData.nombre}
+                              onChange={handleEditReservaChange}
+                              style={{ flex: 2 }}
+                            />
+                            <input
+                              className={s.miniInput}
+                              type="text"
+                              placeholder="Cant."
+                              name="cantidad"
+                              value={editReservaData.cantidad}
+                              onChange={handleEditReservaChange}
+                              style={{ width: 60 }}
+                            />
+                            <input
+                              className={s.miniInput}
+                              type="text"
+                              placeholder="Teléfono"
+                              name="telefono"
+                              value={editReservaData.telefono}
+                              onChange={handleEditReservaChange}
+                              style={{ flex: 1 }}
+                            />
+                            <NumericFormat
+                              className={s.miniInput}
+                              prefix="$"
+                              placeholder="Monto"
+                              value={editReservaData.total}
+                              thousandSeparator="."
+                              decimalSeparator=","
+                              onValueChange={(e) => setEditReservaData((prev) => ({ ...prev, total: e.floatValue || 0 }))}
+                              style={{ width: 100 }}
+                            />
+                            <select
+                              className={s.miniSelect}
+                              value={editReservaData.turno}
+                              onChange={(e) => setEditReservaData((prev) => ({ ...prev, turno: e.target.value }))}
+                            >
+                              <option value="PRIMER TURNO">1er turno</option>
+                              <option value="SEGUNDO TURNO">2do turno</option>
+                            </select>
+                          </div>
+                          <div className={s.reservaEditActions}>
+                            <button className={s.miniAddBtn} type="button" onClick={guardarEditReserva}>
+                              <i className="bi bi-check-lg"></i> Guardar
+                            </button>
+                            <button className={s.borrarReservaBtn} type="button" onClick={cancelarEditReserva} title="Cancelar">
+                              <i className="bi bi-x-lg"></i>
+                            </button>
+                          </div>
                         </div>
-                        {pagoBadge(r)}
-                        <button className={s.cobrarBtn} onClick={() => abrirCobrar(r)}>
-                          <i className="bi bi-cash-coin"></i> Cobrar
-                        </button>
-                        <button className={s.borrarReservaBtn} onClick={() => borrarReserva(r._id)} title="Eliminar reserva">
-                          <i className="bi bi-trash3"></i>
-                        </button>
-                      </div>
-                    ))}
+                      ) : (
+                        <div key={r._id} className={s.reservaRow}>
+                          <div className={s.reservaInfo}>
+                            <span className={s.reservaNombre}>
+                              {r.nombre}
+                              {r.telefono && (
+                                <>
+                                  <button
+                                    style={{ marginLeft: 6, background: "none", border: "none", color: "var(--success)", cursor: "pointer", fontSize: 13 }}
+                                    onClick={() => window.open(`https://wa.me/549${r.telefono}`, "_blank")}
+                                    title="WhatsApp"
+                                  >
+                                    <i className="bi bi-whatsapp"></i>
+                                  </button>
+                                  <button
+                                    style={{ marginLeft: 4, background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 13 }}
+                                    onClick={() => {
+                                      const link = `${window.location.origin}/feedback/${detailData._id}/${r._id}`;
+                                      const msg = `Hola ${r.nombre}! 🍷 Gracias por haber venido a "${detailData.nombre}". Nos encantaría saber qué te pareció la degustación. Tu opinión nos importa mucho para seguir mejorando! Podés dejarnos tu feedback acá: ${link}`;
+                                      window.open(`https://wa.me/549${r.telefono}?text=${encodeURIComponent(msg)}`, "_blank");
+                                    }}
+                                    title="Pedir reseña"
+                                  >
+                                    <i className="bi bi-star"></i>
+                                  </button>
+                                </>
+                              )}
+                            </span>
+                            <span className={s.reservaDetail}>
+                              {r.cantidad} pers. — {r.turno === "PRIMER TURNO" ? "1er turno" : "2do turno"}
+                              {r.total > 0 && <> — Total: {money(r.total)}</>}
+                              {r.cobrado > 0 && <> — Cobrado: {money(r.cobrado)}</>}
+                            </span>
+                          </div>
+                          {pagoBadge(r)}
+                          <button className={s.editReservaBtn} onClick={() => iniciarEditReserva(r)} title="Editar reserva">
+                            <i className="bi bi-pencil"></i>
+                          </button>
+                          <button className={s.cobrarBtn} onClick={() => abrirCobrar(r)}>
+                            <i className="bi bi-cash-coin"></i> Cobrar
+                          </button>
+                          <button className={s.borrarReservaBtn} onClick={() => borrarReserva(r._id)} title="Eliminar reserva">
+                            <i className="bi bi-trash3"></i>
+                          </button>
+                        </div>
+                      )
+                    )}
                   </div>
                 )}
               </div>

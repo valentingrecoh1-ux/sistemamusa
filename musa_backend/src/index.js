@@ -24,7 +24,7 @@ const OrdenCompra = require("./models/ordenCompra");
 const PagoProveedor = require("./models/pagoProveedor");
 const PedidoWeb = require("./models/pedidoWeb");
 const ConfigTienda = require("./models/configTienda");
-const { crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowCreateWebhook } = require("./logisticaService");
+const { crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowCreateWebhook, pedidosyaCrearEnvio, pedidosyaCancelarEnvio, pedidosyaGetEnvio, pedidosyaEstimar, PEDIDOSYA_ESTADO_MAP } = require("./logisticaService");
 const { normalizar, NORMALIZAR_CEPAS, NORMALIZAR_REGIONES } = require("./migracionNormalizacion");
 const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
@@ -639,7 +639,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }) }));
 
 app.post(
   "/upload_flujo",
@@ -5722,6 +5722,29 @@ Reglas:
       cb?.({ ok: true, tracking: pedido.logisticaTracking, proveedor: pedido.logisticaProveedor });
       io.emit("cambios-web");
       io.emit("cambios");
+
+      // Notificar al cliente por WhatsApp si el pedido es envio
+      if (pedido.entrega === "envio" && estado !== estadoAnterior) {
+        try {
+          const configWA = await ConfigTienda.findById("main").lean();
+          if (configWA?.notificacionesEnvioWA && waStatus === "connected" && waSocket && pedido.cliente?.telefono) {
+            const WA_MSGS = {
+              preparando: `Hola ${pedido.cliente.nombre}! 🍷\nTu pedido #${pedido.numeroPedido} se esta preparando para el envio.\nTe avisamos cuando el rider lo retire!`,
+              enviado: `Hola ${pedido.cliente.nombre}! 🚴\nTu pedido #${pedido.numeroPedido} ya esta en camino!${pedido.logisticaTracking ? `\nSeguilo aca: ${pedido.logisticaTracking}` : "\nTe avisamos cuando este por llegar."}`,
+              entregado: `Hola ${pedido.cliente.nombre}! ✅\nTu pedido #${pedido.numeroPedido} fue entregado.\nGracias por tu compra! Esperamos que lo disfrutes 🥂`,
+              cancelado: `Hola ${pedido.cliente.nombre},\nTu envio del pedido #${pedido.numeroPedido} fue cancelado.\nSi tenes dudas contactanos por este medio.`,
+            };
+            const msg = WA_MSGS[estado];
+            if (msg) {
+              const jid = pedido.cliente.telefono.replace(/\D/g, "") + "@s.whatsapp.net";
+              await waSocket.sendMessage(jid, { text: msg });
+              console.log(`[WA Envio] Notificacion "${estado}" enviada a ${pedido.cliente.telefono} para pedido #${pedido.numeroPedido}`);
+            }
+          }
+        } catch (waErr) {
+          console.error("[WA Envio] Error enviando notificacion:", waErr.message);
+        }
+      }
     } catch (err) {
       console.error("Error update-estado-pedido-web:", err);
       cb?.({ error: "Error al actualizar estado" });
@@ -5766,6 +5789,87 @@ Reglas:
       cb?.({ ok: true, webhookId: result.id });
     } catch (err) {
       console.error("Error registrar-shipnow-webhook:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // ── PedidosYa Envios propios ──
+
+  // Estimar envio propio (no vinculado a pedido web)
+  socket.on("pedidosya-estimar", async (data, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      const origen = config.origenEnvio || {};
+      const opciones = await pedidosyaEstimar(config, {
+        origen,
+        destino: data.destino,
+        items: data.items || [{ cantidad: 1, precioUnitario: 0, nombre: "Paquete" }],
+      });
+      cb?.({ ok: true, opciones });
+    } catch (err) {
+      console.error("Error pedidosya-estimar:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // Crear envio propio con PedidosYa
+  socket.on("pedidosya-crear-envio", async (data, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      const origen = config.origenEnvio || {};
+      const resultado = await pedidosyaCrearEnvio(config, {
+        origen,
+        destino: data.destino,
+        items: data.items || [],
+        referencia: data.referencia || `PYA-${Date.now()}`,
+      });
+      cb?.({ ok: true, envio: resultado });
+    } catch (err) {
+      console.error("Error pedidosya-crear-envio:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // Consultar estado de envio PedidosYa
+  socket.on("pedidosya-estado-envio", async ({ envioId }, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      const envio = await pedidosyaGetEnvio(config, envioId);
+      if (!envio) return cb?.({ error: "Envio no encontrado" });
+      cb?.({
+        ok: true,
+        envio: {
+          id: envio.id,
+          status: envio.status,
+          estadoInterno: PEDIDOSYA_ESTADO_MAP[envio.status] || envio.status,
+          trackingUrl: envio.trackingUrl || null,
+          rider: envio.courier ? {
+            nombre: envio.courier.name,
+            telefono: envio.courier.phone,
+            foto: envio.courier.pictureUrl,
+          } : null,
+          waypoints: envio.waypoints || [],
+          createdAt: envio.createdAt,
+        },
+      });
+    } catch (err) {
+      console.error("Error pedidosya-estado-envio:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // Cancelar envio PedidosYa
+  socket.on("pedidosya-cancelar-envio", async ({ envioId }, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      await pedidosyaCancelarEnvio(config, envioId);
+      cb?.({ ok: true });
+    } catch (err) {
+      console.error("Error pedidosya-cancelar-envio:", err);
       cb?.({ error: err.message });
     }
   });

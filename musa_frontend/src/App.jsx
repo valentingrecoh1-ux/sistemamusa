@@ -30,6 +30,7 @@ import WebDashboard from './pages/web/WebDashboard';
 import WebPedidos from './pages/web/WebPedidos';
 import WebConfig from './pages/web/WebConfig';
 import WebClub from './pages/web/WebClub';
+import PedidosYaEnvios from './pages/web/PedidosYaEnvios';
 import Precios from './pages/Precios';
 import Clientes from './pages/Clientes';
 import Usuarios from './pages/admin/Usuarios';
@@ -137,6 +138,7 @@ function AdminApp({ usuario, onLogout }) {
           <Route path="/web" element={<WebDashboard />} />
           <Route path="/web/pedidos" element={<WebPedidos />} />
           <Route path="/web/club" element={<WebClub />} />
+          <Route path="/web/pedidosya" element={<PedidosYaEnvios />} />
           <Route path="/web/config" element={<WebConfig />} />
           <Route path="/admin/usuarios" element={<Usuarios usuario={usuario} />} />
           <Route path="/admin/setup" element={<Setup />} />

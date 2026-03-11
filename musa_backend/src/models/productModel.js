@@ -35,7 +35,7 @@ const productSchema = new mongoose.Schema({
     historialPrecios: [historialPrecioSchema],
 }, { timestamps: true });
 
-productSchema.index({ cepa: 1 });
+productSchema.index({ cepa: 1 }, { collation: { locale: "es", strength: 1 } });
 productSchema.index({ cantidad: 1 });
 productSchema.index({ bodega: 1 });
 productSchema.index({ origen: 1 });

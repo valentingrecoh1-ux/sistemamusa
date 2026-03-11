@@ -133,8 +133,9 @@ function mpRawToDoc(p, ownCollectorId) {
   }
   const bruto = p.transaction_amount || 0;
   const neto = p.transaction_details?.net_received_amount ?? null;
+  const shipping = p.shipping_amount || 0;
   let comis = (p.fee_details || []).reduce((s, f) => s + (f.amount || 0), 0);
-  let ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
+  let ret = neto != null ? Math.max(0, +(bruto - comis - (neto - shipping)).toFixed(2)) : 0;
 
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();
@@ -1666,13 +1667,18 @@ io.on("connection", (socket) => {
           ...(!ordenadoCepa && !ordenadoCantidad && { _id: -1 }),
         };
 
-        const [productos, totalProductos, stockTotal] = await Promise.all([
-          Product.find(query)
+        let productsQuery = Product.find(query)
             .select("-foto -fotos -fotoIA -descripcionGenerada")
-            .sort(sortOption)
-            .collation({ locale: "es", strength: 1 })
+            .sort(sortOption);
+        if (ordenadoCepa) {
+          productsQuery = productsQuery.collation({ locale: "es", strength: 1 });
+        }
+        productsQuery = productsQuery
             .skip((page - 1) * pageSize)
-            .limit(pageSize),
+            .limit(pageSize);
+
+        const [productos, totalProductos, stockTotal] = await Promise.all([
+          productsQuery,
           Product.countDocuments(query),
           Product.aggregate([
             { $match: { $and: [query, { $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }] }] } },

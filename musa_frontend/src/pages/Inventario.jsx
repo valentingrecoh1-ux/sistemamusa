@@ -53,6 +53,7 @@ function Inventario({ usuario }) {
 
   const cycleSort = (setter) => {
     setter((prev) => (prev === "" ? "asc" : prev === "asc" ? "desc" : ""));
+    setPage(1);
   };
 
   const sortIcon = (val) =>
@@ -166,6 +167,8 @@ function Inventario({ usuario }) {
       setTotalPages(data.totalPages);
       setTotalProductos(data.totalProductos || 0);
       setStockTotal(data.stockTotal || 0);
+      // Si la página actual queda fuera de rango, volver a la última válida
+      setPage((prev) => prev > data.totalPages ? Math.max(1, data.totalPages) : prev);
     };
     const onFiltros = (data) => setFiltrosOpciones(data);
     const onProveedores = (data) => setProveedores(data || []);

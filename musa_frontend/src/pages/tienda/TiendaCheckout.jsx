@@ -6,6 +6,7 @@ import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
+const formatDni = (raw) => { const d = raw.replace(/\D/g, ''); if (d.length <= 2) return d; if (d.length <= 5) return `${d.slice(0, -3)}.${d.slice(-3)}`; return `${d.slice(0, -6)}.${d.slice(-6, -3)}.${d.slice(-3)}`; };
 
 const STORAGE_KEY = 'musa_checkout_profile';
 
@@ -72,6 +73,7 @@ export default function TiendaCheckout() {
   const [cotizando, setCotizando] = useState(false);
   const [yaCotizo, setYaCotizo] = useState(false);
   const tieneLogistica = config.shipnowActivo || config.moovaActivo || config.pedidosyaActivo;
+  const [buscandoCP, setBuscandoCP] = useState(false);
   const debounceRef = useRef(null);
   const cpLookupRef = useRef(null);
   const perfilLookupRef = useRef(null);
@@ -156,7 +158,7 @@ export default function TiendaCheckout() {
     return () => { if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current); };
   }, [form.dni, perfilCargado, buscarPerfilRemoto]);
 
-  // Cotizar envio
+  // Cotizar envio — solo depende de CP, localidad y provincia (no calle/numero)
   const doCotizar = useCallback(async () => {
     if (entrega !== 'envio') return;
     if (!tieneLogistica) return;
@@ -168,9 +170,9 @@ export default function TiendaCheckout() {
     setYaCotizo(true);
     try {
       const res = await cotizarEnvio({
-        direccion: direccionCompleta,
-        calle: form.calle,
-        numero: form.numero,
+        direccion: form.localidad || '',
+        calle: '',
+        numero: '',
         localidad: form.localidad,
         codigoPostal: form.codigoPostal,
         ciudad: form.localidad || 'CABA',
@@ -188,26 +190,27 @@ export default function TiendaCheckout() {
     } finally {
       setCotizando(false);
     }
-  }, [entrega, form.calle, form.numero, form.localidad, form.codigoPostal, form.provincia, tieneLogistica, direccionCompleta, totalItems]);
+  }, [entrega, form.codigoPostal, form.localidad, form.provincia, tieneLogistica, totalItems]);
 
-  // Auto-cotizar con debounce
+  // Auto-cotizar con debounce — solo cuando cambia CP o se selecciona envio
   useEffect(() => {
     if (entrega !== 'envio' || !tieneLogistica) return;
     if (!form.codigoPostal.trim() || form.codigoPostal.trim().length < 4) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => { doCotizar(); }, 900);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [form.codigoPostal, form.calle, form.numero, form.localidad, entrega, tieneLogistica, doCotizar]);
+  }, [form.codigoPostal, entrega, tieneLogistica, doCotizar]);
 
   // Auto-completar localidad/provincia por CP
   useEffect(() => {
     const cp = form.codigoPostal.trim();
-    if (cp.length < 4) return;
+    if (cp.length < 4) { setBuscandoCP(false); return; }
     if (cpLookupRef.current) clearTimeout(cpLookupRef.current);
+    setBuscandoCP(true);
     cpLookupRef.current = setTimeout(async () => {
       try {
         const res = await fetch(`https://apis.datos.gob.ar/georef/api/localidades?codigo_postal=${cp}&campos=nombre,provincia.nombre&max=1`);
-        if (!res.ok) return;
+        if (!res.ok) { setBuscandoCP(false); return; }
         const data = await res.json();
         const loc = data.localidades?.[0];
         if (loc) {
@@ -218,6 +221,7 @@ export default function TiendaCheckout() {
           }));
         }
       } catch { /* silently fail */ }
+      setBuscandoCP(false);
     }, 500);
     return () => { if (cpLookupRef.current) clearTimeout(cpLookupRef.current); };
   }, [form.codigoPostal]);
@@ -240,7 +244,7 @@ export default function TiendaCheckout() {
   };
 
   // Validacion: ¿se puede pagar?
-  const datosOk = form.nombre.trim() && form.apellido.trim() && form.email.trim() && form.telefono.trim();
+  const datosOk = form.dni.trim().length >= 7 && form.nombre.trim() && form.apellido.trim() && form.email.trim() && form.telefono.trim();
   const direccionOk = entrega !== 'envio' || !esDomicilio || (form.calle.trim() && form.numero.trim());
   const cpOk = entrega !== 'envio' || form.codigoPostal.trim().length >= 4;
   const sucursalOk = !opcionElegida?.sucursales || sucursalElegida;
@@ -251,7 +255,7 @@ export default function TiendaCheckout() {
     e.preventDefault();
     setError('');
 
-    if (!datosOk) { setError('Completa nombre, apellido, email y WhatsApp'); return; }
+    if (!datosOk) { setError('Completa documento, nombre, apellido, email y WhatsApp'); return; }
     if (entrega === 'envio' && !cpOk) { setError('Completa el codigo postal'); return; }
     if (entrega === 'envio' && esDomicilio && !direccionOk) { setError('Completa calle y numero para envio a domicilio'); return; }
     if (entrega === 'envio' && !sucursalOk) { setError('Selecciona una sucursal de retiro'); return; }
@@ -343,6 +347,21 @@ export default function TiendaCheckout() {
             )}
 
             <div className={s.datosGrid}>
+              <div className={`${s.field} ${s.fieldFull}`}>
+                <label>DNI *</label>
+                <input
+                  type="text"
+                  value={formatDni(form.dni)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^\d]/g, '').slice(0, 8);
+                    setForm((prev) => ({ ...prev, dni: val }));
+                    setPerfilCargado(false);
+                  }}
+                  placeholder="41.858.889"
+                  maxLength={10}
+                  inputMode="numeric"
+                />
+              </div>
               <div className={s.field}>
                 <label>Nombre *</label>
                 <input type="text" value={form.nombre} onChange={handleField('nombre')} placeholder="Juan" />
@@ -372,20 +391,6 @@ export default function TiendaCheckout() {
                     maxLength={13}
                   />
                 </div>
-              </div>
-              <div className={s.field}>
-                <label>DNI</label>
-                <input
-                  type="text"
-                  value={form.dni}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^\d]/g, '');
-                    setForm((prev) => ({ ...prev, dni: val }));
-                    setPerfilCargado(false);
-                  }}
-                  placeholder="12345678"
-                  maxLength={8}
-                />
               </div>
             </div>
           </div>
@@ -437,11 +442,11 @@ export default function TiendaCheckout() {
                   </div>
                   <div className={s.field}>
                     <label>Localidad</label>
-                    <input type="text" value={form.localidad} onChange={handleField('localidad')} placeholder={form.codigoPostal.length >= 4 ? 'Buscando...' : 'Se completa con el CP'} />
+                    <input type="text" value={form.localidad} onChange={handleField('localidad')} placeholder={buscandoCP ? 'Buscando...' : 'Se completa con el CP'} />
                   </div>
                   <div className={s.field}>
                     <label>Provincia</label>
-                    <input type="text" value={form.provincia} onChange={handleField('provincia')} placeholder={form.codigoPostal.length >= 4 ? 'Buscando...' : 'Se completa con el CP'} />
+                    <input type="text" value={form.provincia} onChange={handleField('provincia')} placeholder={buscandoCP ? 'Buscando...' : 'Se completa con el CP'} />
                   </div>
                 </div>
 
@@ -634,7 +639,7 @@ export default function TiendaCheckout() {
             </button>
             {!puedeComprar && !loading && (
               <span className={s.payHint}>
-                {!datosOk ? 'Completa tus datos para continuar'
+                {!datosOk ? 'Completa tu documento y datos personales'
                   : !cpOk ? 'Ingresa tu codigo postal'
                   : !opcionOk ? 'Espera la cotizacion del envio'
                   : !sucursalOk ? 'Selecciona una sucursal'

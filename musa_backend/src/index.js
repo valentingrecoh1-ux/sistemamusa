@@ -133,8 +133,9 @@ function mpRawToDoc(p, ownCollectorId) {
   }
   const bruto = p.transaction_amount || 0;
   const neto = p.transaction_details?.net_received_amount ?? null;
+  const shipping = p.shipping_amount || 0;
   let comis = (p.fee_details || []).reduce((s, f) => s + (f.amount || 0), 0);
-  let ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
+  let ret = neto != null ? Math.max(0, +(bruto - comis - (neto - shipping)).toFixed(2)) : 0;
 
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();

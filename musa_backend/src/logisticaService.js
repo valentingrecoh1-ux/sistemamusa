@@ -35,18 +35,36 @@ async function shipnowCotizar(token, { codigoPostalDestino, pesoGramos }) {
     return [];
   }
   const data = await res.json();
-  return (data.results || []).map((r) => ({
-    proveedor: "shipnow",
-    servicio: r.shipping_service?.name || "Shipnow",
-    precio: r.price || 0,
-    entregaMin: r.minimum_delivery,
-    entregaMax: r.maximum_delivery,
-    tipo: r.shipping_service?.code?.includes("pas") ? "sucursal" : "domicilio",
-    meta: {
-      serviceCode: r.shipping_service?.code,
-      carrierCode: r.shipping_contract?.carrier?.code,
-    },
-  }));
+  return (data.results || []).map((r) => {
+    const esSucursal = r.shipping_service?.code?.includes("pas");
+    const shipTo = r.ship_to || {};
+    const addr = shipTo.address || {};
+    const opt = {
+      proveedor: "shipnow",
+      servicio: r.shipping_service?.name || "Envío",
+      precio: r.price || 0,
+      entregaMin: r.minimum_delivery,
+      entregaMax: r.maximum_delivery,
+      tipo: esSucursal ? "sucursal" : "domicilio",
+      transportista: r.shipping_contract?.carrier?.name || null,
+      meta: {
+        serviceCode: r.shipping_service?.code,
+        carrierCode: r.shipping_contract?.carrier?.code,
+      },
+    };
+    // Para opciones de sucursal, incluir datos del punto de retiro
+    if (esSucursal && shipTo.id) {
+      opt.sucursal = {
+        id: shipTo.id,
+        nombre: shipTo.description || addr.name || "Sucursal",
+        direccion: [addr.street_name, addr.street_number].filter(Boolean).join(" ") || "",
+        ciudad: addr.city || "",
+        provincia: addr.state || "",
+      };
+      opt.meta.postOfficeId = shipTo.id;
+    }
+    return opt;
+  });
 }
 
 async function shipnowCrearEnvio(token, { referencia, destino, items, opcionElegida }) {

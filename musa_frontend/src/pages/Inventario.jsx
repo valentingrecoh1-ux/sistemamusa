@@ -109,8 +109,12 @@ function Inventario({ usuario }) {
     });
   };
 
+  // Ref to always call latest fetchProductos from socket listeners
+  const fetchProductosRef = useRef(fetchProductos);
+  fetchProductosRef.current = fetchProductos;
+
+  // Printer init — once only
   useEffect(() => {
-    // Intentar QZ Tray primero, si falla caer a JSPM
     connectQZ().then(async (ok) => {
       if (ok) {
         try {
@@ -121,11 +125,10 @@ function Inventario({ usuario }) {
             const godex = printers.find((p) => /godex/i.test(p));
             setSelectedPrinter(godex || printers[0]);
             setUseQZ(true);
-            return; // QZ listo, no iniciar JSPM
+            return;
           }
         } catch { /* QZ fallo, caer a JSPM */ }
       }
-      // Fallback: JSPM
       if (window.JSPM) {
         window.JSPM.JSPrintManager.auto_reconnect = true;
         window.JSPM.JSPrintManager.start(false);
@@ -146,12 +149,15 @@ function Inventario({ usuario }) {
         };
       }
     });
+  }, []);
 
-    socket.on("cambios", () => {
-      fetchProductos();
+  // Socket listeners — once only
+  useEffect(() => {
+    const onCambios = () => {
+      fetchProductosRef.current();
       socket.emit("request-filtros-productos");
-    });
-    socket.on("response-productos", (data) => {
+    };
+    const onProductos = (data) => {
       if (data.status === "error") {
         console.error(data.message);
         return;
@@ -160,24 +166,32 @@ function Inventario({ usuario }) {
       setTotalPages(data.totalPages);
       setTotalProductos(data.totalProductos || 0);
       setStockTotal(data.stockTotal || 0);
-    });
-    socket.on("response-filtros-productos", (data) => {
-      setFiltrosOpciones(data);
-    });
-    socket.on("response-proveedores-simple", (data) => setProveedores(data || []));
-    socket.on("response-historial-precios", (data) => setHistorialModal(data));
+    };
+    const onFiltros = (data) => setFiltrosOpciones(data);
+    const onProveedores = (data) => setProveedores(data || []);
+    const onHistorial = (data) => setHistorialModal(data);
 
-    fetchProductos();
+    socket.on("cambios", onCambios);
+    socket.on("response-productos", onProductos);
+    socket.on("response-filtros-productos", onFiltros);
+    socket.on("response-proveedores-simple", onProveedores);
+    socket.on("response-historial-precios", onHistorial);
+
     socket.emit("request-filtros-productos");
     socket.emit("request-proveedores-simple");
 
     return () => {
-      socket.off("cambios");
-      socket.off("response-productos");
-      socket.off("response-filtros-productos");
-      socket.off("response-proveedores-simple");
-      socket.off("response-historial-precios");
+      socket.off("cambios", onCambios);
+      socket.off("response-productos", onProductos);
+      socket.off("response-filtros-productos", onFiltros);
+      socket.off("response-proveedores-simple", onProveedores);
+      socket.off("response-historial-precios", onHistorial);
     };
+  }, []);
+
+  // Fetch when filters/page/sort change
+  useEffect(() => {
+    fetchProductos();
   }, [page, search, ordenadoCantidad, ordenadoCepa, filtroCepa, filtroBodega, filtroOrigen, filtroYear]);
 
   const jspmWSStatus = () => {

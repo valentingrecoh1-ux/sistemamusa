@@ -139,10 +139,6 @@ function mpRawToDoc(p, ownCollectorId) {
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();
   let tipo = "cobro";
-  // Log detallado para Bank Transfer para diagnóstico
-  if (desc === "bank transfer" || p.payment_type_id === "bank_transfer") {
-    console.log(`[MP Bank Transfer] id=${p.id} desc="${p.description}" op=${p.operation_type} payment_type=${p.payment_type_id} status=${p.status} monto=${bruto} collector=${p.collector_id} payer=${p.payer?.id} ownId=${ownCollectorId}`);
-  }
   if (desc === "bank transfer" || (p.payment_type_id === "bank_transfer" && bruto > 0 && p.status === "approved")) {
     // Transferencias bancarias recibidas → cobro (plata que nos transfieren)
     tipo = "cobro";
@@ -166,11 +162,6 @@ function mpRawToDoc(p, ownCollectorId) {
     tipo = "cobro";
   } else if (p.operation_type === "money_transfer") {
     tipo = "gasto";
-  }
-
-  // Log para diagnóstico de clasificación dudosa (sin ownCollectorId o sin collector_id)
-  if (!ownCollectorId || !p.collector_id) {
-    console.log(`[MP clasificación] id=${p.id} desc="${p.description}" op=${p.operation_type} collector=${p.collector_id} payer=${p.payer?.id} ownId=${ownCollectorId} → ${tipo}`);
   }
 
   // Gastos no tienen comisiones ni retenciones

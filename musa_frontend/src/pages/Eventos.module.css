@@ -661,6 +661,44 @@
 
 .borrarReservaBtn:hover { color: var(--danger); background-color: rgba(239, 68, 68, 0.1); }
 
+.editReservaBtn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.editReservaBtn:hover { color: var(--accent); background-color: rgba(99, 102, 241, 0.1); }
+
+.reservaEditRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--card-border);
+  background: rgba(99, 102, 241, 0.04);
+  border-radius: var(--border-radius-sm);
+  padding: 8px;
+  margin: -2px -8px;
+}
+.reservaEditRow:last-child { border-bottom: none; }
+
+.reservaEditFields {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.reservaEditActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 /* ── Mini form for adding reserva ── */
 .miniForm {
   display: flex;

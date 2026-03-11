@@ -96,6 +96,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
+.fieldFull { grid-column: 1 / -1; }
 
 .field {
   display: flex;

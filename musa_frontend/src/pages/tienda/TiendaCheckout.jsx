@@ -12,7 +12,7 @@ const STORAGE_KEY = 'musa_checkout_profile';
 function saveProfile(form) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      nombre: form.nombre, email: form.email, telefono: form.telefono, dni: form.dni,
+      nombre: form.nombre, apellido: form.apellido, email: form.email, telefono: form.telefono, dni: form.dni,
       calle: form.calle, numero: form.numero, pisoDepto: form.pisoDepto,
       localidad: form.localidad, provincia: form.provincia, codigoPostal: form.codigoPostal,
     }));
@@ -58,7 +58,7 @@ export default function TiendaCheckout() {
   const navigate = useNavigate();
   const { items, totalPrice, totalItems, clearCart } = useCart();
   const [config, setConfig] = useState({});
-  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', dni: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
+  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', telefono: '', dni: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
   const [entrega, setEntrega] = useState('retiro');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -76,8 +76,11 @@ export default function TiendaCheckout() {
   const cpLookupRef = useRef(null);
   const perfilLookupRef = useRef(null);
 
-  // Opciones agrupadas (sucursales del mismo precio en 1 sola opcion)
+  // Opciones agrupadas
   const opcionesEnvio = useMemo(() => agruparOpciones(opcionesEnvioRaw), [opcionesEnvioRaw]);
+
+  // ¿La opcion elegida es a domicilio? (necesita calle/numero)
+  const esDomicilio = opcionElegida ? (opcionElegida.tipo === 'domicilio' || (!opcionElegida.sucursales && opcionElegida.tipo !== 'sucursal')) : true;
 
   // Cargar perfil guardado en localStorage al montar
   useEffect(() => {
@@ -95,19 +98,27 @@ export default function TiendaCheckout() {
 
   const direccionCompleta = [form.calle, form.numero, form.pisoDepto, form.localidad].filter(Boolean).join(' ');
 
-  // Buscar perfil en backend al cambiar email o telefono o DNI
+  // Buscar perfil en backend
   const buscarPerfilRemoto = useCallback(async (campo, valor) => {
     if (!valor || valor.length < 5) return;
-    // No buscar si ya se cargo un perfil
     if (perfilCargado) return;
 
     setBuscandoPerfil(true);
     try {
       const res = await buscarClienteCheckout(valor);
       if (res.cliente) {
+        // Separar nombre completo en nombre+apellido si viene junto
+        let cNombre = res.cliente.nombre || '';
+        let cApellido = '';
+        if (cNombre.includes(' ')) {
+          const parts = cNombre.split(' ');
+          cNombre = parts[0];
+          cApellido = parts.slice(1).join(' ');
+        }
         setForm((prev) => ({
           ...prev,
-          nombre: prev.nombre || res.cliente.nombre || '',
+          nombre: prev.nombre || cNombre,
+          apellido: prev.apellido || cApellido,
           email: prev.email || res.cliente.email || '',
           telefono: prev.telefono || res.cliente.telefono || '',
           dni: prev.dni || res.cliente.dni || '',
@@ -120,7 +131,7 @@ export default function TiendaCheckout() {
     setBuscandoPerfil(false);
   }, [perfilCargado]);
 
-  // Debounced profile lookup on email/phone/dni change
+  // Debounced profile lookups
   useEffect(() => {
     const val = form.email.trim();
     if (val.length < 5 || !val.includes('@') || perfilCargado) return;
@@ -145,7 +156,7 @@ export default function TiendaCheckout() {
     return () => { if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current); };
   }, [form.dni, perfilCargado, buscarPerfilRemoto]);
 
-  // Cotizar envio (llamado automaticamente)
+  // Cotizar envio
   const doCotizar = useCallback(async () => {
     if (entrega !== 'envio') return;
     if (!tieneLogistica) return;
@@ -183,17 +194,15 @@ export default function TiendaCheckout() {
   useEffect(() => {
     if (entrega !== 'envio' || !tieneLogistica) return;
     if (!form.codigoPostal.trim() || form.codigoPostal.trim().length < 4) return;
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => { doCotizar(); }, 900);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [form.codigoPostal, form.calle, form.numero, form.localidad, entrega, tieneLogistica, doCotizar]);
 
-  // Auto-completar localidad/provincia por CP con API GeoRef Argentina
+  // Auto-completar localidad/provincia por CP
   useEffect(() => {
     const cp = form.codigoPostal.trim();
     if (cp.length < 4) return;
-
     if (cpLookupRef.current) clearTimeout(cpLookupRef.current);
     cpLookupRef.current = setTimeout(async () => {
       try {
@@ -210,7 +219,6 @@ export default function TiendaCheckout() {
         }
       } catch { /* silently fail */ }
     }, 500);
-
     return () => { if (cpLookupRef.current) clearTimeout(cpLookupRef.current); };
   }, [form.codigoPostal]);
 
@@ -228,35 +236,29 @@ export default function TiendaCheckout() {
   const handleField = (field) => (e) => {
     const val = e.target.value;
     setForm((prev) => ({ ...prev, [field]: val }));
-    // Si cambia un campo clave, permitir busqueda de perfil de nuevo
-    if (['email', 'telefono', 'dni'].includes(field)) {
-      setPerfilCargado(false);
-    }
+    if (['email', 'telefono', 'dni'].includes(field)) setPerfilCargado(false);
   };
+
+  // Validacion: ¿se puede pagar?
+  const datosOk = form.nombre.trim() && form.apellido.trim() && form.email.trim() && form.telefono.trim();
+  const direccionOk = entrega !== 'envio' || !esDomicilio || (form.calle.trim() && form.numero.trim());
+  const cpOk = entrega !== 'envio' || form.codigoPostal.trim().length >= 4;
+  const sucursalOk = !opcionElegida?.sucursales || sucursalElegida;
+  const opcionOk = entrega !== 'envio' || !tieneLogistica || opcionElegida;
+  const puedeComprar = datosOk && direccionOk && cpOk && sucursalOk && opcionOk;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!form.nombre.trim() || !form.email.trim() || !form.telefono.trim()) {
-      setError('Completa nombre, email y telefono');
-      return;
-    }
-    if (entrega === 'envio' && (!form.calle.trim() || !form.numero.trim())) {
-      setError('Completa calle y numero para el envio');
-      return;
-    }
-    if (entrega === 'envio' && !form.codigoPostal.trim()) {
-      setError('Completa el codigo postal');
-      return;
-    }
+    if (!datosOk) { setError('Completa nombre, apellido, email y WhatsApp'); return; }
+    if (entrega === 'envio' && !cpOk) { setError('Completa el codigo postal'); return; }
+    if (entrega === 'envio' && esDomicilio && !direccionOk) { setError('Completa calle y numero para envio a domicilio'); return; }
+    if (entrega === 'envio' && !sucursalOk) { setError('Selecciona una sucursal de retiro'); return; }
 
     setLoading(true);
     try {
-      const clienteData = {
-        ...form,
-        direccion: direccionCompleta,
-      };
+      const clienteData = { ...form, direccion: direccionCompleta };
       let opcionFinal = null;
       if (entrega === 'envio' && opcionElegida) {
         if (opcionElegida.sucursales && sucursalElegida) {
@@ -276,14 +278,9 @@ export default function TiendaCheckout() {
         opcionEnvio: opcionFinal,
       });
 
-      // Guardar perfil en localStorage para la proxima compra
       saveProfile(form);
 
-      if (result.error) {
-        setError(result.error);
-        setLoading(false);
-        return;
-      }
+      if (result.error) { setError(result.error); setLoading(false); return; }
 
       if (result.initPoint) {
         clearCart();
@@ -328,7 +325,7 @@ export default function TiendaCheckout() {
                 <button
                   type="button"
                   onClick={() => {
-                    setForm({ nombre: '', email: '', telefono: '', dni: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
+                    setForm({ nombre: '', apellido: '', email: '', telefono: '', dni: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
                     setPerfilCargado(false);
                     localStorage.removeItem(STORAGE_KEY);
                   }}
@@ -345,10 +342,14 @@ export default function TiendaCheckout() {
               </div>
             )}
 
-            <div className={s.formGrid}>
+            <div className={s.datosGrid}>
               <div className={s.field}>
-                <label>Nombre completo *</label>
-                <input type="text" value={form.nombre} onChange={handleField('nombre')} placeholder="Juan Perez" />
+                <label>Nombre *</label>
+                <input type="text" value={form.nombre} onChange={handleField('nombre')} placeholder="Juan" />
+              </div>
+              <div className={s.field}>
+                <label>Apellido *</label>
+                <input type="text" value={form.apellido} onChange={handleField('apellido')} placeholder="Perez" />
               </div>
               <div className={s.field}>
                 <label>Email *</label>
@@ -356,8 +357,8 @@ export default function TiendaCheckout() {
               </div>
               <div className={s.field}>
                 <label>WhatsApp *</label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#888', fontSize: 14, pointerEvents: 'none' }}>+54</span>
+                <div className={s.phoneWrap}>
+                  <span className={s.phonePrefix}>+54</span>
                   <input
                     type="tel"
                     value={form.telefono}
@@ -367,14 +368,10 @@ export default function TiendaCheckout() {
                       setPerfilCargado(false);
                     }}
                     placeholder="11 5555 1234"
-                    style={{ paddingLeft: 42 }}
+                    className={s.phoneInput}
                     maxLength={13}
                   />
                 </div>
-                <span style={{ color: '#999', fontSize: 11, marginTop: 3, display: 'block' }}>
-                  <i className="bi bi-whatsapp" style={{ color: '#25D366', marginRight: 4 }} />
-                  Te notificaremos por WhatsApp
-                </span>
               </div>
               <div className={s.field}>
                 <label>DNI</label>
@@ -401,7 +398,7 @@ export default function TiendaCheckout() {
                 <label className={`${s.deliveryOption} ${entrega === 'retiro' ? s.deliveryActive : ''}`}>
                   <input type="radio" name="entrega" value="retiro" checked={entrega === 'retiro'} onChange={() => setEntrega('retiro')} />
                   <div>
-                    <strong>Retiro en local</strong>
+                    <strong><i className="bi bi-shop" /> Retiro en local</strong>
                     {config.direccionLocal && <span>{config.direccionLocal}</span>}
                   </div>
                   <span className={s.deliveryPrice}>Gratis</span>
@@ -411,8 +408,8 @@ export default function TiendaCheckout() {
                 <label className={`${s.deliveryOption} ${entrega === 'envio' ? s.deliveryActive : ''}`}>
                   <input type="radio" name="entrega" value="envio" checked={entrega === 'envio'} onChange={() => setEntrega('envio')} />
                   <div>
-                    <strong>Envio a domicilio</strong>
-                    <span>{tieneLogistica ? 'Cotizamos automaticamente al completar tu direccion' : 'Recibilo en tu puerta'}</span>
+                    <strong><i className="bi bi-truck" /> Envio</strong>
+                    <span>{tieneLogistica ? 'A domicilio o retiro en sucursal' : 'Recibilo en tu puerta'}</span>
                   </div>
                   {!tieneLogistica && (
                     <span className={s.deliveryPrice}>{config.costoEnvio ? money(config.costoEnvio) : 'Gratis'}</span>
@@ -422,8 +419,9 @@ export default function TiendaCheckout() {
             </div>
 
             {entrega === 'envio' && (
-              <div style={{ marginTop: 12 }}>
-                <div className={s.addressGrid}>
+              <div className={s.envioSection}>
+                {/* Paso 1: Codigo postal */}
+                <div className={s.cpRow}>
                   <div className={s.field}>
                     <label>Codigo postal *</label>
                     <input
@@ -445,20 +443,9 @@ export default function TiendaCheckout() {
                     <label>Provincia</label>
                     <input type="text" value={form.provincia} onChange={handleField('provincia')} placeholder={form.codigoPostal.length >= 4 ? 'Buscando...' : 'Se completa con el CP'} />
                   </div>
-                  <div className={s.field}>
-                    <label>Calle *</label>
-                    <input type="text" value={form.calle} onChange={handleField('calle')} placeholder="Av. Corrientes" />
-                  </div>
-                  <div className={s.field}>
-                    <label>Numero *</label>
-                    <input type="text" value={form.numero} onChange={handleField('numero')} placeholder="1234" />
-                  </div>
-                  <div className={s.field}>
-                    <label>Piso / Depto</label>
-                    <input type="text" value={form.pisoDepto} onChange={handleField('pisoDepto')} placeholder="3ro B" />
-                  </div>
                 </div>
 
+                {/* Paso 2: Opciones de envio */}
                 {tieneLogistica && (
                   <>
                     {cotizando && (
@@ -469,38 +456,44 @@ export default function TiendaCheckout() {
 
                     {opcionesEnvio.length > 0 && !cotizando && (
                       <div className={s.shippingOptions}>
-                        {opcionesEnvio.map((opt, i) => (
-                          <label key={i} className={`${s.shippingOption} ${opcionElegida === opt ? s.shippingOptionActive : ''}`}>
-                            <input
-                              type="radio"
-                              name="opcionEnvio"
-                              checked={opcionElegida === opt}
-                              onChange={() => { setOpcionElegida(opt); setSucursalElegida(null); }}
-                            />
-                            <div className={s.shippingOptionInfo}>
-                              <div className={s.shippingOptionTop}>
-                                <span className={s.shippingProvider}>
-                                  {opt.transportista || (opt.proveedor === 'moova' ? 'Moova' : opt.proveedor === 'pedidosya' ? 'PedidosYa' : 'Envío')}
-                                </span>
-                                <span className={s.shippingService}>
-                                  {opt.servicio}
-                                  {opt.sucursales ? ` (${opt.sucursales.length} sucursales)` : opt.tipo === 'sucursal' ? ' (retiro en sucursal)' : ''}
-                                </span>
+                        {opcionesEnvio.map((opt, i) => {
+                          const esSuc = opt.sucursales || opt.tipo === 'sucursal';
+                          return (
+                            <label key={i} className={`${s.shippingOption} ${opcionElegida === opt ? s.shippingOptionActive : ''}`}>
+                              <input
+                                type="radio"
+                                name="opcionEnvio"
+                                checked={opcionElegida === opt}
+                                onChange={() => { setOpcionElegida(opt); setSucursalElegida(null); }}
+                              />
+                              <div className={s.shippingOptionInfo}>
+                                <div className={s.shippingOptionTop}>
+                                  <span className={s.shippingProvider}>
+                                    {opt.transportista || (opt.proveedor === 'moova' ? 'Moova' : opt.proveedor === 'pedidosya' ? 'PedidosYa' : 'Envío')}
+                                  </span>
+                                  <span className={s.shippingService}>
+                                    {esSuc
+                                      ? `Retiro en sucursal${opt.sucursales ? ` (${opt.sucursales.length} puntos)` : ''}`
+                                      : 'Envio a domicilio'
+                                    }
+                                  </span>
+                                </div>
+                                {opt.entregaMin && (
+                                  <span className={s.shippingDate}>
+                                    <i className="bi bi-calendar3" /> Llega {formatEntrega(opt)}
+                                  </span>
+                                )}
                               </div>
-                              {opt.entregaMin && (
-                                <span className={s.shippingDate}>
-                                  <i className="bi bi-calendar3" /> Llega {formatEntrega(opt)}
-                                </span>
-                              )}
-                            </div>
-                            <span className={s.shippingPrice}>
-                              {opt.precio > 0 ? money(opt.precio) : 'Gratis'}
-                            </span>
-                          </label>
-                        ))}
+                              <span className={s.shippingPrice}>
+                                {opt.precio > 0 ? money(opt.precio) : 'Gratis'}
+                              </span>
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
 
+                    {/* Selector de sucursal */}
                     {opcionElegida?.sucursales && opcionElegida.sucursales.length > 0 && (
                       <div className={s.sucursalSelect}>
                         <label><i className="bi bi-geo-alt" /> Elegi donde retirar:</label>
@@ -526,6 +519,27 @@ export default function TiendaCheckout() {
                       </div>
                     )}
 
+                    {/* Paso 3: Dirección completa (solo si es domicilio) */}
+                    {opcionElegida && esDomicilio && (
+                      <div className={s.addressSection}>
+                        <label className={s.addressLabel}><i className="bi bi-house-door" /> Direccion de entrega</label>
+                        <div className={s.addressRow}>
+                          <div className={`${s.field} ${s.fieldWide}`}>
+                            <label>Calle *</label>
+                            <input type="text" value={form.calle} onChange={handleField('calle')} placeholder="Av. Corrientes" />
+                          </div>
+                          <div className={s.field}>
+                            <label>Numero *</label>
+                            <input type="text" value={form.numero} onChange={handleField('numero')} placeholder="1234" />
+                          </div>
+                          <div className={s.field}>
+                            <label>Piso / Depto</label>
+                            <input type="text" value={form.pisoDepto} onChange={handleField('pisoDepto')} placeholder="3ro B" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {!cotizando && yaCotizo && opcionesEnvio.length === 0 && (
                       <p className={s.shippingHint}>
                         <i className="bi bi-exclamation-circle" /> No encontramos opciones de envio para este codigo postal
@@ -538,6 +552,26 @@ export default function TiendaCheckout() {
                       </p>
                     )}
                   </>
+                )}
+
+                {/* Sin logistica: campos de direccion siempre visibles */}
+                {!tieneLogistica && (
+                  <div className={s.addressSection}>
+                    <div className={s.addressRow}>
+                      <div className={`${s.field} ${s.fieldWide}`}>
+                        <label>Calle *</label>
+                        <input type="text" value={form.calle} onChange={handleField('calle')} placeholder="Av. Corrientes" />
+                      </div>
+                      <div className={s.field}>
+                        <label>Numero *</label>
+                        <input type="text" value={form.numero} onChange={handleField('numero')} placeholder="1234" />
+                      </div>
+                      <div className={s.field}>
+                        <label>Piso / Depto</label>
+                        <input type="text" value={form.pisoDepto} onChange={handleField('pisoDepto')} placeholder="3ro B" />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -552,22 +586,35 @@ export default function TiendaCheckout() {
 
         {/* Summary */}
         <div className={s.summaryCol}>
-          <div className={s.summary}>
-            <h3 className={s.summaryTitle}>Resumen del pedido</h3>
+          {/* Detalle de productos */}
+          <div className={s.summaryProducts}>
+            <h3 className={s.summaryTitle}>Tu pedido ({totalItems} {totalItems === 1 ? 'producto' : 'productos'})</h3>
             {items.map((item) => (
-              <div key={item.productoId} className={s.summaryItem}>
-                <span>{item.nombre} x{item.cantidad}</span>
-                <span>{money(item.precioUnitario * item.cantidad)}</span>
+              <div key={item.productoId} className={s.productCard}>
+                <div className={s.productInfo}>
+                  <span className={s.productName}>{item.nombre}</span>
+                  <div className={s.productMeta}>
+                    {item.bodega && <span><i className="bi bi-building" /> {item.bodega}</span>}
+                    {item.cepa && <span><i className="bi bi-droplet" /> {item.cepa}</span>}
+                  </div>
+                </div>
+                <div className={s.productRight}>
+                  <span className={s.productQty}>x{item.cantidad}</span>
+                  <span className={s.productPrice}>{money(item.precioUnitario * item.cantidad)}</span>
+                </div>
               </div>
             ))}
-            <div className={s.summaryDivider} />
+          </div>
+
+          {/* Totales y pago */}
+          <div className={s.summary}>
             <div className={s.summaryRow}>
               <span>Subtotal</span>
               <span>{money(totalPrice)}</span>
             </div>
             {costoEnvio > 0 && (
               <div className={s.summaryRow}>
-                <span>Envío ({opcionElegida?.transportista || (opcionElegida?.proveedor === 'moova' ? 'Moova' : opcionElegida?.proveedor === 'pedidosya' ? 'PedidosYa' : 'Domicilio')})</span>
+                <span>Envío{opcionElegida?.transportista ? ` (${opcionElegida.transportista})` : ''}</span>
                 <span>{money(costoEnvio)}</span>
               </div>
             )}
@@ -578,15 +625,22 @@ export default function TiendaCheckout() {
 
             {error && <div className={s.error}>{error}</div>}
 
-            <button type="submit" className={s.payBtn} disabled={loading || (entrega === 'envio' && opcionElegida?.sucursales && !sucursalElegida)}>
+            <button type="submit" className={s.payBtn} disabled={loading || !puedeComprar}>
               {loading ? (
                 'Procesando...'
               ) : (
                 <><i className="bi bi-credit-card" /> Pagar con MercadoPago</>
               )}
             </button>
-            {entrega === 'envio' && opcionElegida?.sucursales && !sucursalElegida && (
-              <span style={{ textAlign: 'center', fontSize: 12, color: '#f59e0b' }}>Selecciona una sucursal para continuar</span>
+            {!puedeComprar && !loading && (
+              <span className={s.payHint}>
+                {!datosOk ? 'Completa tus datos para continuar'
+                  : !cpOk ? 'Ingresa tu codigo postal'
+                  : !opcionOk ? 'Espera la cotizacion del envio'
+                  : !sucursalOk ? 'Selecciona una sucursal'
+                  : !direccionOk ? 'Completa calle y numero'
+                  : ''}
+              </span>
             )}
           </div>
         </div>

@@ -6,6 +6,7 @@ import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
+const formatDni = (raw) => { const d = raw.replace(/\D/g, ''); if (d.length <= 2) return d; if (d.length <= 5) return `${d.slice(0, -3)}.${d.slice(-3)}`; return `${d.slice(0, -6)}.${d.slice(-6, -3)}.${d.slice(-3)}`; };
 
 const STORAGE_KEY = 'musa_checkout_profile';
 
@@ -347,17 +348,17 @@ export default function TiendaCheckout() {
 
             <div className={s.datosGrid}>
               <div className={`${s.field} ${s.fieldFull}`}>
-                <label>Documento (DNI) *</label>
+                <label>DNI *</label>
                 <input
                   type="text"
-                  value={form.dni}
+                  value={formatDni(form.dni)}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/[^\d]/g, '');
+                    const val = e.target.value.replace(/[^\d]/g, '').slice(0, 8);
                     setForm((prev) => ({ ...prev, dni: val }));
                     setPerfilCargado(false);
                   }}
-                  placeholder="12345678"
-                  maxLength={8}
+                  placeholder="41.858.889"
+                  maxLength={10}
                   inputMode="numeric"
                 />
               </div>

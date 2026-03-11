@@ -1667,23 +1667,38 @@ io.on("connection", (socket) => {
           ...(!ordenadoCepa && !ordenadoCantidad && { _id: -1 }),
         };
 
+        // Usar collation española cuando cepa está involucrada (filtro o sort)
+        // para que MongoDB pueda usar el índice de cepa (creado con collation)
+        const usarCollation = !!(ordenadoCepa || filtroCepa);
+        const collationOpt = { locale: "es", strength: 1 };
+
         let productsQuery = Product.find(query)
             .select("-foto -fotos -fotoIA -descripcionGenerada")
             .sort(sortOption);
-        if (ordenadoCepa) {
-          productsQuery = productsQuery.collation({ locale: "es", strength: 1 });
+        if (usarCollation) {
+          productsQuery = productsQuery.collation(collationOpt);
         }
         productsQuery = productsQuery
             .skip((page - 1) * pageSize)
             .limit(pageSize);
 
+        let countQuery = Product.countDocuments(query);
+        if (usarCollation) {
+          countQuery = countQuery.collation(collationOpt);
+        }
+
+        let stockAgg = Product.aggregate([
+          { $match: { $and: [query, { $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }] }] } },
+          { $group: { _id: null, total: { $sum: "$cantidad" } } },
+        ]).allowDiskUse(true);
+        if (usarCollation) {
+          stockAgg = stockAgg.collation(collationOpt);
+        }
+
         const [productos, totalProductos, stockTotal] = await Promise.all([
           productsQuery,
-          Product.countDocuments(query),
-          Product.aggregate([
-            { $match: { $and: [query, { $or: [{ tipo: "vino" }, { tipo: { $exists: false } }, { tipo: null }] }] } },
-            { $group: { _id: null, total: { $sum: { $toInt: "$cantidad" } } } },
-          ]).allowDiskUse(true),
+          countQuery,
+          stockAgg,
         ]);
 
         let totalPages = Math.ceil(totalProductos / pageSize);

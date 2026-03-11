@@ -36,6 +36,8 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 productSchema.index({ cepa: 1 }, { collation: { locale: "es", strength: 1 } });
+// Índice compuesto para filtro cepa + sort por _id (paginación default)
+productSchema.index({ cepa: 1, _id: -1 }, { collation: { locale: "es", strength: 1 } });
 productSchema.index({ cantidad: 1 });
 productSchema.index({ bodega: 1 });
 productSchema.index({ origen: 1 });

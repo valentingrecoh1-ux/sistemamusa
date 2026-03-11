@@ -1224,7 +1224,10 @@ IMPORTANT RULES:
 
   // Helper: compute client profile data (reused by token and search endpoints)
   async function computeClientProfile(cliente) {
-    const ventas = await Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean();
+    const [ventas, pedidosWeb] = await Promise.all([
+      Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
+      PedidoWeb.find({ clienteId: cliente._id, estado: { $in: ["confirmado", "preparando", "listo", "enviado", "entregado"] } }).sort({ createdAt: -1 }).limit(200).lean(),
+    ]);
     const productosComprados = [];
     const productoIdsSet = new Set();
     const cepasProbadas = new Set();
@@ -1239,8 +1242,22 @@ IMPORTANT RULES:
       });
     });
 
-    const totalGastado = ventas.reduce((s, v) => s + (v.monto || 0), 0);
-    const cantCompras = ventas.length;
+    // Incluir productos de pedidos web en las metricas
+    pedidosWeb.forEach((pw) => {
+      (pw.items || []).forEach((it) => {
+        productosComprados.push({ ...it, fecha: pw.createdAt });
+        if (it.productoId) productoIdsSet.add(String(it.productoId));
+        if (it.cepa) cepasProbadas.add(it.cepa);
+        if (it.bodega) bodegasProbadas.add(it.bodega);
+      });
+    });
+
+    const totalGastadoLocal = ventas.reduce((s, v) => s + (v.monto || 0), 0);
+    const totalGastadoOnline = pedidosWeb.reduce((s, p) => s + (p.montoTotal || 0), 0);
+    const totalGastado = totalGastadoLocal + totalGastadoOnline;
+    const cantComprasLocal = ventas.length;
+    const cantComprasOnline = pedidosWeb.length;
+    const cantCompras = cantComprasLocal + cantComprasOnline;
     const vinosUnicos = productoIdsSet.size;
 
     let nivel, nivelNum;
@@ -1326,7 +1343,7 @@ IMPORTANT RULES:
 
     return {
       cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido, estadoPerfil: cliente.estadoPerfil || "aprobado", tokenAcceso: cliente.tokenAcceso },
-      metricas: { totalGastado, cantCompras, vinosUnicos },
+      metricas: { totalGastado, cantCompras, cantComprasLocal, cantComprasOnline, vinosUnicos },
       nivel, nivelNum,
       preferencias: {
         cepaFavorita: cepaFav ? cepaFav[0] : null,
@@ -1449,12 +1466,20 @@ IMPORTANT RULES:
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 20);
 
+      // Tambien traer ventas en local
+      const ventasLocal = await Venta.find({ clienteId: cliente._id })
+        .select("-facturaPdf -notaCreditoPdf")
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean();
+
       res.json({
         pedidos: todos.map((p) => ({
           id: p._id,
           numeroPedido: p.numeroPedido,
           estado: p.estado,
           entrega: p.entrega,
+          origen: "online",
           items: p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, foto: i.foto })),
           montoTotal: p.montoTotal,
           costoEnvio: p.costoEnvio,
@@ -1463,6 +1488,14 @@ IMPORTANT RULES:
           logisticaEstado: p.logisticaEstado || null,
           mpStatus: p.mpStatus || null,
           fecha: p.createdAt,
+        })),
+        comprasLocal: ventasLocal.map((v) => ({
+          id: v._id,
+          numeroVenta: v.numeroVenta,
+          items: (v.productos || []).map((p) => ({ nombre: p.nombre, cantidad: p.cantidad, foto: p.foto })),
+          monto: v.monto,
+          formaPago: v.formaPago,
+          fecha: v.createdAt,
         })),
       });
     } catch (err) {

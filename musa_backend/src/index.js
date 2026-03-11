@@ -389,6 +389,12 @@ async function connectWhatsApp() {
   if (waStatus === "connecting") return;
   if (waStatus === "connected" && waSocket) return;
 
+  // Limpiar socket previo si quedó colgado
+  if (waSocket) {
+    try { waSocket.end(); } catch (e) { }
+    waSocket = null;
+  }
+
   waStatus = "connecting";
   waQR = null;
 
@@ -400,6 +406,7 @@ async function connectWhatsApp() {
       logger: pino({ level: "warn" }),
       printQRInTerminal: false,
       browser: ["MUSA Palermo", "Chrome", "1.0.0"],
+      connectTimeoutMs: 20000,
     });
 
     waSocket.ev.on("creds.update", saveCreds);
@@ -409,6 +416,7 @@ async function connectWhatsApp() {
       if (waStatus === "connecting") {
         console.warn("WhatsApp: timeout esperando QR, reseteando");
         waStatus = "disconnected";
+        if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
       }
     }, 30000);
 
@@ -417,6 +425,7 @@ async function connectWhatsApp() {
         waQR = await QRCode.toDataURL(qr);
         waStatus = "qr";
         clearTimeout(safetyTimer);
+        console.log("WhatsApp: QR generado");
       }
 
       if (connection === "open") {
@@ -431,23 +440,29 @@ async function connectWhatsApp() {
         clearTimeout(safetyTimer);
         waQR = null;
         const code = lastDisconnect?.error?.output?.statusCode;
+        const reason = lastDisconnect?.error?.output?.payload?.message || "";
+        console.log(`WhatsApp desconectado: code=${code} reason=${reason}`);
 
-        if (code === DisconnectReason.loggedOut) {
+        if (code === DisconnectReason.loggedOut || code === 401) {
           waStatus = "disconnected";
           waSocket = null;
           await mongoose.connection.collection("wa_auth").deleteMany({});
-          console.log("WhatsApp deslogueado");
+          console.log("WhatsApp: sesion cerrada, creds limpiadas");
         } else {
           waSocket = null;
           waStatus = "disconnected";
-          waReconnectDelay = Math.min((waReconnectDelay || 5000) * 2, 300000);
-          setTimeout(connectWhatsApp, waReconnectDelay);
+          // Solo auto-reconectar si no fue una desconexion limpia
+          if (code !== DisconnectReason.connectionClosed) {
+            waReconnectDelay = Math.min((waReconnectDelay || 5000) * 2, 300000);
+            setTimeout(connectWhatsApp, waReconnectDelay);
+          }
         }
       }
     });
   } catch (e) {
     console.error("WhatsApp error:", e.message, e.stack);
     waStatus = "disconnected";
+    if (waSocket) { try { waSocket.end(); } catch (e2) { } }
     waSocket = null;
   }
 }
@@ -607,7 +622,14 @@ app.post("/api/whatsapp/connect", async (req, res) => {
   // Esperar hasta 20s por QR o conexión
   for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 1000));
-    if (waQR || waStatus === "connected" || waStatus === "disconnected") break;
+    if (waQR || waStatus === "connected") break;
+    // Si se desconectó inmediatamente (creds viejas), limpiar y reintentar
+    if (waStatus === "disconnected" && i < 5) {
+      console.log("WhatsApp: creds posiblemente stale, limpiando y reintentando...");
+      await mongoose.connection.collection("wa_auth").deleteMany({});
+      waReconnectDelay = 5000;
+      await connectWhatsApp();
+    }
   }
 
   res.json({ status: waStatus, qr: waQR });

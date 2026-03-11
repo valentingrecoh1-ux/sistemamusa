@@ -1288,6 +1288,18 @@
   text-decoration: none;
 }
 .pedidoTracking:hover { text-decoration: underline; }
+.comprasSubtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 8px 0 0;
+  color: var(--tienda-text, var(--text-primary));
+}
+.comprasSubtitle i {
+  color: #7c3aed;
+}
 
 .pedidoStatusRow {
   display: flex;

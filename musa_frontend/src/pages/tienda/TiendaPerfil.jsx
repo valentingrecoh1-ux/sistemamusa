@@ -146,8 +146,9 @@ export default function TiendaPerfil() {
   const [regLoading, setRegLoading] = useState(false);
   const [regMsg, setRegMsg] = useState('');
 
-  // Mis pedidos
+  // Mis compras
   const [pedidos, setPedidos] = useState([]);
+  const [comprasLocal, setComprasLocal] = useState([]);
   const [pedidosLoading, setPedidosLoading] = useState(false);
 
   // Complete profile form (for clients created with only DNI)
@@ -178,7 +179,7 @@ export default function TiendaPerfil() {
     const tok = perfil.cliente?.tokenAcceso || token || localStorage.getItem(PERFIL_TOKEN_KEY);
     if (!tok) return;
     setPedidosLoading(true);
-    fetchPedidosPerfil(tok).then((res) => setPedidos(res.pedidos || [])).catch(() => {}).finally(() => setPedidosLoading(false));
+    fetchPedidosPerfil(tok).then((res) => { setPedidos(res.pedidos || []); setComprasLocal(res.comprasLocal || []); }).catch(() => {}).finally(() => setPedidosLoading(false));
   }, [tab, perfil, token]);
 
   // Suggestion form
@@ -521,69 +522,158 @@ export default function TiendaPerfil() {
             ))}
           </div>
 
-          {/* Tab: Mis Pedidos */}
+          {/* Tab: Mis Compras */}
           {tab === 'pedidos' && (
             <div className={s.tabContent}>
               <h3 className={s.sectionTitle}>Mis Compras</h3>
-              {pedidosLoading && <div className={s.loading}>Cargando pedidos...</div>}
-              {!pedidosLoading && pedidos.length === 0 && (
-                <div className={s.empty}>Todavia no tenes pedidos. Hace tu primera compra!</div>
+              {pedidosLoading && <div className={s.loading}>Cargando...</div>}
+              {!pedidosLoading && pedidos.length === 0 && comprasLocal.length === 0 && (
+                <div className={s.empty}>Todavia no tenes compras. Hace tu primera compra!</div>
               )}
-              {!pedidosLoading && pedidos.length > 0 && (
-                <div className={s.pedidosList}>
-                  {pedidos.map((p) => {
-                    const estadoColors = {
-                      pendiente: '#f59e0b', confirmado: '#3b82f6', preparando: '#8b5cf6',
-                      listo: '#06b6d4', enviado: '#6366f1', entregado: '#22c55e', cancelado: '#ef4444',
-                    };
-                    const estadoIcons = {
-                      pendiente: 'bi-clock', confirmado: 'bi-check-circle', preparando: 'bi-box-seam',
-                      listo: 'bi-check2-all', enviado: 'bi-truck', entregado: 'bi-house-check', cancelado: 'bi-x-circle',
-                    };
-                    const TRANSPORTISTA_NOMBRES = { shipnow: 'ShipNow (OCA)', moova: 'Moova', fijo: 'Envio propio' };
-                    const pagoLabel = { approved: 'Aprobado', pending: 'Pendiente', rejected: 'Rechazado', in_process: 'En proceso', refunded: 'Reembolsado' };
-                    const pagoColor = { approved: '#22c55e', pending: '#f59e0b', rejected: '#ef4444', in_process: '#6366f1', refunded: '#94a3b8' };
-                    const pagoIcon = { approved: 'bi-check-circle-fill', pending: 'bi-clock-fill', rejected: 'bi-x-circle-fill', in_process: 'bi-hourglass-split', refunded: 'bi-arrow-counterclockwise' };
-                    const envioEstadoLabel = { shipped: 'Despachado', in_transit: 'En camino', delivered: 'Entregado', cancelled: 'Cancelado', returned: 'Devuelto', ready_to_ship: 'Listo para enviar' };
-                    const isPendiente = p.estado === 'pendiente';
-                    const puedePagar = isPendiente && p.mpStatus !== 'approved';
-                    const puedeCancelar = isPendiente;
 
-                    return (
-                      <div key={p.id} className={s.pedidoCard}>
-                        <div className={s.pedidoHeader}>
-                          <div className={s.pedidoNum}>
-                            <span>Pedido #{p.numeroPedido}</span>
-                            <span className={s.pedidoFecha}>
-                              {new Date(p.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {/* ── Compras Online ── */}
+              {!pedidosLoading && pedidos.length > 0 && (
+                <>
+                  <h4 className={s.comprasSubtitle}><i className="bi bi-globe" /> Compras Online</h4>
+                  <div className={s.pedidosList}>
+                    {pedidos.map((p) => {
+                      const estadoColors = {
+                        pendiente: '#f59e0b', confirmado: '#3b82f6', preparando: '#8b5cf6',
+                        listo: '#06b6d4', enviado: '#6366f1', entregado: '#22c55e', cancelado: '#ef4444',
+                      };
+                      const estadoIcons = {
+                        pendiente: 'bi-clock', confirmado: 'bi-check-circle', preparando: 'bi-box-seam',
+                        listo: 'bi-check2-all', enviado: 'bi-truck', entregado: 'bi-house-check', cancelado: 'bi-x-circle',
+                      };
+                      const TRANSPORTISTA_NOMBRES = { shipnow: 'ShipNow (OCA)', moova: 'Moova', fijo: 'Envio propio' };
+                      const pagoLabel = { approved: 'Aprobado', pending: 'Pendiente', rejected: 'Rechazado', in_process: 'En proceso', refunded: 'Reembolsado' };
+                      const pagoColor = { approved: '#22c55e', pending: '#f59e0b', rejected: '#ef4444', in_process: '#6366f1', refunded: '#94a3b8' };
+                      const pagoIcon = { approved: 'bi-check-circle-fill', pending: 'bi-clock-fill', rejected: 'bi-x-circle-fill', in_process: 'bi-hourglass-split', refunded: 'bi-arrow-counterclockwise' };
+                      const envioEstadoLabel = { shipped: 'Despachado', in_transit: 'En camino', delivered: 'Entregado', cancelled: 'Cancelado', returned: 'Devuelto', ready_to_ship: 'Listo para enviar' };
+                      const isPendiente = p.estado === 'pendiente';
+                      const puedePagar = isPendiente && p.mpStatus !== 'approved';
+                      const puedeCancelar = isPendiente;
+
+                      return (
+                        <div key={p.id} className={s.pedidoCard}>
+                          <div className={s.pedidoHeader}>
+                            <div className={s.pedidoNum}>
+                              <span>Pedido #{p.numeroPedido}</span>
+                              <span className={s.pedidoFecha}>
+                                {new Date(p.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            </div>
+                            <span className={s.pedidoEstado} style={{ color: estadoColors[p.estado] || '#94a3b8', borderColor: estadoColors[p.estado] || '#94a3b8' }}>
+                              <i className={`bi ${estadoIcons[p.estado] || 'bi-circle'}`} /> {p.estado}
                             </span>
                           </div>
-                          <span className={s.pedidoEstado} style={{ color: estadoColors[p.estado] || '#94a3b8', borderColor: estadoColors[p.estado] || '#94a3b8' }}>
-                            <i className={`bi ${estadoIcons[p.estado] || 'bi-circle'}`} /> {p.estado}
+
+                          {/* Estado detallado: pago + envio */}
+                          <div className={s.pedidoStatusRow}>
+                            {p.mpStatus && (
+                              <span className={s.pedidoStatusChip} style={{ color: pagoColor[p.mpStatus] || '#94a3b8', borderColor: pagoColor[p.mpStatus] || '#94a3b8' }}>
+                                <i className={`bi ${pagoIcon[p.mpStatus] || 'bi-circle'}`} /> Pago: {pagoLabel[p.mpStatus] || p.mpStatus}
+                              </span>
+                            )}
+                            {!p.mpStatus && isPendiente && (
+                              <span className={s.pedidoStatusChip} style={{ color: '#f59e0b', borderColor: '#f59e0b' }}>
+                                <i className="bi bi-clock-fill" /> Pago: Pendiente
+                              </span>
+                            )}
+                            {p.entrega === 'envio' && p.logisticaEstado && (
+                              <span className={s.pedidoStatusChip} style={{ color: '#6366f1', borderColor: '#6366f1' }}>
+                                <i className="bi bi-truck" /> {envioEstadoLabel[p.logisticaEstado] || p.logisticaEstado}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className={s.pedidoItems}>
+                            {p.items.map((it, i) => (
+                              <div key={i} className={s.pedidoItem}>
+                                {it.foto && <img src={it.foto} alt="" className={s.pedidoItemFoto} />}
+                                <span>{it.nombre} x{it.cantidad}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className={s.pedidoFooter}>
+                            <span className={s.pedidoEntrega}>
+                              <i className={`bi ${p.entrega === 'envio' ? 'bi-truck' : 'bi-shop'}`} />
+                              {p.entrega === 'envio' ? (TRANSPORTISTA_NOMBRES[p.transportista] || p.transportista || 'Envio') : 'Retiro en local'}
+                            </span>
+                            <span className={s.pedidoTotal}>{money(p.montoTotal)}</span>
+                          </div>
+                          {p.tracking && (
+                            <a href={p.tracking} target="_blank" rel="noopener noreferrer" className={s.pedidoTracking}>
+                              <i className="bi bi-geo-alt" /> Seguir envio
+                            </a>
+                          )}
+
+                          {/* Acciones para pedidos pendientes */}
+                          {(puedePagar || puedeCancelar) && (
+                            <div className={s.pedidoActions}>
+                              {puedePagar && (
+                                <button
+                                  className={s.pedidoActionBtn}
+                                  onClick={async () => {
+                                    const token = localStorage.getItem(PERFIL_TOKEN_KEY);
+                                    const data = await retomarPagoPedido(p.id, token);
+                                    if (data.initPoint) {
+                                      window.location.href = data.initPoint;
+                                    } else {
+                                      alert(data.error || 'No se pudo generar el link de pago');
+                                    }
+                                  }}
+                                >
+                                  <i className="bi bi-credit-card" /> Retomar pago
+                                </button>
+                              )}
+                              {puedeCancelar && (
+                                <button
+                                  className={s.pedidoActionBtnDanger}
+                                  onClick={async () => {
+                                    if (!window.confirm(`Cancelar pedido #${p.numeroPedido}?`)) return;
+                                    const token = localStorage.getItem(PERFIL_TOKEN_KEY);
+                                    const data = await cancelarPedido(p.id, token);
+                                    if (data.ok) {
+                                      const updated = await fetchPedidosPerfil(token);
+                                      if (updated.pedidos) { setPedidos(updated.pedidos); setComprasLocal(updated.comprasLocal || []); }
+                                    } else {
+                                      alert(data.error || 'Error al cancelar');
+                                    }
+                                  }}
+                                >
+                                  <i className="bi bi-x-lg" /> Cancelar pedido
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* ── Compras en Local ── */}
+              {!pedidosLoading && comprasLocal.length > 0 && (
+                <>
+                  <h4 className={s.comprasSubtitle}><i className="bi bi-shop" /> Compras en Local</h4>
+                  <div className={s.pedidosList}>
+                    {comprasLocal.map((v) => (
+                      <div key={v.id} className={s.pedidoCard}>
+                        <div className={s.pedidoHeader}>
+                          <div className={s.pedidoNum}>
+                            <span>Compra #{v.numeroVenta}</span>
+                            <span className={s.pedidoFecha}>
+                              {new Date(v.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+                          <span className={s.pedidoEstado} style={{ color: '#22c55e', borderColor: '#22c55e' }}>
+                            <i className="bi bi-check-circle" /> completada
                           </span>
                         </div>
-
-                        {/* Estado detallado: pago + envio */}
-                        <div className={s.pedidoStatusRow}>
-                          {p.mpStatus && (
-                            <span className={s.pedidoStatusChip} style={{ color: pagoColor[p.mpStatus] || '#94a3b8', borderColor: pagoColor[p.mpStatus] || '#94a3b8' }}>
-                              <i className={`bi ${pagoIcon[p.mpStatus] || 'bi-circle'}`} /> Pago: {pagoLabel[p.mpStatus] || p.mpStatus}
-                            </span>
-                          )}
-                          {!p.mpStatus && isPendiente && (
-                            <span className={s.pedidoStatusChip} style={{ color: '#f59e0b', borderColor: '#f59e0b' }}>
-                              <i className="bi bi-clock-fill" /> Pago: Pendiente
-                            </span>
-                          )}
-                          {p.entrega === 'envio' && p.logisticaEstado && (
-                            <span className={s.pedidoStatusChip} style={{ color: '#6366f1', borderColor: '#6366f1' }}>
-                              <i className="bi bi-truck" /> {envioEstadoLabel[p.logisticaEstado] || p.logisticaEstado}
-                            </span>
-                          )}
-                        </div>
-
                         <div className={s.pedidoItems}>
-                          {p.items.map((it, i) => (
+                          {v.items.map((it, i) => (
                             <div key={i} className={s.pedidoItem}>
                               {it.foto && <img src={it.foto} alt="" className={s.pedidoItemFoto} />}
                               <span>{it.nombre} x{it.cantidad}</span>
@@ -592,60 +682,14 @@ export default function TiendaPerfil() {
                         </div>
                         <div className={s.pedidoFooter}>
                           <span className={s.pedidoEntrega}>
-                            <i className={`bi ${p.entrega === 'envio' ? 'bi-truck' : 'bi-shop'}`} />
-                            {p.entrega === 'envio' ? (TRANSPORTISTA_NOMBRES[p.transportista] || p.transportista || 'Envio') : 'Retiro en local'}
+                            <i className="bi bi-shop" /> En local{v.formaPago ? ` · ${v.formaPago}` : ''}
                           </span>
-                          <span className={s.pedidoTotal}>{money(p.montoTotal)}</span>
+                          <span className={s.pedidoTotal}>{money(v.monto)}</span>
                         </div>
-                        {p.tracking && (
-                          <a href={p.tracking} target="_blank" rel="noopener noreferrer" className={s.pedidoTracking}>
-                            <i className="bi bi-geo-alt" /> Seguir envio
-                          </a>
-                        )}
-
-                        {/* Acciones para pedidos pendientes */}
-                        {(puedePagar || puedeCancelar) && (
-                          <div className={s.pedidoActions}>
-                            {puedePagar && (
-                              <button
-                                className={s.pedidoActionBtn}
-                                onClick={async () => {
-                                  const token = localStorage.getItem(PERFIL_TOKEN_KEY);
-                                  const data = await retomarPagoPedido(p.id, token);
-                                  if (data.initPoint) {
-                                    window.location.href = data.initPoint;
-                                  } else {
-                                    alert(data.error || 'No se pudo generar el link de pago');
-                                  }
-                                }}
-                              >
-                                <i className="bi bi-credit-card" /> Retomar pago
-                              </button>
-                            )}
-                            {puedeCancelar && (
-                              <button
-                                className={s.pedidoActionBtnDanger}
-                                onClick={async () => {
-                                  if (!window.confirm(`Cancelar pedido #${p.numeroPedido}?`)) return;
-                                  const token = localStorage.getItem(PERFIL_TOKEN_KEY);
-                                  const data = await cancelarPedido(p.id, token);
-                                  if (data.ok) {
-                                    const updated = await fetchPedidosPerfil(token);
-                                    if (updated.pedidos) setPedidos(updated.pedidos);
-                                  } else {
-                                    alert(data.error || 'Error al cancelar');
-                                  }
-                                }}
-                              >
-                                <i className="bi bi-x-lg" /> Cancelar pedido
-                              </button>
-                            )}
-                          </div>
-                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}

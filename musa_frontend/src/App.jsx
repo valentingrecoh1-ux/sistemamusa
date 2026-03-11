@@ -193,7 +193,11 @@ function App() {
   const [loginError, setLoginError] = useState('');
 
   const requestInicio = (credentials) => {
-    socket.emit('request-inicio', credentials);
+    if (socket.connected) {
+      socket.emit('request-inicio', credentials);
+    } else {
+      socket.once('connect', () => socket.emit('request-inicio', credentials));
+    }
   };
 
   useEffect(() => {
@@ -240,7 +244,7 @@ function App() {
     renderTimeout = setTimeout(() => {
       setLoginError('La validacion de inicio demoro demasiado. Intenta ingresar de nuevo.');
       resolveFirstRender();
-    }, 4000);
+    }, 10000);
 
     const saved = localStorage.getItem('auth');
     if (saved) {

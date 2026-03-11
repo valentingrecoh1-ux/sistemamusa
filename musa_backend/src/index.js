@@ -5678,6 +5678,12 @@ Reglas:
       if (!pedido) return cb?.({ error: "Pedido no encontrado" });
 
       const estadoAnterior = pedido.estado;
+
+      // Bloquear confirmacion si el pago no esta aprobado (cuando usa MP)
+      if (estado === "confirmado" && estadoAnterior === "pendiente" && pedido.mpPreferenceId && pedido.mpStatus !== "approved") {
+        return cb?.({ error: "No se puede confirmar: el pago no esta aprobado" });
+      }
+
       pedido.estado = estado;
 
       // Si se confirma y no estaba confirmado, descontar stock

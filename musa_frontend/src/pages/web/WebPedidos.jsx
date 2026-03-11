@@ -38,6 +38,18 @@ const NEXT_ESTADO = {
   enviado: 'entregado',
 };
 
+const PAGO_LABELS = { approved: 'Aprobado', pending: 'Pendiente', rejected: 'Rechazado', in_process: 'En proceso', refunded: 'Reembolsado' };
+const PAGO_CLASS = { approved: 'pago_approved', pending: 'pago_pending', rejected: 'pago_rejected', in_process: 'pago_pending' };
+const TRANSPORTISTA_NOMBRES = { shipnow: 'ShipNow (OCA)', moova: 'Moova', fijo: 'Envio propio' };
+
+// Un pedido puede confirmarse solo si el pago fue aprobado o si no usa MercadoPago
+const puedConfirmar = (p) => {
+  if (p.estado !== 'pendiente') return true; // no aplica
+  // Si tiene preferencia de MP, necesita pago aprobado
+  if (p.mpPreferenceId && p.mpStatus !== 'approved') return false;
+  return true;
+};
+
 export default function WebPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [total, setTotal] = useState(0);
@@ -130,32 +142,50 @@ export default function WebPedidos() {
             <span>Cliente</span>
             <span>Items</span>
             <span>Total</span>
+            <span>Pago</span>
             <span>Entrega</span>
             <span>Estado</span>
             <span>Fecha</span>
             <span>Accion</span>
           </div>
-          {pedidos.map((p) => (
-            <div key={p._id} className={s.tableRow} onClick={() => setSelected(p)}>
-              <span className={s.num}>{p.numeroPedido}</span>
-              <span className={s.cliente}>
-                <strong>{p.cliente?.nombre}</strong>
-                <small>{p.cliente?.telefono}</small>
-              </span>
-              <span>{p.items?.length || 0}</span>
-              <span className={s.total}>{money(p.montoTotal)}</span>
-              <span className={s.entrega}>{p.entrega === 'envio' ? 'Envio' : 'Retiro'}</span>
-              <span><span className={`${s.badge} ${s[`badge_${p.estado}`]}`}>{ESTADO_LABELS[p.estado]}</span></span>
-              <span className={s.date}>{new Date(p.createdAt).toLocaleDateString('es-AR')}</span>
-              <span onClick={(e) => e.stopPropagation()}>
-                {NEXT_ESTADO[p.estado] && (
-                  <button className={s.nextBtn} onClick={() => handleEstadoChange(p._id, NEXT_ESTADO[p.estado])}>
-                    {ESTADO_LABELS[NEXT_ESTADO[p.estado]]} <i className="bi bi-arrow-right" />
-                  </button>
-                )}
-              </span>
-            </div>
-          ))}
+          {pedidos.map((p) => {
+            const pagoStatus = p.mpStatus || (p.mpPreferenceId ? 'pending' : null);
+            const nextEst = NEXT_ESTADO[p.estado];
+            const bloqueado = nextEst === 'confirmado' && !puedConfirmar(p);
+            return (
+              <div key={p._id} className={s.tableRow} onClick={() => setSelected(p)}>
+                <span className={s.num}>{p.numeroPedido}</span>
+                <span className={s.cliente}>
+                  <strong>{p.cliente?.nombre}</strong>
+                  <small>{p.cliente?.telefono}</small>
+                </span>
+                <span>{p.items?.length || 0}</span>
+                <span className={s.total}>{money(p.montoTotal)}</span>
+                <span>
+                  {pagoStatus ? (
+                    <span className={`${s.badge} ${s[PAGO_CLASS[pagoStatus]] || s.pago_pending}`}>{PAGO_LABELS[pagoStatus] || pagoStatus}</span>
+                  ) : (
+                    <span className={s.pagoNA}>—</span>
+                  )}
+                </span>
+                <span className={s.entrega}>{p.entrega === 'envio' ? 'Envio' : 'Retiro'}</span>
+                <span><span className={`${s.badge} ${s[`badge_${p.estado}`]}`}>{ESTADO_LABELS[p.estado]}</span></span>
+                <span className={s.date}>{new Date(p.createdAt).toLocaleDateString('es-AR')}</span>
+                <span onClick={(e) => e.stopPropagation()}>
+                  {nextEst && !bloqueado && (
+                    <button className={s.nextBtn} onClick={() => handleEstadoChange(p._id, nextEst)}>
+                      {ESTADO_LABELS[nextEst]} <i className="bi bi-arrow-right" />
+                    </button>
+                  )}
+                  {bloqueado && (
+                    <span className={s.bloqueadoHint} title="El pago debe estar aprobado para confirmar">
+                      <i className="bi bi-lock" /> Sin pago
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -221,19 +251,50 @@ export default function WebPedidos() {
                 </div>
               </div>
 
+              {/* Pago */}
+              <div className={s.modalSection}>
+                <h4><i className="bi bi-credit-card" /> Pago</h4>
+                {(() => {
+                  const ps = selected.mpStatus || (selected.mpPreferenceId ? 'pending' : null);
+                  if (!ps) return <p className={s.pagoNA} style={{ fontSize: 13 }}>Sin MercadoPago (pago por otro medio)</p>;
+                  return (
+                    <div className={s.modalGrid}>
+                      <div>
+                        <label>Estado del pago</label>
+                        <span className={`${s.badge} ${s[PAGO_CLASS[ps]] || s.pago_pending}`} style={{ width: 'fit-content' }}>
+                          {PAGO_LABELS[ps] || ps}
+                        </span>
+                      </div>
+                      {selected.mpPaymentId && <div><label>ID Pago MP</label><span>{selected.mpPaymentId}</span></div>}
+                      {selected.mpPreferenceId && <div><label>Preference ID</label><span style={{ fontSize: 11, fontFamily: 'monospace' }}>{selected.mpPreferenceId}</span></div>}
+                    </div>
+                  );
+                })()}
+              </div>
+
               {/* Estado */}
               <div className={s.modalSection}>
-                <h4><i className="bi bi-flag" /> Estado</h4>
+                <h4><i className="bi bi-flag" /> Estado del pedido</h4>
+                {selected.estado === 'pendiente' && !puedConfirmar(selected) && (
+                  <div className={s.pagoWarning}>
+                    <i className="bi bi-exclamation-triangle" /> No se puede confirmar este pedido hasta que el pago este aprobado.
+                  </div>
+                )}
                 <div className={s.estadoSelect}>
-                  {ESTADOS.filter((e) => e).map((e) => (
-                    <button
-                      key={e}
-                      className={`${s.estadoBtn} ${selected.estado === e ? s.estadoBtnActive : ''} ${s[`estadoBtn_${e}`]}`}
-                      onClick={() => handleEstadoChange(selected._id, e)}
-                    >
-                      {ESTADO_LABELS[e]}
-                    </button>
-                  ))}
+                  {ESTADOS.filter((e) => e).map((e) => {
+                    const disabled = e === 'confirmado' && selected.estado === 'pendiente' && !puedConfirmar(selected);
+                    return (
+                      <button
+                        key={e}
+                        className={`${s.estadoBtn} ${selected.estado === e ? s.estadoBtnActive : ''} ${s[`estadoBtn_${e}`]} ${disabled ? s.estadoBtnDisabled : ''}`}
+                        onClick={() => !disabled && handleEstadoChange(selected._id, e)}
+                        disabled={disabled}
+                        title={disabled ? 'Pago no aprobado' : ''}
+                      >
+                        {ESTADO_LABELS[e]}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -250,7 +311,7 @@ export default function WebPedidos() {
                 <div className={s.modalSection}>
                   <h4><i className="bi bi-truck" /> Logistica</h4>
                   <div className={s.modalGrid}>
-                    {selected.logisticaProveedor && <div><label>Proveedor</label><span style={{ textTransform: 'capitalize' }}>{selected.logisticaProveedor}</span></div>}
+                    {selected.logisticaProveedor && <div><label>Proveedor</label><span>{TRANSPORTISTA_NOMBRES[selected.logisticaProveedor] || selected.logisticaProveedor}</span></div>}
                     {selected.logisticaEnvioId && <div><label>ID Envio</label><span>{selected.logisticaEnvioId}</span></div>}
                     {selected.logisticaTracking && <div><label>Tracking</label><span className={s.tracking}>{selected.logisticaTracking}</span></div>}
                     {selected.logisticaEstado && (
@@ -295,11 +356,15 @@ export default function WebPedidos() {
                 </div>
               )}
 
-              {/* MP */}
-              {selected.mpPaymentId && (
+              {/* Costos */}
+              {(selected.costoEnvio > 0 || selected.montoSubtotal) && (
                 <div className={s.modalSection}>
-                  <h4><i className="bi bi-credit-card" /> MercadoPago</h4>
-                  <p>ID Pago: {selected.mpPaymentId} — Estado: {selected.mpStatus}</p>
+                  <h4><i className="bi bi-calculator" /> Detalle de costos</h4>
+                  <div className={s.modalItem}><span>Subtotal</span><span>{money(selected.montoSubtotal || (selected.montoTotal - (selected.costoEnvio || 0)))}</span></div>
+                  {selected.costoEnvio > 0 && <div className={s.modalItem}><span>Envio</span><span>{money(selected.costoEnvio)}</span></div>}
+                  <div className={s.modalItem} style={{ fontWeight: 700, borderTop: '1px solid var(--card-border)', paddingTop: 8 }}>
+                    <span>Total</span><span>{money(selected.montoTotal)}</span>
+                  </div>
                 </div>
               )}
             </div>

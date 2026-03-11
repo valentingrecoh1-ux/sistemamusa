@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos } from '../../lib/tiendaApi';
+import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos, fetchPedidosPerfil } from '../../lib/tiendaApi';
 import { useMusito } from '../../context/MusitoContext';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaPerfil.module.css';
@@ -146,6 +146,10 @@ export default function TiendaPerfil() {
   const [regLoading, setRegLoading] = useState(false);
   const [regMsg, setRegMsg] = useState('');
 
+  // Mis pedidos
+  const [pedidos, setPedidos] = useState([]);
+  const [pedidosLoading, setPedidosLoading] = useState(false);
+
   // Complete profile form (for clients created with only DNI)
   const [completeForm, setCompleteForm] = useState({ nombre: '', apellido: '', whatsapp: '' });
   const [completeLoading, setCompleteLoading] = useState(false);
@@ -167,6 +171,15 @@ export default function TiendaPerfil() {
     if (perfil?.nombre) updateUserName(perfil.nombre);
   }, [perfil?.nivelNum, perfil?.nombre, updateLevel, updateUserName]);
 
+
+  // Fetch pedidos when tab changes to pedidos
+  useEffect(() => {
+    if (tab !== 'pedidos' || !perfil) return;
+    const tok = perfil.cliente?.tokenAcceso || token || localStorage.getItem(PERFIL_TOKEN_KEY);
+    if (!tok) return;
+    setPedidosLoading(true);
+    fetchPedidosPerfil(tok).then((res) => setPedidos(res.pedidos || [])).catch(() => {}).finally(() => setPedidosLoading(false));
+  }, [tab, perfil, token]);
 
   // Suggestion form
   const [sugTipo, setSugTipo] = useState('sugerencia');
@@ -497,6 +510,7 @@ export default function TiendaPerfil() {
           <div className={s.tabs}>
             {[
               { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
+              { key: 'pedidos', label: 'Mis Pedidos', icon: 'bi-bag-check' },
               { key: 'resumen', label: 'Logros', icon: 'bi-trophy' },
               { key: 'premios', label: 'Premios', icon: 'bi-gift' },
               { key: 'sugerencias', label: 'Comentarios', icon: 'bi-chat-dots' },
@@ -506,6 +520,66 @@ export default function TiendaPerfil() {
               </button>
             ))}
           </div>
+
+          {/* Tab: Mis Pedidos */}
+          {tab === 'pedidos' && (
+            <div className={s.tabContent}>
+              <h3 className={s.sectionTitle}>Mis Pedidos</h3>
+              {pedidosLoading && <div className={s.loading}>Cargando pedidos...</div>}
+              {!pedidosLoading && pedidos.length === 0 && (
+                <div className={s.empty}>Todavia no tenes pedidos. Hace tu primera compra!</div>
+              )}
+              {!pedidosLoading && pedidos.length > 0 && (
+                <div className={s.pedidosList}>
+                  {pedidos.map((p) => {
+                    const estadoColors = {
+                      pendiente: '#f59e0b', confirmado: '#3b82f6', preparando: '#8b5cf6',
+                      listo: '#06b6d4', enviado: '#6366f1', entregado: '#22c55e', cancelado: '#ef4444',
+                    };
+                    const estadoIcons = {
+                      pendiente: 'bi-clock', confirmado: 'bi-check-circle', preparando: 'bi-box-seam',
+                      listo: 'bi-check2-all', enviado: 'bi-truck', entregado: 'bi-house-check', cancelado: 'bi-x-circle',
+                    };
+                    return (
+                      <div key={p.id} className={s.pedidoCard}>
+                        <div className={s.pedidoHeader}>
+                          <div className={s.pedidoNum}>
+                            <span>Pedido #{p.numeroPedido}</span>
+                            <span className={s.pedidoFecha}>
+                              {new Date(p.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                          </div>
+                          <span className={s.pedidoEstado} style={{ color: estadoColors[p.estado] || '#94a3b8', borderColor: estadoColors[p.estado] || '#94a3b8' }}>
+                            <i className={`bi ${estadoIcons[p.estado] || 'bi-circle'}`} /> {p.estado}
+                          </span>
+                        </div>
+                        <div className={s.pedidoItems}>
+                          {p.items.map((it, i) => (
+                            <div key={i} className={s.pedidoItem}>
+                              {it.foto && <img src={it.foto} alt="" className={s.pedidoItemFoto} />}
+                              <span>{it.nombre} x{it.cantidad}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className={s.pedidoFooter}>
+                          <span className={s.pedidoEntrega}>
+                            <i className={`bi ${p.entrega === 'envio' ? 'bi-truck' : 'bi-shop'}`} />
+                            {p.entrega === 'envio' ? (p.transportista || 'Envio') : 'Retiro en local'}
+                          </span>
+                          <span className={s.pedidoTotal}>{money(p.montoTotal)}</span>
+                        </div>
+                        {p.tracking && (
+                          <a href={p.tracking} target="_blank" rel="noopener noreferrer" className={s.pedidoTracking}>
+                            <i className="bi bi-geo-alt" /> Seguir envio
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tab: Logros */}
           {tab === 'resumen' && (

@@ -168,6 +168,16 @@ export async function actualizarDatos(token, data) {
   return res.json();
 }
 
+export async function buscarClienteCheckout(q) {
+  const res = await fetch(`${BASE()}/cliente/buscar?q=${encodeURIComponent(q)}`);
+  return res.json();
+}
+
+export async function fetchPedidosPerfil(token) {
+  const res = await fetch(`${BASE()}/perfil/${token}/pedidos`);
+  return res.json();
+}
+
 export async function fetchEventos() {
   const res = await fetch(`${BASE()}/eventos`);
   return res.json();

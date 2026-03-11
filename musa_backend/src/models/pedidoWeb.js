@@ -28,6 +28,8 @@ const pedidoWebSchema = new mongoose.Schema(
       pisoDepto: { type: String },
       localidad: { type: String },
       codigoPostal: { type: String },
+      provincia: { type: String },
+      dni: { type: String },
       notas: { type: String },
     },
     entrega: { type: String, enum: ["envio", "retiro"], default: "retiro" },

@@ -1,11 +1,30 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { crearPedido, fetchConfig, cotizarEnvio } from '../../lib/tiendaApi';
+import { crearPedido, fetchConfig, cotizarEnvio, buscarClienteCheckout } from '../../lib/tiendaApi';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaCheckout.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
+
+const STORAGE_KEY = 'musa_checkout_profile';
+
+function saveProfile(form) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      nombre: form.nombre, email: form.email, telefono: form.telefono, dni: form.dni,
+      calle: form.calle, numero: form.numero, pisoDepto: form.pisoDepto,
+      localidad: form.localidad, provincia: form.provincia, codigoPostal: form.codigoPostal,
+    }));
+  } catch { /* quota exceeded */ }
+}
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
 
 // Agrupar opciones de sucursal con mismo precio/servicio/transportista
 function agruparOpciones(opciones) {
@@ -39,10 +58,12 @@ export default function TiendaCheckout() {
   const navigate = useNavigate();
   const { items, totalPrice, totalItems, clearCart } = useCart();
   const [config, setConfig] = useState({});
-  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
+  const [form, setForm] = useState({ nombre: '', email: '', telefono: '', dni: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
   const [entrega, setEntrega] = useState('retiro');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [perfilCargado, setPerfilCargado] = useState(false);
+  const [buscandoPerfil, setBuscandoPerfil] = useState(false);
 
   // Opciones de envio dinamicas
   const [opcionesEnvioRaw, setOpcionesEnvioRaw] = useState([]);
@@ -53,12 +74,19 @@ export default function TiendaCheckout() {
   const tieneLogistica = config.shipnowActivo || config.moovaActivo || config.pedidosyaActivo;
   const debounceRef = useRef(null);
   const cpLookupRef = useRef(null);
+  const perfilLookupRef = useRef(null);
 
   // Opciones agrupadas (sucursales del mismo precio en 1 sola opcion)
   const opcionesEnvio = useMemo(() => agruparOpciones(opcionesEnvioRaw), [opcionesEnvioRaw]);
 
+  // Cargar perfil guardado en localStorage al montar
   useEffect(() => {
     fetchConfig().then(setConfig).catch(() => {});
+    const saved = loadProfile();
+    if (saved) {
+      setForm((prev) => ({ ...prev, ...saved }));
+      setPerfilCargado(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -66,6 +94,56 @@ export default function TiendaCheckout() {
   }, [items, navigate]);
 
   const direccionCompleta = [form.calle, form.numero, form.pisoDepto, form.localidad].filter(Boolean).join(' ');
+
+  // Buscar perfil en backend al cambiar email o telefono o DNI
+  const buscarPerfilRemoto = useCallback(async (campo, valor) => {
+    if (!valor || valor.length < 5) return;
+    // No buscar si ya se cargo un perfil
+    if (perfilCargado) return;
+
+    setBuscandoPerfil(true);
+    try {
+      const res = await buscarClienteCheckout(valor);
+      if (res.cliente) {
+        setForm((prev) => ({
+          ...prev,
+          nombre: prev.nombre || res.cliente.nombre || '',
+          email: prev.email || res.cliente.email || '',
+          telefono: prev.telefono || res.cliente.telefono || '',
+          dni: prev.dni || res.cliente.dni || '',
+          localidad: prev.localidad || res.cliente.localidad || '',
+          provincia: prev.provincia || res.cliente.provincia || '',
+        }));
+        setPerfilCargado(true);
+      }
+    } catch { /* silently fail */ }
+    setBuscandoPerfil(false);
+  }, [perfilCargado]);
+
+  // Debounced profile lookup on email/phone/dni change
+  useEffect(() => {
+    const val = form.email.trim();
+    if (val.length < 5 || !val.includes('@') || perfilCargado) return;
+    if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current);
+    perfilLookupRef.current = setTimeout(() => buscarPerfilRemoto('email', val), 800);
+    return () => { if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current); };
+  }, [form.email, perfilCargado, buscarPerfilRemoto]);
+
+  useEffect(() => {
+    const val = form.telefono.trim();
+    if (val.length < 10 || perfilCargado) return;
+    if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current);
+    perfilLookupRef.current = setTimeout(() => buscarPerfilRemoto('telefono', val), 800);
+    return () => { if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current); };
+  }, [form.telefono, perfilCargado, buscarPerfilRemoto]);
+
+  useEffect(() => {
+    const val = form.dni.trim();
+    if (val.length < 7 || perfilCargado) return;
+    if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current);
+    perfilLookupRef.current = setTimeout(() => buscarPerfilRemoto('dni', val), 800);
+    return () => { if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current); };
+  }, [form.dni, perfilCargado, buscarPerfilRemoto]);
 
   // Cotizar envio (llamado automaticamente)
   const doCotizar = useCallback(async () => {
@@ -90,7 +168,6 @@ export default function TiendaCheckout() {
       });
       const opts = res.opciones || [];
       setOpcionesEnvioRaw(opts);
-      // Auto-seleccionar la mas barata
       if (opts.length > 0) {
         const agrupadas = agruparOpciones(opts);
         setOpcionElegida(agrupadas[0]);
@@ -102,16 +179,13 @@ export default function TiendaCheckout() {
     }
   }, [entrega, form.calle, form.numero, form.localidad, form.codigoPostal, form.provincia, tieneLogistica, direccionCompleta, totalItems]);
 
-  // Auto-cotizar con debounce cuando cambian los campos de direccion
+  // Auto-cotizar con debounce
   useEffect(() => {
     if (entrega !== 'envio' || !tieneLogistica) return;
     if (!form.codigoPostal.trim() || form.codigoPostal.trim().length < 4) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      doCotizar();
-    }, 900);
-
+    debounceRef.current = setTimeout(() => { doCotizar(); }, 900);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [form.codigoPostal, form.calle, form.numero, form.localidad, entrega, tieneLogistica, doCotizar]);
 
@@ -151,7 +225,14 @@ export default function TiendaCheckout() {
   }
   const montoTotal = totalPrice + costoEnvio;
 
-  const handleField = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  const handleField = (field) => (e) => {
+    const val = e.target.value;
+    setForm((prev) => ({ ...prev, [field]: val }));
+    // Si cambia un campo clave, permitir busqueda de perfil de nuevo
+    if (['email', 'telefono', 'dni'].includes(field)) {
+      setPerfilCargado(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -178,14 +259,12 @@ export default function TiendaCheckout() {
       };
       let opcionFinal = null;
       if (entrega === 'envio' && opcionElegida) {
-        // Si es grupo de sucursales, usar la opcion original de la sucursal elegida
         if (opcionElegida.sucursales && sucursalElegida) {
           const original = opcionElegida._originales?.find((o) => o.sucursal?.id === sucursalElegida.id);
           opcionFinal = original ? { ...original } : { ...opcionElegida, meta: { ...opcionElegida.meta, postOfficeId: sucursalElegida.id } };
         } else {
           opcionFinal = { ...opcionElegida };
         }
-        // Limpiar campos internos
         delete opcionFinal._originales;
         delete opcionFinal.sucursales;
       }
@@ -196,6 +275,9 @@ export default function TiendaCheckout() {
         entrega,
         opcionEnvio: opcionFinal,
       });
+
+      // Guardar perfil en localStorage para la proxima compra
+      saveProfile(form);
 
       if (result.error) {
         setError(result.error);
@@ -238,10 +320,35 @@ export default function TiendaCheckout() {
           {/* Datos del cliente */}
           <div className={s.card}>
             <h3 className={s.cardTitle}><i className="bi bi-person" /> Tus datos</h3>
+
+            {perfilCargado && form.nombre && (
+              <div className={s.perfilBanner}>
+                <i className="bi bi-check-circle-fill" />
+                <span>Hola <strong>{form.nombre.split(' ')[0]}</strong>! Completamos tus datos.</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm({ nombre: '', email: '', telefono: '', dni: '', calle: '', numero: '', pisoDepto: '', localidad: '', provincia: '', codigoPostal: '', notas: '' });
+                    setPerfilCargado(false);
+                    localStorage.removeItem(STORAGE_KEY);
+                  }}
+                  className={s.perfilClear}
+                >
+                  No soy yo
+                </button>
+              </div>
+            )}
+
+            {buscandoPerfil && (
+              <div className={s.perfilBuscando}>
+                <i className="bi bi-search" /> Buscando tus datos...
+              </div>
+            )}
+
             <div className={s.formGrid}>
               <div className={s.field}>
-                <label>Nombre *</label>
-                <input type="text" value={form.nombre} onChange={handleField('nombre')} placeholder="Tu nombre completo" />
+                <label>Nombre completo *</label>
+                <input type="text" value={form.nombre} onChange={handleField('nombre')} placeholder="Juan Perez" />
               </div>
               <div className={s.field}>
                 <label>Email *</label>
@@ -257,19 +364,31 @@ export default function TiendaCheckout() {
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^\d]/g, '');
                       setForm((prev) => ({ ...prev, telefono: val }));
+                      setPerfilCargado(false);
                     }}
                     placeholder="11 5555 1234"
                     style={{ paddingLeft: 42 }}
                     maxLength={13}
                   />
                 </div>
-                {form.telefono && (form.telefono.length < 10 || form.telefono.length > 13) && (
-                  <span style={{ color: '#f87171', fontSize: 12, marginTop: 2 }}>El numero debe tener entre 10 y 13 digitos</span>
-                )}
                 <span style={{ color: '#999', fontSize: 11, marginTop: 3, display: 'block' }}>
                   <i className="bi bi-whatsapp" style={{ color: '#25D366', marginRight: 4 }} />
-                  Te notificaremos el estado de tu envio por WhatsApp
+                  Te notificaremos por WhatsApp
                 </span>
+              </div>
+              <div className={s.field}>
+                <label>DNI</label>
+                <input
+                  type="text"
+                  value={form.dni}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^\d]/g, '');
+                    setForm((prev) => ({ ...prev, dni: val }));
+                    setPerfilCargado(false);
+                  }}
+                  placeholder="12345678"
+                  maxLength={8}
+                />
               </div>
             </div>
           </div>
@@ -342,7 +461,6 @@ export default function TiendaCheckout() {
 
                 {tieneLogistica && (
                   <>
-                    {/* Indicador de cotizacion automatica */}
                     {cotizando && (
                       <div className={s.cotizandoBar}>
                         <i className="bi bi-hourglass-split" /> Cotizando opciones de envio...
@@ -383,7 +501,6 @@ export default function TiendaCheckout() {
                       </div>
                     )}
 
-                    {/* Selector de sucursal para opcion agrupada */}
                     {opcionElegida?.sucursales && opcionElegida.sucursales.length > 0 && (
                       <div className={s.sucursalSelect}>
                         <label><i className="bi bi-geo-alt" /> Elegi donde retirar:</label>

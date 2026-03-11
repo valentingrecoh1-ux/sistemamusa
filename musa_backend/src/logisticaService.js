@@ -169,18 +169,39 @@ async function shipnowGetPostOffices(token) {
 }
 
 async function shipnowCreateWebhook(token, url) {
+  // Primero verificar si ya existe un webhook para esta URL
+  try {
+    const listRes = await fetch(`${SHIPNOW_BASE}/webhooks`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (listRes.ok) {
+      const listData = await listRes.json();
+      const existing = (listData.results || listData || []).find((w) => w.url === url);
+      if (existing) {
+        console.log(`[Shipnow] Webhook ya existe para ${url}, id=${existing.id}`);
+        return existing;
+      }
+    }
+  } catch (listErr) {
+    console.error("Shipnow listWebhooks error:", listErr.message);
+  }
+
   const res = await fetch(`${SHIPNOW_BASE}/webhooks`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ url, active: true }),
+    body: JSON.stringify({
+      url,
+      active: true,
+      filters: { topics: ["orders/update", "shipments/update", "shipments/create"] },
+    }),
   });
   if (!res.ok) {
     const txt = await res.text();
     console.error("Shipnow createWebhook error:", res.status, txt);
-    throw new Error("Error al registrar webhook en Shipnow");
+    throw new Error(`Shipnow (${res.status}): ${txt || "Error desconocido"}`);
   }
   return res.json();
 }

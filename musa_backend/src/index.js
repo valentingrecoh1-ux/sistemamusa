@@ -5771,7 +5771,7 @@ Reglas:
       if (estado.tracking && estado.tracking !== pedido.logisticaTracking) {
         pedido.logisticaTracking = estado.tracking;
       }
-      pedido.logisticaEstado = estado.estadoShipnow;
+      pedido.logisticaEstado = estado.estadoShipnow || estado.estadoPedidosYa || pedido.logisticaEstado;
       await pedido.save();
 
       cb?.({ ok: true, estado });

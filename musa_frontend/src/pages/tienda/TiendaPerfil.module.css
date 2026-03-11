@@ -1288,3 +1288,73 @@
   text-decoration: none;
 }
 .pedidoTracking:hover { text-decoration: underline; }
+.comprasSubtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 8px 0 0;
+  color: var(--tienda-text, var(--text-primary));
+}
+.comprasSubtitle i {
+  color: #7c3aed;
+}
+
+.pedidoStatusRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pedidoStatusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid;
+  background: transparent;
+}
+.pedidoActions {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--tienda-border, var(--card-border));
+}
+.pedidoActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--border-radius);
+  background: #7c3aed;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pedidoActionBtn:hover { background: #6d28d9; }
+.pedidoActionBtnDanger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border: 1px solid var(--tienda-border, #d1d5db);
+  border-radius: var(--border-radius);
+  background: transparent;
+  box-shadow: none;
+  color: var(--tienda-text-muted, #6b7280);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pedidoActionBtnDanger:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+}

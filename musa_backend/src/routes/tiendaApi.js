@@ -433,6 +433,89 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
     }
   });
 
+  // POST /api/tienda/pedido/:id/retomar-pago - Generar nuevo link de pago para pedido pendiente
+  router.post("/pedido/:id/retomar-pago", async (req, res) => {
+    try {
+      const pedido = await PedidoWeb.findById(req.params.id);
+      if (!pedido) return res.status(404).json({ error: "Pedido no encontrado" });
+      if (pedido.estado !== "pendiente") return res.status(400).json({ error: "Solo se puede retomar el pago de pedidos pendientes" });
+      if (pedido.mpStatus === "approved") return res.status(400).json({ error: "El pago ya fue aprobado" });
+      if (!mpPreference) return res.status(400).json({ error: "Pago online no disponible" });
+
+      // Verificar token del cliente
+      const { token } = req.body;
+      if (token) {
+        const cliente = await Cliente.findOne({ tokenAcceso: token }).lean();
+        if (!cliente || pedido.clienteId?.toString() !== cliente._id.toString()) {
+          return res.status(403).json({ error: "No autorizado" });
+        }
+      }
+
+      const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, "") || `${req.protocol}://${req.get("host")}`;
+      const isTiendaDomain = origin && !origin.includes("sistema.") && !origin.includes("localhost");
+      const backUrl = isTiendaDomain ? `${origin}/checkout/resultado` : `${origin}/tienda/checkout/resultado`;
+      const apiBase = `${req.protocol}://${req.get("host")}`;
+
+      const preference = await mpPreference.create({
+        body: {
+          items: pedido.items.map((i) => ({
+            title: i.nombre,
+            quantity: i.cantidad,
+            unit_price: Number(i.precioUnitario),
+            currency_id: "ARS",
+          })),
+          ...(pedido.costoEnvio > 0 && { shipments: { cost: Number(pedido.costoEnvio) } }),
+          payer: {
+            name: pedido.cliente.nombre,
+            email: pedido.cliente.email,
+            phone: { number: pedido.cliente.telefono },
+          },
+          back_urls: { success: backUrl, failure: backUrl, pending: backUrl },
+          auto_return: "approved",
+          external_reference: pedido._id.toString(),
+          notification_url: `${apiBase}/api/tienda/checkout/webhook`,
+        },
+      });
+
+      pedido.mpPreferenceId = preference.id;
+      await pedido.save();
+
+      const initPoint = preference.init_point || preference.sandbox_init_point;
+      res.json({ initPoint });
+    } catch (err) {
+      console.error("Error retomar pago:", err.message);
+      res.status(500).json({ error: "Error al generar link de pago" });
+    }
+  });
+
+  // POST /api/tienda/pedido/:id/cancelar - Cancelar pedido pendiente desde perfil cliente
+  router.post("/pedido/:id/cancelar", async (req, res) => {
+    try {
+      const pedido = await PedidoWeb.findById(req.params.id);
+      if (!pedido) return res.status(404).json({ error: "Pedido no encontrado" });
+      if (pedido.estado !== "pendiente") return res.status(400).json({ error: "Solo se pueden cancelar pedidos pendientes" });
+
+      // Verificar token del cliente
+      const { token } = req.body;
+      if (token) {
+        const cliente = await Cliente.findOne({ tokenAcceso: token }).lean();
+        if (!cliente || pedido.clienteId?.toString() !== cliente._id.toString()) {
+          return res.status(403).json({ error: "No autorizado" });
+        }
+      }
+
+      pedido.estado = "cancelado";
+      await pedido.save();
+      io.emit("cambios");
+      io.emit("cambios-web");
+
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("Error cancelar pedido:", err.message);
+      res.status(500).json({ error: "Error al cancelar el pedido" });
+    }
+  });
+
   // POST /api/tienda/shipnow/webhook - Recibir notificaciones de ShipNow
   router.post("/shipnow/webhook", async (req, res) => {
     try {
@@ -1141,7 +1224,10 @@ IMPORTANT RULES:
 
   // Helper: compute client profile data (reused by token and search endpoints)
   async function computeClientProfile(cliente) {
-    const ventas = await Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean();
+    const [ventas, pedidosWeb] = await Promise.all([
+      Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
+      PedidoWeb.find({ clienteId: cliente._id, estado: { $in: ["confirmado", "preparando", "listo", "enviado", "entregado"] } }).sort({ createdAt: -1 }).limit(200).lean(),
+    ]);
     const productosComprados = [];
     const productoIdsSet = new Set();
     const cepasProbadas = new Set();
@@ -1156,8 +1242,22 @@ IMPORTANT RULES:
       });
     });
 
-    const totalGastado = ventas.reduce((s, v) => s + (v.monto || 0), 0);
-    const cantCompras = ventas.length;
+    // Incluir productos de pedidos web en las metricas
+    pedidosWeb.forEach((pw) => {
+      (pw.items || []).forEach((it) => {
+        productosComprados.push({ ...it, fecha: pw.createdAt });
+        if (it.productoId) productoIdsSet.add(String(it.productoId));
+        if (it.cepa) cepasProbadas.add(it.cepa);
+        if (it.bodega) bodegasProbadas.add(it.bodega);
+      });
+    });
+
+    const totalGastadoLocal = ventas.reduce((s, v) => s + (v.monto || 0), 0);
+    const totalGastadoOnline = pedidosWeb.reduce((s, p) => s + (p.montoTotal || 0), 0);
+    const totalGastado = totalGastadoLocal + totalGastadoOnline;
+    const cantComprasLocal = ventas.length;
+    const cantComprasOnline = pedidosWeb.length;
+    const cantCompras = cantComprasLocal + cantComprasOnline;
     const vinosUnicos = productoIdsSet.size;
 
     let nivel, nivelNum;
@@ -1243,7 +1343,7 @@ IMPORTANT RULES:
 
     return {
       cliente: { _id: cliente._id, nombre: cliente.nombre, apellido: cliente.apellido, estadoPerfil: cliente.estadoPerfil || "aprobado", tokenAcceso: cliente.tokenAcceso },
-      metricas: { totalGastado, cantCompras, vinosUnicos },
+      metricas: { totalGastado, cantCompras, cantComprasLocal, cantComprasOnline, vinosUnicos },
       nivel, nivelNum,
       preferencias: {
         cepaFavorita: cepaFav ? cepaFav[0] : null,
@@ -1366,18 +1466,36 @@ IMPORTANT RULES:
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 20);
 
+      // Tambien traer ventas en local
+      const ventasLocal = await Venta.find({ clienteId: cliente._id })
+        .select("-facturaPdf -notaCreditoPdf")
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .lean();
+
       res.json({
         pedidos: todos.map((p) => ({
           id: p._id,
           numeroPedido: p.numeroPedido,
           estado: p.estado,
           entrega: p.entrega,
+          origen: "online",
           items: p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, foto: i.foto })),
           montoTotal: p.montoTotal,
           costoEnvio: p.costoEnvio,
           tracking: p.logisticaTracking || null,
           transportista: p.logisticaProveedor || null,
+          logisticaEstado: p.logisticaEstado || null,
+          mpStatus: p.mpStatus || null,
           fecha: p.createdAt,
+        })),
+        comprasLocal: ventasLocal.map((v) => ({
+          id: v._id,
+          numeroVenta: v.numeroVenta,
+          items: (v.productos || []).map((p) => ({ nombre: p.nombre, cantidad: p.cantidad, foto: p.foto })),
+          monto: v.monto,
+          formaPago: v.formaPago,
+          fecha: v.createdAt,
         })),
       });
     } catch (err) {

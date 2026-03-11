@@ -313,6 +313,217 @@ async function moovaCrearEnvio(appId, apiKey, { origen, destino, items, referenc
   };
 }
 
+// ── PedidosYa Envios ──
+const PEDIDOSYA_AUTH_BASE = "https://auth-api.pedidosya.com/v1";
+const PEDIDOSYA_API_BASE = "https://courier-api.pedidosya.com/v1";
+
+// Cache de tokens (expiran a los 45 min)
+const pedidosyaTokenCache = { token: null, expiresAt: 0 };
+
+const PEDIDOSYA_ESTADO_MAP = {
+  CONFIRMED: "confirmado",
+  PREPARING: "preparando",
+  PICKING_UP: "preparando",
+  ONGOING: "enviado",
+  NEAR_DROP_OFF: "enviado",
+  DELIVERED: "entregado",
+  CANCELLED: "cancelado",
+  RETURNED: "cancelado",
+};
+
+async function pedidosyaGetToken(config) {
+  // Reusar token si aun no expiro
+  if (pedidosyaTokenCache.token && Date.now() < pedidosyaTokenCache.expiresAt) {
+    return pedidosyaTokenCache.token;
+  }
+  const params = new URLSearchParams({
+    client_id: config.pedidosyaClientId,
+    client_secret: config.pedidosyaClientSecret,
+    username: config.pedidosyaUsername,
+    password: config.pedidosyaPassword,
+    grant_type: "password",
+  });
+  const res = await fetch(`${PEDIDOSYA_AUTH_BASE}/token?${params}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("PedidosYa auth error:", res.status, txt);
+    throw new Error("Error al autenticar con PedidosYa");
+  }
+  const data = await res.json();
+  pedidosyaTokenCache.token = data.access_token;
+  pedidosyaTokenCache.expiresAt = Date.now() + 40 * 60 * 1000; // 40 min para tener margen
+  return data.access_token;
+}
+
+async function pedidosyaEstimar(config, { origen, destino, items }) {
+  const token = await pedidosyaGetToken(config);
+  const pesoTotal = items.reduce((acc, it) => acc + (it.cantidad || 1) * PESO_BOTELLA_GRAMOS / 1000, 0);
+  const body = {
+    referenceId: `est_${Date.now()}`,
+    isTest: false,
+    weight: pesoTotal,
+    items: items.map((it) => ({
+      value: it.precioUnitario || 0,
+      description: it.nombre || "Vino",
+      quantity: it.cantidad || 1,
+      weight: PESO_BOTELLA_GRAMOS / 1000,
+    })),
+    waypoints: [
+      {
+        type: "PICK_UP",
+        addressStreet: origen.direccion || "",
+        city: origen.ciudad || origen.localidad || "CABA",
+        phone: origen.contactoTelefono || "",
+        name: origen.contactoNombre || "MUSA",
+        order: 1,
+      },
+      {
+        type: "DROP_OFF",
+        addressStreet: destino.direccion || "",
+        city: destino.ciudad || destino.localidad || "CABA",
+        phone: destino.telefono || "",
+        name: destino.nombre || "",
+        order: 2,
+      },
+    ],
+  };
+  const res = await fetch(`${PEDIDOSYA_API_BASE}/shippings/estimates`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("PedidosYa estimar error:", res.status, txt);
+    return [];
+  }
+  const data = await res.json();
+  const offers = data.deliveryOffers || [data];
+  return offers
+    .filter((o) => o.pricing?.total != null || o.price?.total != null)
+    .map((o) => ({
+      proveedor: "pedidosya",
+      servicio: "PedidosYa Envios",
+      precio: o.pricing?.total || o.price?.total || 0,
+      entregaMin: o.estimatedDeliveryTime || null,
+      entregaMax: null,
+      tipo: "domicilio",
+      meta: { deliveryOfferId: o.deliveryOfferId || null, estimateData: body },
+    }));
+}
+
+async function pedidosyaCrearEnvio(config, { origen, destino, items, referencia }) {
+  const token = await pedidosyaGetToken(config);
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + 30); // 30 min de preparacion
+  const body = {
+    referenceId: `#${referencia}`,
+    isTest: false,
+    notificationMail: destino.email || "",
+    deliveryTime: now.toISOString(),
+    weight: items.reduce((acc, it) => acc + (it.cantidad || 1) * PESO_BOTELLA_GRAMOS / 1000, 0),
+    items: items.map((it) => ({
+      value: it.precioUnitario || 0,
+      description: it.nombre || "Vino",
+      quantity: it.cantidad || 1,
+      weight: PESO_BOTELLA_GRAMOS / 1000,
+    })),
+    waypoints: [
+      {
+        type: "PICK_UP",
+        addressStreet: origen.direccion || "",
+        city: origen.ciudad || origen.localidad || "CABA",
+        phone: (origen.contactoTelefono || "").replace(/\D/g, ""),
+        name: origen.contactoNombre || "MUSA",
+        order: 1,
+      },
+      {
+        type: "DROP_OFF",
+        addressStreet: destino.direccion || "",
+        city: destino.ciudad || destino.localidad || "CABA",
+        phone: (destino.telefono || "").replace(/\D/g, ""),
+        name: destino.nombre || "",
+        order: 2,
+      },
+    ],
+  };
+  const res = await fetch(`${PEDIDOSYA_API_BASE}/shippings`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("PedidosYa crear envio error:", res.status, txt);
+    throw new Error("Error al crear envio en PedidosYa");
+  }
+  const data = await res.json();
+  return {
+    proveedor: "pedidosya",
+    envioId: String(data.id),
+    tracking: data.trackingUrl || null,
+    estado: data.status || "CONFIRMED",
+  };
+}
+
+async function pedidosyaConfirmarEnvio(config, shippingId) {
+  const token = await pedidosyaGetToken(config);
+  const res = await fetch(`${PEDIDOSYA_API_BASE}/shippings/${shippingId}/confirm`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id: shippingId }),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("PedidosYa confirmar error:", res.status, txt);
+    throw new Error("Error al confirmar envio en PedidosYa");
+  }
+  return res.json();
+}
+
+async function pedidosyaCancelarEnvio(config, shippingId) {
+  const token = await pedidosyaGetToken(config);
+  const res = await fetch(`${PEDIDOSYA_API_BASE}/shippings/${shippingId}/cancel`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ reason: "Cancelado por el comercio" }),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("PedidosYa cancelar error:", res.status, txt);
+    throw new Error("Error al cancelar envio en PedidosYa");
+  }
+  return res.json();
+}
+
+async function pedidosyaGetEnvio(config, shippingId) {
+  const token = await pedidosyaGetToken(config);
+  const res = await fetch(`${PEDIDOSYA_API_BASE}/shippings/${shippingId}`, {
+    headers: { Authorization: token },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    console.error("PedidosYa getEnvio error:", res.status, txt);
+    return null;
+  }
+  return res.json();
+}
+
 // ── Servicio unificado ──
 
 async function cotizarEnvio(config, destino, { cantidadBotellas = 1 } = {}) {
@@ -343,6 +554,20 @@ async function cotizarEnvio(config, destino, { cantidadBotellas = 1 } = {}) {
       opciones.push(...moovaOpts);
     } catch (err) {
       console.error("Error cotizando Moova:", err.message);
+    }
+  }
+
+  // PedidosYa
+  if (config.pedidosyaActivo && config.pedidosyaClientId && config.pedidosyaClientSecret) {
+    try {
+      const pyaOpts = await pedidosyaEstimar(config, {
+        origen,
+        destino,
+        items: [{ cantidad: cantidadBotellas, precioUnitario: 0, nombre: "Vino" }],
+      });
+      opciones.push(...pyaOpts);
+    } catch (err) {
+      console.error("Error cotizando PedidosYa:", err.message);
     }
   }
 
@@ -383,6 +608,15 @@ async function crearEnvioLogistica(config, { destino, items, referencia, opcionE
     });
   }
 
+  if (opcionElegida.proveedor === "pedidosya" && config.pedidosyaClientId) {
+    return pedidosyaCrearEnvio(config, {
+      origen,
+      destino,
+      items,
+      referencia,
+    });
+  }
+
   // Envio fijo - no hay tracking
   return { proveedor: "fijo", envioId: null, tracking: null, estado: "manual" };
 }
@@ -390,6 +624,9 @@ async function crearEnvioLogistica(config, { destino, items, referencia, opcionE
 async function cancelarEnvioLogistica(config, pedido) {
   if (pedido.logisticaProveedor === "shipnow" && pedido.logisticaEnvioId && config.shipnowToken) {
     return shipnowCancelOrder(config.shipnowToken, pedido.logisticaEnvioId);
+  }
+  if (pedido.logisticaProveedor === "pedidosya" && pedido.logisticaEnvioId && config.pedidosyaClientId) {
+    return pedidosyaCancelarEnvio(config, pedido.logisticaEnvioId);
   }
   // Moova y fijo no tienen cancelacion automatica
   return null;
@@ -413,6 +650,21 @@ async function consultarEstadoEnvio(config, pedido) {
       })),
     };
   }
+  if (pedido.logisticaProveedor === "pedidosya" && pedido.logisticaEnvioId && config.pedidosyaClientId) {
+    const envio = await pedidosyaGetEnvio(config, pedido.logisticaEnvioId);
+    if (!envio) return null;
+    return {
+      proveedor: "pedidosya",
+      estadoPedidosYa: envio.status,
+      estadoInterno: PEDIDOSYA_ESTADO_MAP[envio.status] || null,
+      tracking: envio.trackingUrl || null,
+      rider: envio.courier ? {
+        nombre: envio.courier.name,
+        telefono: envio.courier.phone,
+        foto: envio.courier.pictureUrl,
+      } : null,
+    };
+  }
   return null;
 }
 
@@ -424,4 +676,11 @@ module.exports = {
   shipnowGetPostOffices,
   shipnowCreateWebhook,
   SHIPNOW_ESTADO_MAP,
+  PEDIDOSYA_ESTADO_MAP,
+  pedidosyaCrearEnvio,
+  pedidosyaCancelarEnvio,
+  pedidosyaConfirmarEnvio,
+  pedidosyaGetEnvio,
+  pedidosyaEstimar,
+  pedidosyaGetToken,
 };

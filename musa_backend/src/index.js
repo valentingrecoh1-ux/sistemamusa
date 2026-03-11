@@ -24,7 +24,7 @@ const OrdenCompra = require("./models/ordenCompra");
 const PagoProveedor = require("./models/pagoProveedor");
 const PedidoWeb = require("./models/pedidoWeb");
 const ConfigTienda = require("./models/configTienda");
-const { crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowCreateWebhook } = require("./logisticaService");
+const { crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowCreateWebhook, pedidosyaCrearEnvio, pedidosyaCancelarEnvio, pedidosyaGetEnvio, pedidosyaEstimar, PEDIDOSYA_ESTADO_MAP } = require("./logisticaService");
 const { normalizar, NORMALIZAR_CEPAS, NORMALIZAR_REGIONES } = require("./migracionNormalizacion");
 const { PlanClub, SuscripcionClub } = require("./models/suscripcionClub");
 const Resena = require("./models/resena");
@@ -5766,6 +5766,87 @@ Reglas:
       cb?.({ ok: true, webhookId: result.id });
     } catch (err) {
       console.error("Error registrar-shipnow-webhook:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // ── PedidosYa Envios propios ──
+
+  // Estimar envio propio (no vinculado a pedido web)
+  socket.on("pedidosya-estimar", async (data, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      const origen = config.origenEnvio || {};
+      const opciones = await pedidosyaEstimar(config, {
+        origen,
+        destino: data.destino,
+        items: data.items || [{ cantidad: 1, precioUnitario: 0, nombre: "Paquete" }],
+      });
+      cb?.({ ok: true, opciones });
+    } catch (err) {
+      console.error("Error pedidosya-estimar:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // Crear envio propio con PedidosYa
+  socket.on("pedidosya-crear-envio", async (data, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      const origen = config.origenEnvio || {};
+      const resultado = await pedidosyaCrearEnvio(config, {
+        origen,
+        destino: data.destino,
+        items: data.items || [],
+        referencia: data.referencia || `PYA-${Date.now()}`,
+      });
+      cb?.({ ok: true, envio: resultado });
+    } catch (err) {
+      console.error("Error pedidosya-crear-envio:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // Consultar estado de envio PedidosYa
+  socket.on("pedidosya-estado-envio", async ({ envioId }, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      const envio = await pedidosyaGetEnvio(config, envioId);
+      if (!envio) return cb?.({ error: "Envio no encontrado" });
+      cb?.({
+        ok: true,
+        envio: {
+          id: envio.id,
+          status: envio.status,
+          estadoInterno: PEDIDOSYA_ESTADO_MAP[envio.status] || envio.status,
+          trackingUrl: envio.trackingUrl || null,
+          rider: envio.courier ? {
+            nombre: envio.courier.name,
+            telefono: envio.courier.phone,
+            foto: envio.courier.pictureUrl,
+          } : null,
+          waypoints: envio.waypoints || [],
+          createdAt: envio.createdAt,
+        },
+      });
+    } catch (err) {
+      console.error("Error pedidosya-estado-envio:", err);
+      cb?.({ error: err.message });
+    }
+  });
+
+  // Cancelar envio PedidosYa
+  socket.on("pedidosya-cancelar-envio", async ({ envioId }, cb) => {
+    try {
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.pedidosyaActivo || !config.pedidosyaClientId) return cb?.({ error: "PedidosYa no esta configurado" });
+      await pedidosyaCancelarEnvio(config, envioId);
+      cb?.({ ok: true });
+    } catch (err) {
+      console.error("Error pedidosya-cancelar-envio:", err);
       cb?.({ error: err.message });
     }
   });

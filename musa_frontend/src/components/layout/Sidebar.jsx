@@ -45,6 +45,7 @@ const NAV = [
     items: [
       { to: '/web', icon: 'bi-globe', label: 'Web Dashboard' },
       { to: '/web/pedidos', icon: 'bi-bag-check', label: 'Pedidos Web' },
+      { to: '/web/pedidosya', icon: 'bi-scooter', label: 'PedidosYa Envios' },
       { to: '/web/club', icon: 'bi-trophy', label: 'Club de Vinos' },
       { to: '/clientes', icon: 'bi-person-lines-fill', label: 'Clientes' },
       { to: '/web/config', icon: 'bi-gear', label: 'Configuracion' },

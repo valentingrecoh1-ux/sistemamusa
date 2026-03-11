@@ -19,6 +19,12 @@ const configTiendaSchema = new mongoose.Schema(
     moovaAppId: { type: String, default: "" },
     moovaApiKey: { type: String, default: "" },
     moovaActivo: { type: Boolean, default: false },
+    // PedidosYa Envios
+    pedidosyaActivo: { type: Boolean, default: false },
+    pedidosyaClientId: { type: String, default: "" },
+    pedidosyaClientSecret: { type: String, default: "" },
+    pedidosyaUsername: { type: String, default: "" },
+    pedidosyaPassword: { type: String, default: "" },
     origenEnvio: {
       direccion: { type: String, default: "" },
       codigoPostal: { type: String, default: "" },

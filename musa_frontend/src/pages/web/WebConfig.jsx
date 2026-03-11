@@ -213,6 +213,42 @@ export default function WebConfig() {
 
           <div className={s.divider} />
 
+          <h4 className={s.subTitle}>PedidosYa Envios</h4>
+          <p className={s.cardHint}>PedidosYa Envios hace envios express en CABA y GBA. Registrate en envios.pedidosya.com.ar y genera tus credenciales en el portal de desarrolladores.</p>
+          <div className={s.toggleRow}>
+            <label className={s.toggle}>
+              <input type="checkbox" checked={config.pedidosyaActivo || false} onChange={handleField('pedidosyaActivo')} />
+              <span>PedidosYa activo</span>
+              <div className={s.toggleTrack} />
+            </label>
+          </div>
+          {config.pedidosyaActivo && (
+            <>
+              <div className={s.row} style={{ marginTop: 8 }}>
+                <div className={s.field}>
+                  <label>Client ID</label>
+                  <input type="text" value={config.pedidosyaClientId || ''} onChange={handleField('pedidosyaClientId')} placeholder="Tu Client ID" />
+                </div>
+                <div className={s.field}>
+                  <label>Client Secret</label>
+                  <input type="password" value={config.pedidosyaClientSecret || ''} onChange={handleField('pedidosyaClientSecret')} placeholder="Tu Client Secret" />
+                </div>
+              </div>
+              <div className={s.row}>
+                <div className={s.field}>
+                  <label>Username</label>
+                  <input type="text" value={config.pedidosyaUsername || ''} onChange={handleField('pedidosyaUsername')} placeholder="Tu username de PedidosYa" />
+                </div>
+                <div className={s.field}>
+                  <label>Password</label>
+                  <input type="password" value={config.pedidosyaPassword || ''} onChange={handleField('pedidosyaPassword')} placeholder="Tu password de PedidosYa" />
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className={s.divider} />
+
           <h4 className={s.subTitle}>Moova</h4>
           <p className={s.cardHint}>Moova hace envios express en CABA y GBA (2-3hs). Registrate en moova.io para obtener tu App ID y API Key.</p>
           <div className={s.toggleRow}>

@@ -157,7 +157,7 @@ export default function TiendaCheckout() {
     return () => { if (perfilLookupRef.current) clearTimeout(perfilLookupRef.current); };
   }, [form.dni, perfilCargado, buscarPerfilRemoto]);
 
-  // Cotizar envio
+  // Cotizar envio — solo depende de CP, localidad y provincia (no calle/numero)
   const doCotizar = useCallback(async () => {
     if (entrega !== 'envio') return;
     if (!tieneLogistica) return;
@@ -169,9 +169,9 @@ export default function TiendaCheckout() {
     setYaCotizo(true);
     try {
       const res = await cotizarEnvio({
-        direccion: direccionCompleta,
-        calle: form.calle,
-        numero: form.numero,
+        direccion: form.localidad || '',
+        calle: '',
+        numero: '',
         localidad: form.localidad,
         codigoPostal: form.codigoPostal,
         ciudad: form.localidad || 'CABA',
@@ -189,16 +189,16 @@ export default function TiendaCheckout() {
     } finally {
       setCotizando(false);
     }
-  }, [entrega, form.calle, form.numero, form.localidad, form.codigoPostal, form.provincia, tieneLogistica, direccionCompleta, totalItems]);
+  }, [entrega, form.codigoPostal, form.localidad, form.provincia, tieneLogistica, totalItems]);
 
-  // Auto-cotizar con debounce
+  // Auto-cotizar con debounce — solo cuando cambia CP o se selecciona envio
   useEffect(() => {
     if (entrega !== 'envio' || !tieneLogistica) return;
     if (!form.codigoPostal.trim() || form.codigoPostal.trim().length < 4) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => { doCotizar(); }, 900);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [form.codigoPostal, form.calle, form.numero, form.localidad, entrega, tieneLogistica, doCotizar]);
+  }, [form.codigoPostal, entrega, tieneLogistica, doCotizar]);
 
   // Auto-completar localidad/provincia por CP
   useEffect(() => {

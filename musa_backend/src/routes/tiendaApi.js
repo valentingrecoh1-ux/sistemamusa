@@ -3,9 +3,43 @@ const router = express.Router();
 const moment = require("moment-timezone");
 const multer = require("multer");
 const uploadAudio = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
-const { cotizarEnvio, crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowGetPostOffices, shipnowCreateWebhook, SHIPNOW_ESTADO_MAP } = require("../logisticaService");
+const { cotizarEnvio, crearEnvioLogistica, cancelarEnvioLogistica, consultarEstadoEnvio, shipnowGetPostOffices, shipnowCreateWebhook, SHIPNOW_ESTADO_MAP, PEDIDOSYA_ESTADO_MAP } = require("../logisticaService");
 
-module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io }) {
+// Mensajes WhatsApp para cada estado de envio
+const WA_MENSAJES_ENVIO = {
+  preparando: (pedido) =>
+    `Hola ${pedido.cliente.nombre}! 🍷\nTu pedido #${pedido.numeroPedido} se esta preparando para el envio.\nTe avisamos cuando el rider lo retire!`,
+  enviado: (pedido) =>
+    `Hola ${pedido.cliente.nombre}! 🚴\nTu pedido #${pedido.numeroPedido} ya esta en camino!\n${pedido.logisticaTracking ? `Seguilo aca: ${pedido.logisticaTracking}` : "Te avisamos cuando este por llegar."}`,
+  cerca: (pedido) =>
+    `Hola ${pedido.cliente.nombre}! 📍\nEl rider con tu pedido #${pedido.numeroPedido} esta cerca de tu domicilio!\nPreparate para recibirlo.`,
+  entregado: (pedido) =>
+    `Hola ${pedido.cliente.nombre}! ✅\nTu pedido #${pedido.numeroPedido} fue entregado.\nGracias por tu compra! Esperamos que lo disfrutes 🥂`,
+  cancelado: (pedido) =>
+    `Hola ${pedido.cliente.nombre},\nTu envio del pedido #${pedido.numeroPedido} fue cancelado.\nSi tenes dudas contactanos por este medio.`,
+};
+
+module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient, io, getWA }) {
+
+  // Envia WhatsApp de notificacion de envio al cliente
+  async function notificarEnvioWA(pedido, tipoMensaje) {
+    try {
+      const { waSocket, waStatus } = getWA ? getWA() : {};
+      if (waStatus !== "connected" || !waSocket) return;
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config?.notificacionesEnvioWA) return;
+      const telefono = pedido.cliente?.telefono;
+      if (!telefono) return;
+      const generarMensaje = WA_MENSAJES_ENVIO[tipoMensaje];
+      if (!generarMensaje) return;
+      const jid = telefono.replace(/\D/g, "") + "@s.whatsapp.net";
+      const mensaje = generarMensaje(pedido);
+      await waSocket.sendMessage(jid, { text: mensaje });
+      console.log(`[WA Envio] Notificacion "${tipoMensaje}" enviada a ${telefono} para pedido #${pedido.numeroPedido}`);
+    } catch (err) {
+      console.error(`[WA Envio] Error enviando notificacion:`, err.message);
+    }
+  }
   let mpPreference = null;
   let mpPayment = null;
   if (mpClient) {
@@ -383,9 +417,60 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
       pedido.logisticaEstado = shipnowStatus;
 
       // Actualizar estado interno del pedido segun el mapa
+      const estadoAnterior = pedido.estado;
       const estadoInterno = SHIPNOW_ESTADO_MAP[shipnowStatus];
       if (estadoInterno && pedido.estado !== "cancelado") {
         // Solo avanzar el estado, nunca retroceder (excepto a cancelado/entregado)
+        const ESTADO_ORDER = ["pendiente", "confirmado", "preparando", "listo", "enviado", "entregado"];
+        const currentIdx = ESTADO_ORDER.indexOf(pedido.estado);
+        const newIdx = ESTADO_ORDER.indexOf(estadoInterno);
+        if (newIdx > currentIdx || estadoInterno === "entregado") {
+          pedido.estado = estadoInterno;
+        }
+      }
+      await pedido.save();
+      io.emit("cambios-web");
+      io.emit("cambios");
+
+      // Notificar por WhatsApp si cambio el estado
+      if (estadoInterno && estadoInterno !== estadoAnterior) {
+        notificarEnvioWA(pedido, estadoInterno);
+      }
+    } catch (err) {
+      console.error("Error shipnow webhook:", err.message);
+    }
+  });
+
+  // POST /api/tienda/pedidosya/webhook - Recibir notificaciones de PedidosYa
+  router.post("/pedidosya/webhook", async (req, res) => {
+    try {
+      res.sendStatus(200); // Responder rapido
+
+      const payload = req.body;
+      const shippingId = String(payload?.id || payload?.shippingId || "");
+      const pyaStatus = payload?.status;
+      if (!shippingId || !pyaStatus) return;
+
+      const pedido = await PedidoWeb.findOne({ logisticaEnvioId: shippingId, logisticaProveedor: "pedidosya" });
+      if (!pedido) {
+        console.log(`[PedidosYa Webhook] Shipping ${shippingId} no encontrado localmente`);
+        return;
+      }
+
+      console.log(`[PedidosYa Webhook] Shipping ${shippingId} status=${pyaStatus} pedido=#${pedido.numeroPedido}`);
+
+      // Actualizar tracking si viene en el payload
+      if (payload.trackingUrl && !pedido.logisticaTracking) {
+        pedido.logisticaTracking = payload.trackingUrl;
+      }
+
+      // Guardar estado del proveedor
+      const estadoAnterior = pedido.estado;
+      pedido.logisticaEstado = pyaStatus;
+
+      // Mapear a estado interno
+      const estadoInterno = PEDIDOSYA_ESTADO_MAP[pyaStatus];
+      if (estadoInterno && pedido.estado !== "cancelado") {
         const ESTADO_ORDER = ["pendiente", "confirmado", "preparando", "listo", "enviado", "entregado"];
         const currentIdx = ESTADO_ORDER.indexOf(pedido.estado);
         const newIdx = ESTADO_ORDER.indexOf(estadoInterno);
@@ -397,8 +482,15 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
       await pedido.save();
       io.emit("cambios-web");
       io.emit("cambios");
+
+      // Notificar por WhatsApp
+      if (pyaStatus === "NEAR_DROP_OFF") {
+        notificarEnvioWA(pedido, "cerca");
+      } else if (estadoInterno && estadoInterno !== estadoAnterior) {
+        notificarEnvioWA(pedido, estadoInterno);
+      }
     } catch (err) {
-      console.error("Error shipnow webhook:", err.message);
+      console.error("Error pedidosya webhook:", err.message);
     }
   });
 

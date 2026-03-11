@@ -639,7 +639,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }) }));
 
 app.post(
   "/upload_flujo",
@@ -5722,6 +5722,29 @@ Reglas:
       cb?.({ ok: true, tracking: pedido.logisticaTracking, proveedor: pedido.logisticaProveedor });
       io.emit("cambios-web");
       io.emit("cambios");
+
+      // Notificar al cliente por WhatsApp si el pedido es envio
+      if (pedido.entrega === "envio" && estado !== estadoAnterior) {
+        try {
+          const configWA = await ConfigTienda.findById("main").lean();
+          if (configWA?.notificacionesEnvioWA && waStatus === "connected" && waSocket && pedido.cliente?.telefono) {
+            const WA_MSGS = {
+              preparando: `Hola ${pedido.cliente.nombre}! 🍷\nTu pedido #${pedido.numeroPedido} se esta preparando para el envio.\nTe avisamos cuando el rider lo retire!`,
+              enviado: `Hola ${pedido.cliente.nombre}! 🚴\nTu pedido #${pedido.numeroPedido} ya esta en camino!${pedido.logisticaTracking ? `\nSeguilo aca: ${pedido.logisticaTracking}` : "\nTe avisamos cuando este por llegar."}`,
+              entregado: `Hola ${pedido.cliente.nombre}! ✅\nTu pedido #${pedido.numeroPedido} fue entregado.\nGracias por tu compra! Esperamos que lo disfrutes 🥂`,
+              cancelado: `Hola ${pedido.cliente.nombre},\nTu envio del pedido #${pedido.numeroPedido} fue cancelado.\nSi tenes dudas contactanos por este medio.`,
+            };
+            const msg = WA_MSGS[estado];
+            if (msg) {
+              const jid = pedido.cliente.telefono.replace(/\D/g, "") + "@s.whatsapp.net";
+              await waSocket.sendMessage(jid, { text: msg });
+              console.log(`[WA Envio] Notificacion "${estado}" enviada a ${pedido.cliente.telefono} para pedido #${pedido.numeroPedido}`);
+            }
+          }
+        } catch (waErr) {
+          console.error("[WA Envio] Error enviando notificacion:", waErr.message);
+        }
+      }
     } catch (err) {
       console.error("Error update-estado-pedido-web:", err);
       cb?.({ error: "Error al actualizar estado" });

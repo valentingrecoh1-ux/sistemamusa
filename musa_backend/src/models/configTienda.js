@@ -37,6 +37,8 @@ const configTiendaSchema = new mongoose.Schema(
     instagramUrl: { type: String, default: "" },
     tiendaActiva: { type: Boolean, default: true },
     fotosEventos: [{ type: String }],
+    // Notificaciones WhatsApp automaticas de envio
+    notificacionesEnvioWA: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

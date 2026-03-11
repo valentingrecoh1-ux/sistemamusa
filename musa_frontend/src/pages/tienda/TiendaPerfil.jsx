@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos, fetchPedidosPerfil } from '../../lib/tiendaApi';
+import { fetchPerfilByToken, buscarPerfil, enviarSugerenciaToken, enviarSugerenciaBusqueda, registrarCliente, actualizarDatos, fetchPedidosPerfil, retomarPagoPedido, cancelarPedido } from '../../lib/tiendaApi';
 import { useMusito } from '../../context/MusitoContext';
 import { tiendaPath } from '../../tiendaConfig';
 import s from './TiendaPerfil.module.css';
@@ -137,7 +137,7 @@ export default function TiendaPerfil() {
   const [perfil, setPerfil] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [tab, setTab] = useState('coleccion');
+  const [tab, setTab] = useState('pedidos');
   const [colTab, setColTab] = useState('cepas');
   const [busqueda, setBusqueda] = useState('');
   const [mode, setMode] = useState(token ? 'token' : 'search'); // 'token' or 'search'
@@ -509,8 +509,8 @@ export default function TiendaPerfil() {
           {/* Tabs */}
           <div className={s.tabs}>
             {[
+              { key: 'pedidos', label: 'Mis Compras', icon: 'bi-bag-check' },
               { key: 'coleccion', label: 'Coleccion', icon: 'bi-collection' },
-              { key: 'pedidos', label: 'Mis Pedidos', icon: 'bi-bag-check' },
               { key: 'resumen', label: 'Logros', icon: 'bi-trophy' },
               { key: 'premios', label: 'Premios', icon: 'bi-gift' },
               { key: 'sugerencias', label: 'Comentarios', icon: 'bi-chat-dots' },
@@ -524,7 +524,7 @@ export default function TiendaPerfil() {
           {/* Tab: Mis Pedidos */}
           {tab === 'pedidos' && (
             <div className={s.tabContent}>
-              <h3 className={s.sectionTitle}>Mis Pedidos</h3>
+              <h3 className={s.sectionTitle}>Mis Compras</h3>
               {pedidosLoading && <div className={s.loading}>Cargando pedidos...</div>}
               {!pedidosLoading && pedidos.length === 0 && (
                 <div className={s.empty}>Todavia no tenes pedidos. Hace tu primera compra!</div>
@@ -540,6 +540,15 @@ export default function TiendaPerfil() {
                       pendiente: 'bi-clock', confirmado: 'bi-check-circle', preparando: 'bi-box-seam',
                       listo: 'bi-check2-all', enviado: 'bi-truck', entregado: 'bi-house-check', cancelado: 'bi-x-circle',
                     };
+                    const TRANSPORTISTA_NOMBRES = { shipnow: 'ShipNow (OCA)', moova: 'Moova', fijo: 'Envio propio' };
+                    const pagoLabel = { approved: 'Aprobado', pending: 'Pendiente', rejected: 'Rechazado', in_process: 'En proceso', refunded: 'Reembolsado' };
+                    const pagoColor = { approved: '#22c55e', pending: '#f59e0b', rejected: '#ef4444', in_process: '#6366f1', refunded: '#94a3b8' };
+                    const pagoIcon = { approved: 'bi-check-circle-fill', pending: 'bi-clock-fill', rejected: 'bi-x-circle-fill', in_process: 'bi-hourglass-split', refunded: 'bi-arrow-counterclockwise' };
+                    const envioEstadoLabel = { shipped: 'Despachado', in_transit: 'En camino', delivered: 'Entregado', cancelled: 'Cancelado', returned: 'Devuelto', ready_to_ship: 'Listo para enviar' };
+                    const isPendiente = p.estado === 'pendiente';
+                    const puedePagar = isPendiente && p.mpStatus !== 'approved';
+                    const puedeCancelar = isPendiente;
+
                     return (
                       <div key={p.id} className={s.pedidoCard}>
                         <div className={s.pedidoHeader}>
@@ -553,6 +562,26 @@ export default function TiendaPerfil() {
                             <i className={`bi ${estadoIcons[p.estado] || 'bi-circle'}`} /> {p.estado}
                           </span>
                         </div>
+
+                        {/* Estado detallado: pago + envio */}
+                        <div className={s.pedidoStatusRow}>
+                          {p.mpStatus && (
+                            <span className={s.pedidoStatusChip} style={{ color: pagoColor[p.mpStatus] || '#94a3b8', borderColor: pagoColor[p.mpStatus] || '#94a3b8' }}>
+                              <i className={`bi ${pagoIcon[p.mpStatus] || 'bi-circle'}`} /> Pago: {pagoLabel[p.mpStatus] || p.mpStatus}
+                            </span>
+                          )}
+                          {!p.mpStatus && isPendiente && (
+                            <span className={s.pedidoStatusChip} style={{ color: '#f59e0b', borderColor: '#f59e0b' }}>
+                              <i className="bi bi-clock-fill" /> Pago: Pendiente
+                            </span>
+                          )}
+                          {p.entrega === 'envio' && p.logisticaEstado && (
+                            <span className={s.pedidoStatusChip} style={{ color: '#6366f1', borderColor: '#6366f1' }}>
+                              <i className="bi bi-truck" /> {envioEstadoLabel[p.logisticaEstado] || p.logisticaEstado}
+                            </span>
+                          )}
+                        </div>
+
                         <div className={s.pedidoItems}>
                           {p.items.map((it, i) => (
                             <div key={i} className={s.pedidoItem}>
@@ -564,7 +593,7 @@ export default function TiendaPerfil() {
                         <div className={s.pedidoFooter}>
                           <span className={s.pedidoEntrega}>
                             <i className={`bi ${p.entrega === 'envio' ? 'bi-truck' : 'bi-shop'}`} />
-                            {p.entrega === 'envio' ? (p.transportista || 'Envio') : 'Retiro en local'}
+                            {p.entrega === 'envio' ? (TRANSPORTISTA_NOMBRES[p.transportista] || p.transportista || 'Envio') : 'Retiro en local'}
                           </span>
                           <span className={s.pedidoTotal}>{money(p.montoTotal)}</span>
                         </div>
@@ -572,6 +601,46 @@ export default function TiendaPerfil() {
                           <a href={p.tracking} target="_blank" rel="noopener noreferrer" className={s.pedidoTracking}>
                             <i className="bi bi-geo-alt" /> Seguir envio
                           </a>
+                        )}
+
+                        {/* Acciones para pedidos pendientes */}
+                        {(puedePagar || puedeCancelar) && (
+                          <div className={s.pedidoActions}>
+                            {puedePagar && (
+                              <button
+                                className={s.pedidoActionBtn}
+                                onClick={async () => {
+                                  const token = localStorage.getItem(PERFIL_TOKEN_KEY);
+                                  const data = await retomarPagoPedido(p.id, token);
+                                  if (data.initPoint) {
+                                    window.location.href = data.initPoint;
+                                  } else {
+                                    alert(data.error || 'No se pudo generar el link de pago');
+                                  }
+                                }}
+                              >
+                                <i className="bi bi-credit-card" /> Retomar pago
+                              </button>
+                            )}
+                            {puedeCancelar && (
+                              <button
+                                className={s.pedidoActionBtnDanger}
+                                onClick={async () => {
+                                  if (!window.confirm(`Cancelar pedido #${p.numeroPedido}?`)) return;
+                                  const token = localStorage.getItem(PERFIL_TOKEN_KEY);
+                                  const data = await cancelarPedido(p.id, token);
+                                  if (data.ok) {
+                                    const updated = await fetchPedidosPerfil(token);
+                                    if (updated.pedidos) setPedidos(updated.pedidos);
+                                  } else {
+                                    alert(data.error || 'Error al cancelar');
+                                  }
+                                }}
+                              >
+                                <i className="bi bi-x-lg" /> Cancelar pedido
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     );

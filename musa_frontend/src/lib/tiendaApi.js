@@ -178,6 +178,24 @@ export async function fetchPedidosPerfil(token) {
   return res.json();
 }
 
+export async function retomarPagoPedido(pedidoId, token) {
+  const res = await fetch(`${BASE()}/pedido/${pedidoId}/retomar-pago`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  return res.json();
+}
+
+export async function cancelarPedido(pedidoId, token) {
+  const res = await fetch(`${BASE()}/pedido/${pedidoId}/cancelar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  return res.json();
+}
+
 export async function fetchEventos() {
   const res = await fetch(`${BASE()}/eventos`);
   return res.json();

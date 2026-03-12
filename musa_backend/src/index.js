@@ -275,38 +275,10 @@ async function syncMpPagos(fecha) {
         }
         await pedido.save();
 
-        // Crear Venta ONLINE si no existe
+        // Crear Venta ONLINE con factura si no existe
         const ventaExistente = await Venta.findOne({ pedidoWebId: pedido._id });
         if (!ventaExistente) {
-          const fechaHoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
-          const productosVenta = pedido.items.map(item => ({
-            _id: item.productoId,
-            nombre: item.nombre,
-            bodega: item.bodega || "",
-            cepa: item.cepa || "",
-            precio: item.precioUnitario,
-            cantidad: item.cantidad,
-            subtotal: item.subtotal,
-          }));
-          await Venta.create({
-            productos: productosVenta,
-            monto: pedido.montoTotal,
-            formaPago: "Digital",
-            montoDigital: pedido.montoTotal,
-            montoEfectivo: 0,
-            fecha: fechaHoy,
-            nombre: `${pedido.cliente.nombre} ${pedido.cliente.apellido || ""}`.trim(),
-            domicilio: pedido.cliente.direccion || pedido.cliente.calle || "",
-            localidad: pedido.cliente.localidad || "",
-            provincia: pedido.cliente.provincia || "",
-            detalle: `Pedido web #${pedido.numeroPedido}`,
-            canal: "ONLINE",
-            pedidoWebId: pedido._id,
-            clienteId: pedido.clienteId || null,
-            mpPaymentIds: [p.id],
-            mpLinkedAt: new Date(),
-          });
-          console.log(`[syncMpPagos] Pedido #${pedido.numeroPedido} vinculado y Venta ONLINE creada (pago ${p.id})`);
+          await crearVentaOnlineConFactura({ pedido, mpPaymentId: p.id });
         } else {
           console.log(`[syncMpPagos] Pedido #${pedido.numeroPedido} vinculado a pago ${p.id}`);
         }
@@ -748,7 +720,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }) }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }), crearVentaOnline: (args) => crearVentaOnlineConFactura(args) }));
 
 app.post(
   "/upload_flujo",
@@ -1690,6 +1662,83 @@ async function vincularVentaCliente(ventaDoc, clienteIdExplicito) {
     await ventaDoc.save();
   } catch (err) {
     console.error("Error vinculando venta a cliente:", err);
+  }
+}
+
+// Helper: crear Venta ONLINE con factura B consumidor final
+async function crearVentaOnlineConFactura({ pedido, mpPaymentId }) {
+  const fechaHoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
+  const productosVenta = pedido.items.map(item => ({
+    _id: item.productoId,
+    nombre: item.nombre,
+    bodega: item.bodega || "",
+    cepa: item.cepa || "",
+    precio: item.precioUnitario,
+    cantidad: item.cantidad,
+    subtotal: item.subtotal,
+  }));
+
+  const ventaData = {
+    productos: productosVenta,
+    monto: pedido.montoTotal,
+    formaPago: "Digital",
+    montoDigital: pedido.montoTotal,
+    montoEfectivo: 0,
+    fecha: fechaHoy,
+    nombre: `${pedido.cliente.nombre} ${pedido.cliente.apellido || ""}`.trim(),
+    domicilio: pedido.cliente.direccion || pedido.cliente.calle || "",
+    localidad: pedido.cliente.localidad || "",
+    provincia: pedido.cliente.provincia || "",
+    detalle: `Pedido web #${pedido.numeroPedido}`,
+    canal: "ONLINE",
+    pedidoWebId: pedido._id,
+    clienteId: pedido.clienteId || null,
+    mpPaymentIds: [mpPaymentId],
+    mpLinkedAt: new Date(),
+  };
+
+  // Intentar emitir factura B consumidor final
+  try {
+    const dataFactura = await afipService.facturaB(pedido.montoTotal, 0);
+    const ptoVta = afipService.ptoVta;
+    const nroComp = dataFactura.numeroComprobante;
+    const nroStr = nroComp.toString().padStart(8, "0");
+    const pvStr = "0000" + ptoVta.toString();
+    const stringNumeroFactura = `FB-${pvStr}-${nroStr}`;
+
+    // Data para generar PDF
+    const facturaData = {
+      factura: "B",
+      numeroComprobante: nroComp,
+      puntoDeVenta: ptoVta,
+      cuit_afip: afipService.CUIT,
+      precio: pedido.montoTotal,
+      CAE: dataFactura.CAE,
+      vtoCAE: dataFactura.vtoCAE,
+      docTipo: 99,
+      dni: 0,
+      nombre: ventaData.nombre,
+      domicilio: ventaData.domicilio,
+      productosCarrito: productosVenta,
+      descuento: 0,
+    };
+
+    const a4 = await generarFacturaA4(facturaData);
+
+    ventaData.tipoFactura = "B";
+    ventaData.stringNumeroFactura = stringNumeroFactura;
+    ventaData.numeroFactura = nroComp;
+    ventaData.facturaPdf = a4.base64;
+
+    const venta = await Venta.create(ventaData);
+    console.log(`[VentaOnline] Venta ${venta._id} con factura ${stringNumeroFactura} para pedido #${pedido.numeroPedido}`);
+    return venta;
+  } catch (facturaErr) {
+    console.error(`[VentaOnline] Error facturando pedido #${pedido.numeroPedido}, creando sin factura:`, facturaErr.message);
+    // Crear sin factura como fallback
+    const venta = await Venta.create(ventaData);
+    console.log(`[VentaOnline] Venta ${venta._id} SIN factura para pedido #${pedido.numeroPedido}`);
+    return venta;
   }
 }
 
@@ -3314,7 +3363,7 @@ Origen: ${producto.origen || ""}`;
       const mpIds = pagos.map((p) => p.id);
       const [linkedVentas, linkedOps] = await Promise.all([
         Venta.find({ mpPaymentIds: { $in: mpIds } })
-          .select("_id mpPaymentIds monto formaPago fecha stringNumeroFactura tipoFactura createdAt").lean(),
+          .select("_id mpPaymentIds monto formaPago fecha stringNumeroFactura tipoFactura numeroVenta canal createdAt").lean(),
         Operacion.find({ mpPagoId: { $in: mpIds } })
           .select("_id mpPagoId nombre monto fecha tipoOperacion").lean(),
       ]);

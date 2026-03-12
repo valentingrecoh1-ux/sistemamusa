@@ -106,6 +106,7 @@ function Ventas({ usuario }) {
   const [venta, setVenta] = useState({});
   const [filtroPago, setFiltroPago] = useState("todos");
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [filtroCanal, setFiltroCanal] = useState("todos");
   const [filtroNotaCredito, setFiltroNotaCredito] = useState(false);
   const [totalMonto, setTotalMonto] = useState(0);
   const [totalDescuento, setTotalDescuento] = useState(0);
@@ -124,8 +125,14 @@ function Ventas({ usuario }) {
     { value: "vino", label: "Vino" },
     { value: "reserva", label: "Reserva" },
   ];
+  const filtrosCanal = [
+    { value: "todos", label: "Todos" },
+    { value: "online", label: "Online" },
+    { value: "presencial", label: "Presencial" },
+  ];
   const pagoIndex = filtrosPago.findIndex((option) => option.value === filtroPago);
   const tipoIndex = filtrosTipo.findIndex((option) => option.value === filtroTipo);
+  const canalIndex = filtrosCanal.findIndex((option) => option.value === filtroCanal);
   const totalNeto = Math.max(totalMonto - totalDescuento, 0);
   const ventaMonto = toNumber(venta.monto);
   const ventaDescuento = toNumber(venta.descuento);
@@ -159,7 +166,8 @@ function Ventas({ usuario }) {
     page,
     filtroPago,
     filtroTipo,
-    filtroNotaCredito
+    filtroNotaCredito,
+    filtroCanal
   ) => {
     setAlreadyClicked(false);
     socket.emit("request-ventas", {
@@ -168,6 +176,7 @@ function Ventas({ usuario }) {
       filtroPago,
       filtroTipo,
       filtroNotaCredito,
+      filtroCanal,
     });
   };
 
@@ -268,6 +277,11 @@ function Ventas({ usuario }) {
     setFiltroTipo(value);
   };
 
+  const changeFiltroCanal = (value) => {
+    setPage(1);
+    setFiltroCanal(value);
+  };
+
   const toggleFiltroNotaCredito = () => {
     setPage(1);
     setFiltroNotaCredito((prev) => !prev);
@@ -313,7 +327,7 @@ function Ventas({ usuario }) {
 
   useEffect(() => {
     socket.on("cambios", () =>
-      fetchVentas(fecha, page, filtroPago, filtroTipo, filtroNotaCredito)
+      fetchVentas(fecha, page, filtroPago, filtroTipo, filtroNotaCredito, filtroCanal)
     );
     socket.on("response-ventas", (data) => {
       if (data.status === "error") {
@@ -334,7 +348,7 @@ function Ventas({ usuario }) {
       setTotalMonto(total);
       setTotalDescuento(totalDescuento);
     });
-    fetchVentas(fecha, page, filtroPago, filtroTipo, filtroNotaCredito);
+    fetchVentas(fecha, page, filtroPago, filtroTipo, filtroNotaCredito, filtroCanal);
     socket.on("response-mp-sin-vincular", (data) => {
       setMpPagosSinVincular(data?.pagos || []);
       setMpPagosOtros(data?.pagosOtros || []);
@@ -345,7 +359,7 @@ function Ventas({ usuario }) {
       socket.off("response-ventas");
       socket.off("response-mp-sin-vincular");
     };
-  }, [fecha, page, filtroPago, filtroTipo, filtroNotaCredito]);
+  }, [fecha, page, filtroPago, filtroTipo, filtroNotaCredito, filtroCanal]);
 
   // Auto-refresh pagos MP mientras el modal está abierto
   useEffect(() => {
@@ -483,6 +497,25 @@ function Ventas({ usuario }) {
               ))}
             </div>
           </div>
+          <div className={s.filterBlock}>
+            <span className={s.filterLabel}>Canal</span>
+            <div
+              className={s.segmented}
+              style={{ "--active-index": canalIndex >= 0 ? canalIndex : 0 }}
+            >
+              <span className={s.segmentThumb} aria-hidden="true"></span>
+              {filtrosCanal.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`${s.segmentBtn} ${filtroCanal === option.value ? s.segmentBtnActive : ""}`}
+                  onClick={() => changeFiltroCanal(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         <div className={s.paginationTools}>
           <button
@@ -553,6 +586,9 @@ function Ventas({ usuario }) {
                         <span className={pagoPillClass(venta.formaPago)}>
                           {venta.formaPago}
                         </span>
+                        {venta.canal === "ONLINE" && (
+                          <span className={`${s.pill} ${s.pillOnline}`}>ONLINE</span>
+                        )}
                         {(venta.formaPago === "DIGITAL" || venta.formaPago === "MIXTO") && (() => {
                           const linked = venta.mpPaymentIds?.length || 0;
                           const montoVenta = toNumber(venta.monto) - toNumber(venta.descuento);

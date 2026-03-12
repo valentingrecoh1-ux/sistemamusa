@@ -32,6 +32,8 @@ const venta = new mongoose.Schema(
     clienteId: { type: mongoose.Schema.Types.ObjectId, ref: "Cliente", default: null },
     facturaPdf: { type: String, default: null },
     notaCreditoPdf: { type: String, default: null },
+    canal: { type: String, default: null }, // "ONLINE" para ventas de tienda web
+    pedidoWebId: { type: mongoose.Schema.Types.ObjectId, ref: "PedidoWeb", default: null },
   },
   { timestamps: true }
 );

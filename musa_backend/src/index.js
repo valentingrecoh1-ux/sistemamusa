@@ -257,6 +257,65 @@ async function syncMpPagos(fecha) {
       return { updateOne: { filter: { mpId: p.id }, update: { $set: doc }, upsert: true } };
     });
     await PagoMp.bulkWrite(ops, { ordered: false });
+
+    // Auto-vincular pedidos web pendientes con pagos aprobados
+    try {
+      const approvedWithRef = payments.filter(p => p.status === "approved" && p.external_reference);
+      for (const p of approvedWithRef) {
+        const pedido = await PedidoWeb.findById(p.external_reference).catch(() => null);
+        if (!pedido || pedido.mpPaymentId || pedido.estado !== "pendiente") continue;
+
+        pedido.mpPaymentId = p.id;
+        pedido.mpStatus = p.status;
+        pedido.estado = "confirmado";
+
+        // Descontar stock
+        for (const item of pedido.items) {
+          await Product.findByIdAndUpdate(item.productoId, { $inc: { cantidad: -item.cantidad } });
+        }
+        await pedido.save();
+
+        // Crear Venta ONLINE si no existe
+        const ventaExistente = await Venta.findOne({ pedidoWebId: pedido._id });
+        if (!ventaExistente) {
+          const fechaHoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
+          const productosVenta = pedido.items.map(item => ({
+            _id: item.productoId,
+            nombre: item.nombre,
+            bodega: item.bodega || "",
+            cepa: item.cepa || "",
+            precio: item.precioUnitario,
+            cantidad: item.cantidad,
+            subtotal: item.subtotal,
+          }));
+          await Venta.create({
+            productos: productosVenta,
+            monto: pedido.montoTotal,
+            formaPago: "Digital",
+            montoDigital: pedido.montoTotal,
+            montoEfectivo: 0,
+            fecha: fechaHoy,
+            nombre: `${pedido.cliente.nombre} ${pedido.cliente.apellido || ""}`.trim(),
+            domicilio: pedido.cliente.direccion || pedido.cliente.calle || "",
+            localidad: pedido.cliente.localidad || "",
+            provincia: pedido.cliente.provincia || "",
+            detalle: `Pedido web #${pedido.numeroPedido}`,
+            canal: "ONLINE",
+            pedidoWebId: pedido._id,
+            clienteId: pedido.clienteId || null,
+            mpPaymentIds: [p.id],
+            mpLinkedAt: new Date(),
+          });
+          console.log(`[syncMpPagos] Pedido #${pedido.numeroPedido} vinculado y Venta ONLINE creada (pago ${p.id})`);
+        } else {
+          console.log(`[syncMpPagos] Pedido #${pedido.numeroPedido} vinculado a pago ${p.id}`);
+        }
+        io.emit("cambios");
+        io.emit("cambios-mp");
+      }
+    } catch (linkErr) {
+      console.error("Error auto-vinculando pedidos en syncMpPagos:", linkErr.message);
+    }
   } catch (err) {
     console.error("Error syncMpPagos:", err.message);
   }

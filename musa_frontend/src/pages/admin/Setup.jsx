@@ -144,11 +144,15 @@ export default function Setup() {
     return () => clearInterval(interval);
   }, [waModal]);
 
-  const connectWa = async () => {
+  const connectWa = async (forceClean = false) => {
     setWaLoading(true);
     setWaQr(null);
     try {
-      const res = await fetch(`${IP()}/api/whatsapp/connect`, { method: 'POST' });
+      const res = await fetch(`${IP()}/api/whatsapp/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ forceClean }),
+      });
       const data = await res.json();
       setWaStatus(data.status);
       if (data.qr) setWaQr(data.qr);
@@ -323,10 +327,17 @@ export default function Setup() {
                   <img src={waQr} alt="QR WhatsApp" className={s.waQrImg} />
                   <p className={s.waQrHint}>WhatsApp {'>'} Dispositivos vinculados {'>'} Vincular dispositivo</p>
                 </div>
-              ) : waLoading || waStatus === 'connecting' ? (
+              ) : waLoading ? (
                 <div className={s.waConnectWrap}>
                   <p>Conectando con WhatsApp, espera unos segundos...</p>
                   <div className={s.waSpinner} />
+                </div>
+              ) : waStatus === 'connecting' ? (
+                <div className={s.waConnectWrap}>
+                  <p>No se pudo obtener el QR. Intenta de nuevo limpiando la sesion anterior.</p>
+                  <button className={s.waConnectBtn} onClick={() => connectWa(true)} disabled={waLoading}>
+                    Reintentar (limpiar sesion)
+                  </button>
                 </div>
               ) : (
                 <div className={s.waConnectWrap}>

@@ -67,6 +67,53 @@ async function shipnowCotizar(token, { codigoPostalDestino, pesoGramos }) {
   });
 }
 
+// Cache de variant_id de ShipNow (se crea una sola vez)
+let _shipnowVariantId = null;
+
+async function shipnowGetOrCreateVariant(token) {
+  if (_shipnowVariantId) return _shipnowVariantId;
+
+  // Buscar si ya existe
+  const EXT_REF = "musa-botella-vino";
+  const listRes = await fetch(`${SHIPNOW_BASE}/variants?external_reference=${EXT_REF}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (listRes.ok) {
+    const listData = await listRes.json();
+    const existing = (listData.results || listData || []).find((v) => v.external_reference === EXT_REF);
+    if (existing) {
+      _shipnowVariantId = existing.id;
+      console.log(`[Shipnow] Variante existente id=${existing.id}`);
+      return _shipnowVariantId;
+    }
+  }
+
+  // Crear nueva variante
+  const createRes = await fetch(`${SHIPNOW_BASE}/variants`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      external_reference: EXT_REF,
+      title: "Botella de Vino",
+      price: 0,
+      stock: 9999,
+      dimensions: { weight: PESO_BOTELLA_GRAMOS, height: 32, length: 9, width: 9 },
+    }),
+  });
+  if (!createRes.ok) {
+    const txt = await createRes.text();
+    console.error("Shipnow crear variante error:", createRes.status, txt);
+    throw new Error("No se pudo crear variante en Shipnow");
+  }
+  const newVariant = await createRes.json();
+  _shipnowVariantId = newVariant.id;
+  console.log(`[Shipnow] Variante creada id=${newVariant.id}`);
+  return _shipnowVariantId;
+}
+
 async function shipnowCrearEnvio(token, { referencia, destino, items, opcionElegida }) {
   const shipTo = {
     name: destino.nombre,
@@ -95,6 +142,9 @@ async function shipnowCrearEnvio(token, { referencia, destino, items, opcionEleg
     shipTo.post_office_id = opcionElegida.meta.postOfficeId;
   }
 
+  // Obtener o crear variante generica en ShipNow
+  const variantId = await shipnowGetOrCreateVariant(token);
+
   const body = {
     external_reference: referencia,
     ship_to: shipTo,
@@ -102,10 +152,9 @@ async function shipnowCrearEnvio(token, { referencia, destino, items, opcionEleg
       service_code: opcionElegida.meta?.serviceCode,
       carrier_code: opcionElegida.meta?.carrierCode,
     },
-    items: items.map((it, i) => ({
-      id: i + 1,
+    items: items.map((it) => ({
+      id: variantId,
       quantity: it.cantidad || 1,
-      unit_price: it.precioUnitario || 0,
     })),
   };
 

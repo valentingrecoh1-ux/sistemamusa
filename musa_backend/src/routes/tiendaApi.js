@@ -1245,7 +1245,7 @@ IMPORTANT RULES:
   // Helper: compute client profile data (reused by token and search endpoints)
   async function computeClientProfile(cliente) {
     const [ventas, pedidosWeb] = await Promise.all([
-      Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" } }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
+      Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" }, pedidoWebId: { $exists: false } }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
       PedidoWeb.find({ clienteId: cliente._id, estado: { $in: ["confirmado", "preparando", "listo", "enviado", "entregado"] } }).sort({ createdAt: -1 }).limit(200).lean(),
     ]);
     const productosComprados = [];
@@ -1487,7 +1487,7 @@ IMPORTANT RULES:
         .slice(0, 20);
 
       // Tambien traer ventas en local
-      const ventasLocal = await Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" } })
+      const ventasLocal = await Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" }, pedidoWebId: { $exists: false } })
         .select("-facturaPdf -notaCreditoPdf")
         .sort({ createdAt: -1 })
         .limit(20)

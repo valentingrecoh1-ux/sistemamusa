@@ -1245,7 +1245,7 @@ IMPORTANT RULES:
   // Helper: compute client profile data (reused by token and search endpoints)
   async function computeClientProfile(cliente) {
     const [ventas, pedidosWeb] = await Promise.all([
-      Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
+      Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" } }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
       PedidoWeb.find({ clienteId: cliente._id, estado: { $in: ["confirmado", "preparando", "listo", "enviado", "entregado"] } }).sort({ createdAt: -1 }).limit(200).lean(),
     ]);
     const productosComprados = [];

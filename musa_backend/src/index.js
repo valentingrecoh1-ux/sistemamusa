@@ -37,7 +37,7 @@ const FeedbackEvento = require("./models/feedbackEvento");
 const SugerenciaCliente = require("./models/sugerenciaCliente");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const createTiendaRouter = require("./routes/tiendaApi");
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, proto, BufferJSON } = require("@whiskeysockets/baileys");
+const { default: makeWASocket, DisconnectReason, proto, BufferJSON, initAuthCreds } = require("@whiskeysockets/baileys");
 const QRCode = require("qrcode");
 const pino = require("pino");
 
@@ -402,41 +402,43 @@ async function useMongoAuthState() {
     await coll.deleteOne({ _id: id });
   };
 
-  const creds = await readData("creds");
+  const creds = (await readData("creds")) || initAuthCreds();
 
-  return {
-    state: {
-      creds: creds || undefined,
-      keys: {
-        get: async (type, ids) => {
-          const result = {};
-          for (const id of ids) {
-            const val = await readData(`${type}-${id}`);
-            if (val) {
-              if (type === "app-state-sync-key") {
-                result[id] = proto.Message.AppStateSyncKeyData.fromObject(val);
-              } else {
-                result[id] = val;
-              }
+  const state = {
+    creds,
+    keys: {
+      get: async (type, ids) => {
+        const result = {};
+        for (const id of ids) {
+          const val = await readData(`${type}-${id}`);
+          if (val) {
+            if (type === "app-state-sync-key") {
+              result[id] = proto.Message.AppStateSyncKeyData.fromObject(val);
+            } else {
+              result[id] = val;
             }
           }
-          return result;
-        },
-        set: async (data) => {
-          for (const [type, entries] of Object.entries(data)) {
-            for (const [id, value] of Object.entries(entries)) {
-              if (value) {
-                await writeData(`${type}-${id}`, value);
-              } else {
-                await removeData(`${type}-${id}`);
-              }
+        }
+        return result;
+      },
+      set: async (data) => {
+        for (const [type, entries] of Object.entries(data)) {
+          for (const [id, value] of Object.entries(entries)) {
+            if (value) {
+              await writeData(`${type}-${id}`, value);
+            } else {
+              await removeData(`${type}-${id}`);
             }
           }
-        },
+        }
       },
     },
-    saveCreds: async (newCreds) => {
-      await writeData("creds", newCreds || creds);
+  };
+
+  return {
+    state,
+    saveCreds: async () => {
+      await writeData("creds", state.creds);
     },
   };
 }
@@ -456,17 +458,30 @@ async function connectWhatsApp() {
 
   try {
     console.log("[WA] Iniciando conexion (Baileys)...");
+
+    // Validar que los creds sean de Baileys (no de whatsapp-web.js anterior)
+    const coll = mongoose.connection.db.collection("wa_auth");
+    const existingCreds = await coll.findOne({ _id: "creds" });
+    if (existingCreds?.value && !existingCreds.value.noiseKey && !existingCreds.value.signedIdentityKey) {
+      console.log("[WA] Creds invalidos (de otra libreria?), limpiando...");
+      await coll.deleteMany({});
+    }
+
     const { state, saveCreds } = await useMongoAuthState();
+    console.log("[WA] Auth state cargado, creds keys:", Object.keys(state.creds || {}).slice(0, 5));
 
     waSocket = makeWASocket({
       auth: state,
-      logger: pino({ level: "silent" }),
+      logger: pino({ level: "warn" }),
       printQRInTerminal: false,
       browser: ["MUSA Vinos", "Chrome", "1.0.0"],
     });
 
-    waSocket.ev.on("creds.update", async () => {
-      await saveCreds(waSocket.authState?.creds);
+    waSocket.ev.on("creds.update", async (update) => {
+      try {
+        Object.assign(state.creds, update);
+        await saveCreds();
+      } catch (e) { console.error("[WA] Error guardando creds:", e.message); }
     });
 
     waSocket.ev.on("connection.update", async (update) => {
@@ -510,11 +525,22 @@ async function connectWhatsApp() {
       }
     });
   } catch (e) {
-    console.error("[WA] Error fatal:", e.message);
+    console.error("[WA] Error fatal:", e.message, e.stack);
     waStatus = "disconnected";
     waSocket = null;
   }
 }
+
+// Capturar errores no manejados de Baileys
+process.on("uncaughtException", (err) => {
+  if (err.message?.includes("'me'") || err.stack?.includes("baileys")) {
+    console.error("[WA] Baileys uncaught error:", err.message);
+    waStatus = "disconnected";
+    waSocket = null;
+  } else {
+    console.error("Uncaught exception:", err);
+  }
+});
 
 async function disconnectWhatsApp() {
   if (waReconnectTimer) { clearTimeout(waReconnectTimer); waReconnectTimer = null; }
@@ -667,38 +693,48 @@ app.get("/api/whatsapp/status", (req, res) => {
 });
 
 app.post("/api/whatsapp/connect", async (req, res) => {
-  if (waStatus === "connected" && waSocket)
-    return res.json({ status: "connected", qr: null });
+  try {
+    if (waStatus === "connected" && waSocket)
+      return res.json({ status: "connected", qr: null });
 
-  // Limpiar socket previo
-  if (waSocket) {
-    try { waSocket.end(); } catch (e) { }
-    waSocket = null;
+    // Limpiar socket previo
+    if (waSocket) {
+      try { waSocket.end(); } catch (e) { }
+      waSocket = null;
+    }
+    waStatus = "disconnected";
+
+    // Si forceClean, limpiar auth de MongoDB
+    const forceClean = req.body?.forceClean;
+    if (forceClean) {
+      try { await mongoose.connection.db.collection("wa_auth").deleteMany({}); } catch (e) { }
+      console.log("[WA /connect] Auth MongoDB limpiado para QR fresco");
+    }
+
+    await connectWhatsApp();
+
+    // Esperar hasta 15s por QR o conexión
+    for (let i = 0; i < 15; i++) {
+      await new Promise((r) => setTimeout(r, 1000));
+      if (waQR || waStatus === "connected") break;
+    }
+
+    console.log(`[WA /connect] Resultado: status=${waStatus} qr=${waQR ? "si" : "no"}`);
+    res.json({ status: waStatus, qr: waQR });
+  } catch (err) {
+    console.error("[WA /connect] Error:", err.message);
+    res.status(500).json({ status: "disconnected", error: err.message });
   }
-  waStatus = "disconnected";
-
-  // Si forceClean, limpiar auth de MongoDB
-  const forceClean = req.body?.forceClean;
-  if (forceClean) {
-    try { await mongoose.connection.db.collection("wa_auth").deleteMany({}); } catch (e) { }
-    console.log("[WA /connect] Auth MongoDB limpiado para QR fresco");
-  }
-
-  await connectWhatsApp();
-
-  // Esperar hasta 15s por QR o conexión
-  for (let i = 0; i < 15; i++) {
-    await new Promise((r) => setTimeout(r, 1000));
-    if (waQR || waStatus === "connected") break;
-  }
-
-  console.log(`[WA /connect] Resultado: status=${waStatus} qr=${waQR ? "si" : "no"}`);
-  res.json({ status: waStatus, qr: waQR });
 });
 
 app.post("/api/whatsapp/disconnect", async (req, res) => {
-  await disconnectWhatsApp();
-  res.json({ status: "disconnected" });
+  try {
+    await disconnectWhatsApp();
+    res.json({ status: "disconnected" });
+  } catch (err) {
+    console.error("[WA /disconnect] Error:", err.message);
+    res.json({ status: "disconnected" });
+  }
 });
 
 app.post("/api/whatsapp/send", async (req, res) => {

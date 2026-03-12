@@ -145,19 +145,27 @@ export default function Setup() {
   }, [waModal]);
 
   const connectWa = async (forceClean = false) => {
+    if (waLoading) return;
     setWaLoading(true);
     setWaQr(null);
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${IP()}/api/whatsapp/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ forceClean }),
+        body: JSON.stringify({ forceClean: !!forceClean }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const data = await res.json();
       setWaStatus(data.status);
       if (data.qr) setWaQr(data.qr);
-    } catch (e) { /* ignore */ }
-    setWaLoading(false);
+    } catch (e) {
+      console.error('Error conectando WhatsApp:', e);
+    } finally {
+      setWaLoading(false);
+    }
   };
 
   const disconnectWa = async () => {
@@ -342,7 +350,7 @@ export default function Setup() {
               ) : (
                 <div className={s.waConnectWrap}>
                   <p>WhatsApp no esta conectado. Presiona para generar el codigo QR.</p>
-                  <button className={s.waConnectBtn} onClick={connectWa} disabled={waLoading}>
+                  <button className={s.waConnectBtn} onClick={() => connectWa(false)} disabled={waLoading}>
                     Conectar WhatsApp
                   </button>
                 </div>

@@ -19,7 +19,7 @@ const WA_MENSAJES_ENVIO = {
     `Hola ${pedido.cliente.nombre},\nTu envio del pedido #${pedido.numeroPedido} fue cancelado.\nSi tenes dudas contactanos por este medio.`,
 };
 
-module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient, io, getWA }) {
+module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient, io, getWA, crearVentaOnline }) {
 
   // Envia WhatsApp de notificacion de envio al cliente
   async function notificarEnvioWA(pedido, tipoMensaje) {
@@ -394,39 +394,10 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
           const doc = mpRawToDoc(payment, ownId);
           await PagoMp.updateOne({ mpId: payment.id }, { $set: doc }, { upsert: true });
 
-          // Crear Venta automatica si no existe una ya vinculada a este pedido
+          // Crear Venta automatica con factura si no existe una ya vinculada
           const ventaExistente = await Venta.findOne({ pedidoWebId: pedido._id });
-          if (!ventaExistente) {
-            const fechaHoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
-            const productosVenta = pedido.items.map(item => ({
-              _id: item.productoId,
-              nombre: item.nombre,
-              bodega: item.bodega || "",
-              cepa: item.cepa || "",
-              precio: item.precioUnitario,
-              cantidad: item.cantidad,
-              subtotal: item.subtotal,
-            }));
-
-            const nuevaVenta = await Venta.create({
-              productos: productosVenta,
-              monto: pedido.montoTotal,
-              formaPago: "Digital",
-              montoDigital: pedido.montoTotal,
-              montoEfectivo: 0,
-              fecha: fechaHoy,
-              nombre: `${pedido.cliente.nombre} ${pedido.cliente.apellido || ""}`.trim(),
-              domicilio: pedido.cliente.direccion || pedido.cliente.calle || "",
-              localidad: pedido.cliente.localidad || "",
-              provincia: pedido.cliente.provincia || "",
-              detalle: `Pedido web #${pedido.numeroPedido}`,
-              canal: "ONLINE",
-              pedidoWebId: pedido._id,
-              clienteId: pedido.clienteId || null,
-              mpPaymentIds: [payment.id],
-              mpLinkedAt: new Date(),
-            });
-            console.log(`[Tienda] Venta ONLINE creada (${nuevaVenta._id}) para pedido #${pedido.numeroPedido}`);
+          if (!ventaExistente && crearVentaOnline) {
+            await crearVentaOnline({ pedido, mpPaymentId: payment.id });
           }
 
           io.emit("cambios-mp");

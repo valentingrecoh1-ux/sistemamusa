@@ -629,18 +629,34 @@ app.post("/api/whatsapp/connect", async (req, res) => {
   if (waStatus === "connected" && waSocket)
     return res.json({ status: "connected", qr: null });
 
+  // Si hay creds pero no logramos conectar antes, limpiar y empezar de cero
+  const forceClean = req.body?.forceClean;
+  if (forceClean) {
+    console.log("WhatsApp: limpieza forzada de creds");
+    if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
+    waStatus = "disconnected";
+    await mongoose.connection.collection("wa_auth").deleteMany({});
+  }
+
   await connectWhatsApp();
 
-  // Esperar hasta 20s por QR o conexión
-  for (let i = 0; i < 20; i++) {
+  // Esperar hasta 15s por QR o conexión
+  for (let i = 0; i < 15; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     if (waQR || waStatus === "connected") break;
-    // Si se desconectó inmediatamente (creds viejas), limpiar y reintentar
-    if (waStatus === "disconnected" && i < 5) {
-      console.log("WhatsApp: creds posiblemente stale, limpiando y reintentando...");
-      await mongoose.connection.collection("wa_auth").deleteMany({});
-      waReconnectDelay = 5000;
-      await connectWhatsApp();
+    if (waStatus === "disconnected") break;
+  }
+
+  // Si seguimos en "connecting" sin QR, algo anda mal — limpiar creds e intentar una vez mas
+  if (waStatus === "connecting" && !waQR) {
+    console.log("WhatsApp: sin QR tras 15s, limpiando creds y reintentando...");
+    if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
+    waStatus = "disconnected";
+    await mongoose.connection.collection("wa_auth").deleteMany({});
+    await connectWhatsApp();
+    for (let i = 0; i < 10; i++) {
+      await new Promise((r) => setTimeout(r, 1000));
+      if (waQR || waStatus === "connected" || waStatus === "disconnected") break;
     }
   }
 

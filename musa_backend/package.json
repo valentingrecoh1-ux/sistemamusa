@@ -10,7 +10,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@whiskeysockets/baileys": "^7.0.0-rc.9",
     "afipjs": "^1.1.5",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.9.0",

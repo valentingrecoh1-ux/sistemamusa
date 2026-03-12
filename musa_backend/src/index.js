@@ -380,8 +380,15 @@ let waClient = null;
 let waQR = null;
 let waStatus = "disconnected";
 
-// Chromium path para puppeteer
-const CHROMIUM_PATH = process.env.CHROMIUM_PATH || "/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome";
+// Chromium path para puppeteer — detectar automaticamente
+const CHROMIUM_PATH = process.env.CHROMIUM_PATH
+  || [
+    "/usr/bin/chromium-browser",         // Render buildpack / apt install
+    "/usr/bin/chromium",                  // Debian/Ubuntu
+    "/usr/bin/google-chrome-stable",      // Chrome instalado
+    "/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome", // Playwright
+  ].find((p) => { try { return require("fs").existsSync(p); } catch { return false; } })
+  || "chromium-browser";
 
 async function connectWhatsApp() {
   if (waStatus === "connecting") return;

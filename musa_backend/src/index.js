@@ -296,7 +296,7 @@ function docToPagoResponse(d) {
 }
 
 // ── Auto-link MP payment to Venta ──
-async function autoLinkMpPayment(ventaDoc) {
+async function autoLinkMpPayment(ventaDoc, _intento = 1) {
   if (!mpPayment) return;
   const formaPago = ventaDoc.formaPago;
   if (formaPago !== "DIGITAL" && formaPago !== "MIXTO") return;
@@ -328,6 +328,17 @@ async function autoLinkMpPayment(ventaDoc) {
         ventaDoc.mpLinkedAt = new Date();
         await ventaDoc.save();
       }
+    } else if (available.length === 0 && _intento <= 3) {
+      // No encontro match — el pago puede no haberse sincronizado aun.
+      // Reintentar en 5s, 15s, 30s
+      const delay = [5000, 15000, 30000][_intento - 1];
+      console.log(`[autoLink] Sin match para venta ${ventaDoc._id} ($${expectedAmount}), reintento ${_intento} en ${delay / 1000}s`);
+      setTimeout(async () => {
+        const fresh = await Venta.findById(ventaDoc._id);
+        if (fresh && (!fresh.mpPaymentIds || fresh.mpPaymentIds.length === 0)) {
+          autoLinkMpPayment(fresh, _intento + 1);
+        }
+      }, delay);
     }
   } catch (err) {
     console.error("Error autoLinkMpPayment:", err.message);

@@ -37,8 +37,7 @@ const FeedbackEvento = require("./models/feedbackEvento");
 const SugerenciaCliente = require("./models/sugerenciaCliente");
 const { MercadoPagoConfig, Payment } = require("mercadopago");
 const createTiendaRouter = require("./routes/tiendaApi");
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState, BufferJSON, initAuthCreds } = require("@whiskeysockets/baileys");
-const pino = require("pino");
+const { Client, LocalAuth } = require("whatsapp-web.js");
 const QRCode = require("qrcode");
 
 const cron = require("node-cron");
@@ -376,161 +375,90 @@ async function autoLinkMpPayment(ventaDoc, _intento = 1) {
   }
 }
 
-// ── WhatsApp (Baileys) ──
-let waSocket = null;
+// ── WhatsApp (whatsapp-web.js) ──
+let waClient = null;
 let waQR = null;
 let waStatus = "disconnected";
-let waReconnectDelay = 5000;
-let waReconnectTimer = null;
 
-async function useMongoAuthState() {
-  const col = mongoose.connection.collection("wa_auth");
-
-  const readData = async (id) => {
-    const doc = await col.findOne({ _id: id });
-    if (!doc) return null;
-    return JSON.parse(JSON.stringify(doc.value), BufferJSON.reviver);
-  };
-
-  const writeData = async (id, data) => {
-    const val = JSON.parse(JSON.stringify(data, BufferJSON.replacer));
-    await col.updateOne({ _id: id }, { $set: { _id: id, value: val } }, { upsert: true });
-  };
-
-  const removeData = async (id) => {
-    await col.deleteOne({ _id: id });
-  };
-
-  const creds = (await readData("creds")) || initAuthCreds();
-
-  return {
-    state: {
-      creds,
-      keys: {
-        get: async (type, ids) => {
-          const result = {};
-          for (const id of ids) {
-            const val = await readData(`${type}-${id}`);
-            if (val) result[id] = val;
-          }
-          return result;
-        },
-        set: async (data) => {
-          for (const [type, entries] of Object.entries(data)) {
-            for (const [id, value] of Object.entries(entries)) {
-              if (value) await writeData(`${type}-${id}`, value);
-              else await removeData(`${type}-${id}`);
-            }
-          }
-        },
-      },
-    },
-    saveCreds: () => writeData("creds", creds),
-  };
-}
+// Chromium path para puppeteer
+const CHROMIUM_PATH = process.env.CHROMIUM_PATH || "/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome";
 
 async function connectWhatsApp() {
   if (waStatus === "connecting") return;
-  if (waStatus === "connected" && waSocket) return;
+  if (waStatus === "connected" && waClient) return;
 
-  // Cancelar reconexion pendiente
-  if (waReconnectTimer) { clearTimeout(waReconnectTimer); waReconnectTimer = null; }
-
-  // Limpiar socket previo si quedó colgado
-  if (waSocket) {
-    try { waSocket.end(); } catch (e) { }
-    waSocket = null;
+  // Destruir cliente previo
+  if (waClient) {
+    try { await waClient.destroy(); } catch (e) { }
+    waClient = null;
   }
 
   waStatus = "connecting";
   waQR = null;
 
   try {
-    console.log("[WA] Iniciando conexion...");
-    const { state, saveCreds } = await useMongoAuthState();
-    const hasCreds = !!(state.creds && state.creds.me);
-    console.log(`[WA] Creds cargadas, sesion previa: ${hasCreds ? "si (" + state.creds.me?.id + ")" : "no (QR necesario)"}`);
-
-    waSocket = makeWASocket({
-      auth: state,
-      logger: pino({ level: "warn" }),
-      printQRInTerminal: false,
-      browser: ["MUSA Palermo", "Chrome", "1.0.0"],
-      connectTimeoutMs: 20000,
+    console.log("[WA] Iniciando conexion (whatsapp-web.js)...");
+    waClient = new Client({
+      authStrategy: new LocalAuth({ dataPath: path.join(__dirname, ".wwebjs_auth") }),
+      puppeteer: {
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"],
+        executablePath: CHROMIUM_PATH,
+      },
     });
 
-    waSocket.ev.on("creds.update", saveCreds);
-
-    // Safety: si en 30s no llega QR ni conexión, resetear
-    const safetyTimer = setTimeout(() => {
-      if (waStatus === "connecting") {
-        console.warn("[WA] Timeout 30s esperando QR, reseteando");
-        waStatus = "disconnected";
-        if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
-      }
-    }, 30000);
-
-    waSocket.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
-      console.log(`[WA] connection.update: connection=${connection} qr=${qr ? "si" : "no"}`);
-
-      if (qr) {
-        waQR = await QRCode.toDataURL(qr);
-        waStatus = "qr";
-        clearTimeout(safetyTimer);
-        console.log("[WA] QR generado OK");
-      }
-
-      if (connection === "open") {
-        waStatus = "connected";
-        waQR = null;
-        waReconnectDelay = 5000;
-        clearTimeout(safetyTimer);
-        console.log("[WA] Conectado!");
-      }
-
-      if (connection === "close") {
-        clearTimeout(safetyTimer);
-        waQR = null;
-        const code = lastDisconnect?.error?.output?.statusCode;
-        const reason = lastDisconnect?.error?.output?.payload?.message || "";
-        console.log(`[WA] Desconectado: code=${code} reason=${reason}`);
-
-        if (code === DisconnectReason.loggedOut || code === 401) {
-          waStatus = "disconnected";
-          waSocket = null;
-          await mongoose.connection.collection("wa_auth").deleteMany({});
-          console.log("[WA] Sesion cerrada (loggedOut), creds limpiadas");
-        } else {
-          waSocket = null;
-          waStatus = "disconnected";
-          // Solo auto-reconectar si no fue una desconexion limpia
-          if (code !== DisconnectReason.connectionClosed) {
-            waReconnectDelay = Math.min((waReconnectDelay || 5000) * 2, 300000);
-            console.log(`[WA] Auto-reconexion en ${waReconnectDelay / 1000}s`);
-            waReconnectTimer = setTimeout(connectWhatsApp, waReconnectDelay);
-          }
-        }
-      }
+    waClient.on("qr", async (qr) => {
+      console.log("[WA] QR recibido");
+      waQR = await QRCode.toDataURL(qr);
+      waStatus = "qr";
     });
+
+    waClient.on("ready", () => {
+      console.log("[WA] Conectado!");
+      waStatus = "connected";
+      waQR = null;
+    });
+
+    waClient.on("authenticated", () => {
+      console.log("[WA] Autenticado");
+    });
+
+    waClient.on("auth_failure", (msg) => {
+      console.error("[WA] Auth failure:", msg);
+      waStatus = "disconnected";
+      waClient = null;
+    });
+
+    waClient.on("disconnected", (reason) => {
+      console.log("[WA] Desconectado:", reason);
+      waStatus = "disconnected";
+      waClient = null;
+    });
+
+    await waClient.initialize();
   } catch (e) {
-    console.error("[WA] Error fatal:", e.message, e.stack);
+    console.error("[WA] Error fatal:", e.message);
     waStatus = "disconnected";
-    if (waSocket) { try { waSocket.end(); } catch (e2) { } }
-    waSocket = null;
+    if (waClient) { try { await waClient.destroy(); } catch (e2) { } }
+    waClient = null;
   }
 }
 
 async function disconnectWhatsApp() {
   try {
-    if (waSocket) {
-      await waSocket.logout();
-      waSocket.end();
+    if (waClient) {
+      await waClient.logout();
     }
-  } catch (e) { }
-  waSocket = null;
+  } catch (e) {
+    // Si logout falla, al menos destruir
+    try { if (waClient) await waClient.destroy(); } catch (e2) { }
+  }
+  waClient = null;
   waStatus = "disconnected";
   waQR = null;
-  await mongoose.connection.collection("wa_auth").deleteMany({});
+  // Limpiar auth local
+  const authDir = path.join(__dirname, ".wwebjs_auth");
+  try { require("fs").rmSync(authDir, { recursive: true, force: true }); } catch (e) { }
 }
 
 // Configuración de CORS para Express
@@ -667,24 +595,28 @@ app.get("/api/whatsapp/status", (req, res) => {
 });
 
 app.post("/api/whatsapp/connect", async (req, res) => {
-  if (waStatus === "connected" && waSocket)
+  if (waStatus === "connected" && waClient)
     return res.json({ status: "connected", qr: null });
 
-  // Cancelar reconexion pendiente
-  if (waReconnectTimer) { clearTimeout(waReconnectTimer); waReconnectTimer = null; }
-
-  // Matar socket previo si existe
-  if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
+  // Destruir cliente previo si existe
+  if (waClient) {
+    try { await waClient.destroy(); } catch (e) { }
+    waClient = null;
+  }
   waStatus = "disconnected";
 
-  // Siempre limpiar creds para generar QR fresco (a menos que haya sesion activa)
-  console.log("[WA /connect] Limpiando creds para QR fresco");
-  await mongoose.connection.collection("wa_auth").deleteMany({});
+  // Si forceClean, limpiar auth local
+  const forceClean = req.body?.forceClean;
+  if (forceClean) {
+    const authDir = path.join(__dirname, ".wwebjs_auth");
+    try { require("fs").rmSync(authDir, { recursive: true, force: true }); } catch (e) { }
+    console.log("[WA /connect] Auth limpiado para QR fresco");
+  }
 
   await connectWhatsApp();
 
-  // Esperar hasta 20s por QR o conexión
-  for (let i = 0; i < 20; i++) {
+  // Esperar hasta 30s por QR o conexión (whatsapp-web.js tarda más que Baileys)
+  for (let i = 0; i < 30; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     if (waQR || waStatus === "connected" || waStatus === "disconnected") break;
   }
@@ -700,7 +632,7 @@ app.post("/api/whatsapp/disconnect", async (req, res) => {
 
 app.post("/api/whatsapp/send", async (req, res) => {
   try {
-    if (waStatus !== "connected" || !waSocket) {
+    if (waStatus !== "connected" || !waClient) {
       return res.status(400).json({ error: "WhatsApp no conectado" });
     }
 
@@ -708,8 +640,8 @@ app.post("/api/whatsapp/send", async (req, res) => {
     if (!phone || !message)
       return res.status(400).json({ error: "Falta phone o message" });
 
-    const jid = phone.replace(/\D/g, "") + "@s.whatsapp.net";
-    await waSocket.sendMessage(jid, { text: message });
+    const chatId = phone.replace(/\D/g, "") + "@c.us";
+    await waClient.sendMessage(chatId, message);
 
     res.json({ sent: true });
   } catch (e) {
@@ -719,7 +651,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }), crearVentaOnline: (args) => crearVentaOnlineConFactura(args) }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waClient, waStatus }), crearVentaOnline: (args) => crearVentaOnlineConFactura(args) }));
 
 app.post(
   "/upload_flujo",
@@ -5925,7 +5857,7 @@ Reglas:
       if (pedido.entrega === "envio" && estado !== estadoAnterior) {
         try {
           const configWA = await ConfigTienda.findById("main").lean();
-          if (configWA?.notificacionesEnvioWA && waStatus === "connected" && waSocket && pedido.cliente?.telefono) {
+          if (configWA?.notificacionesEnvioWA && waStatus === "connected" && waClient && pedido.cliente?.telefono) {
             const WA_MSGS = {
               preparando: `Hola ${pedido.cliente.nombre}! 🍷\nTu pedido #${pedido.numeroPedido} se esta preparando para el envio.\nTe avisamos cuando el rider lo retire!`,
               enviado: `Hola ${pedido.cliente.nombre}! 🚴\nTu pedido #${pedido.numeroPedido} ya esta en camino!${pedido.logisticaTracking ? `\nSeguilo aca: ${pedido.logisticaTracking}` : "\nTe avisamos cuando este por llegar."}`,
@@ -5934,8 +5866,8 @@ Reglas:
             };
             const msg = WA_MSGS[estado];
             if (msg) {
-              const jid = pedido.cliente.telefono.replace(/\D/g, "") + "@s.whatsapp.net";
-              await waSocket.sendMessage(jid, { text: msg });
+              const chatId = pedido.cliente.telefono.replace(/\D/g, "") + "@c.us";
+              await waClient.sendMessage(chatId, msg);
               console.log(`[WA Envio] Notificacion "${estado}" enviada a ${pedido.cliente.telefono} para pedido #${pedido.numeroPedido}`);
             }
           }

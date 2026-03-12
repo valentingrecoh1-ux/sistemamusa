@@ -387,31 +387,52 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
 
       await pedido.save();
 
-      // Sincronizar pago a PagoMp y auto-vincular a Venta
+      // Sincronizar pago a PagoMp y crear Venta ONLINE auto-vinculada
       if (PagoMp && mpRawToDoc && payment.status === "approved") {
         try {
           const ownId = getOwnMpCollectorId ? await getOwnMpCollectorId() : null;
           const doc = mpRawToDoc(payment, ownId);
           await PagoMp.updateOne({ mpId: payment.id }, { $set: doc }, { upsert: true });
 
-          // Buscar Venta con monto similar al total del pedido, misma fecha, sin pago MP vinculado
-          const fecha = doc.fecha;
-          const montoTotal = pedido.montoTotal;
-          if (montoTotal && fecha) {
-            const ventaCandidata = await Venta.findOne({
-              fecha,
-              monto: { $gte: montoTotal - 1, $lte: montoTotal + 1 },
-              $or: [{ mpPaymentIds: { $size: 0 } }, { mpPaymentIds: { $exists: false } }],
+          // Crear Venta automatica si no existe una ya vinculada a este pedido
+          const ventaExistente = await Venta.findOne({ pedidoWebId: pedido._id });
+          if (!ventaExistente) {
+            const fechaHoy = moment().tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
+            const productosVenta = pedido.items.map(item => ({
+              _id: item.productoId,
+              nombre: item.nombre,
+              bodega: item.bodega || "",
+              cepa: item.cepa || "",
+              precio: item.precioUnitario,
+              cantidad: item.cantidad,
+              subtotal: item.subtotal,
+            }));
+
+            const nuevaVenta = await Venta.create({
+              productos: productosVenta,
+              monto: pedido.montoTotal,
+              formaPago: "Digital",
+              montoDigital: pedido.montoTotal,
+              montoEfectivo: 0,
+              fecha: fechaHoy,
+              nombre: `${pedido.cliente.nombre} ${pedido.cliente.apellido || ""}`.trim(),
+              domicilio: pedido.cliente.direccion || pedido.cliente.calle || "",
+              localidad: pedido.cliente.localidad || "",
+              provincia: pedido.cliente.provincia || "",
+              detalle: `Pedido web #${pedido.numeroPedido}`,
+              canal: "ONLINE",
+              pedidoWebId: pedido._id,
+              clienteId: pedido.clienteId || null,
+              mpPaymentIds: [payment.id],
+              mpLinkedAt: new Date(),
             });
-            if (ventaCandidata) {
-              ventaCandidata.mpPaymentIds.push(payment.id);
-              ventaCandidata.mpLinkedAt = new Date();
-              await ventaCandidata.save();
-              io.emit("cambios-mp");
-            }
+            console.log(`[Tienda] Venta ONLINE creada (${nuevaVenta._id}) para pedido #${pedido.numeroPedido}`);
           }
+
+          io.emit("cambios-mp");
+          io.emit("cambios");
         } catch (linkErr) {
-          console.error("Error auto-link MP pago tienda:", linkErr.message);
+          console.error("Error creando venta ONLINE:", linkErr.message);
         }
       }
     } catch (err) {

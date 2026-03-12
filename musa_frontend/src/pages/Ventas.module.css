@@ -528,6 +528,12 @@
   color: #8cf0ca;
 }
 
+.pillOnline {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.45);
+  color: #a5b4fc;
+}
+
 .pillMpLinked {
   background: rgba(34, 197, 94, 0.15);
   border-color: rgba(34, 197, 94, 0.45);

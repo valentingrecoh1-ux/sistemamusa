@@ -553,6 +553,9 @@ function Ventas({ usuario }) {
                         <span className={pagoPillClass(venta.formaPago)}>
                           {venta.formaPago}
                         </span>
+                        {venta.canal === "ONLINE" && (
+                          <span className={`${s.pill} ${s.pillOnline}`}>ONLINE</span>
+                        )}
                         {(venta.formaPago === "DIGITAL" || venta.formaPago === "MIXTO") && (() => {
                           const linked = venta.mpPaymentIds?.length || 0;
                           const montoVenta = toNumber(venta.monto) - toNumber(venta.descuento);

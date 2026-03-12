@@ -381,6 +381,7 @@ let waSocket = null;
 let waQR = null;
 let waStatus = "disconnected";
 let waReconnectDelay = 5000;
+let waReconnectTimer = null;
 
 async function useMongoAuthState() {
   const col = mongoose.connection.collection("wa_auth");
@@ -432,6 +433,9 @@ async function connectWhatsApp() {
   if (waStatus === "connecting") return;
   if (waStatus === "connected" && waSocket) return;
 
+  // Cancelar reconexion pendiente
+  if (waReconnectTimer) { clearTimeout(waReconnectTimer); waReconnectTimer = null; }
+
   // Limpiar socket previo si quedó colgado
   if (waSocket) {
     try { waSocket.end(); } catch (e) { }
@@ -442,7 +446,10 @@ async function connectWhatsApp() {
   waQR = null;
 
   try {
+    console.log("[WA] Iniciando conexion...");
     const { state, saveCreds } = await useMongoAuthState();
+    const hasCreds = !!(state.creds && state.creds.me);
+    console.log(`[WA] Creds cargadas, sesion previa: ${hasCreds ? "si (" + state.creds.me?.id + ")" : "no (QR necesario)"}`);
 
     waSocket = makeWASocket({
       auth: state,
@@ -457,18 +464,20 @@ async function connectWhatsApp() {
     // Safety: si en 30s no llega QR ni conexión, resetear
     const safetyTimer = setTimeout(() => {
       if (waStatus === "connecting") {
-        console.warn("WhatsApp: timeout esperando QR, reseteando");
+        console.warn("[WA] Timeout 30s esperando QR, reseteando");
         waStatus = "disconnected";
         if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
       }
     }, 30000);
 
     waSocket.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
+      console.log(`[WA] connection.update: connection=${connection} qr=${qr ? "si" : "no"}`);
+
       if (qr) {
         waQR = await QRCode.toDataURL(qr);
         waStatus = "qr";
         clearTimeout(safetyTimer);
-        console.log("WhatsApp: QR generado");
+        console.log("[WA] QR generado OK");
       }
 
       if (connection === "open") {
@@ -476,7 +485,7 @@ async function connectWhatsApp() {
         waQR = null;
         waReconnectDelay = 5000;
         clearTimeout(safetyTimer);
-        console.log("WhatsApp conectado");
+        console.log("[WA] Conectado!");
       }
 
       if (connection === "close") {
@@ -484,26 +493,27 @@ async function connectWhatsApp() {
         waQR = null;
         const code = lastDisconnect?.error?.output?.statusCode;
         const reason = lastDisconnect?.error?.output?.payload?.message || "";
-        console.log(`WhatsApp desconectado: code=${code} reason=${reason}`);
+        console.log(`[WA] Desconectado: code=${code} reason=${reason}`);
 
         if (code === DisconnectReason.loggedOut || code === 401) {
           waStatus = "disconnected";
           waSocket = null;
           await mongoose.connection.collection("wa_auth").deleteMany({});
-          console.log("WhatsApp: sesion cerrada, creds limpiadas");
+          console.log("[WA] Sesion cerrada (loggedOut), creds limpiadas");
         } else {
           waSocket = null;
           waStatus = "disconnected";
           // Solo auto-reconectar si no fue una desconexion limpia
           if (code !== DisconnectReason.connectionClosed) {
             waReconnectDelay = Math.min((waReconnectDelay || 5000) * 2, 300000);
-            setTimeout(connectWhatsApp, waReconnectDelay);
+            console.log(`[WA] Auto-reconexion en ${waReconnectDelay / 1000}s`);
+            waReconnectTimer = setTimeout(connectWhatsApp, waReconnectDelay);
           }
         }
       }
     });
   } catch (e) {
-    console.error("WhatsApp error:", e.message, e.stack);
+    console.error("[WA] Error fatal:", e.message, e.stack);
     waStatus = "disconnected";
     if (waSocket) { try { waSocket.end(); } catch (e2) { } }
     waSocket = null;
@@ -660,37 +670,26 @@ app.post("/api/whatsapp/connect", async (req, res) => {
   if (waStatus === "connected" && waSocket)
     return res.json({ status: "connected", qr: null });
 
-  // Si hay creds pero no logramos conectar antes, limpiar y empezar de cero
-  const forceClean = req.body?.forceClean;
-  if (forceClean) {
-    console.log("WhatsApp: limpieza forzada de creds");
-    if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
-    waStatus = "disconnected";
-    await mongoose.connection.collection("wa_auth").deleteMany({});
-  }
+  // Cancelar reconexion pendiente
+  if (waReconnectTimer) { clearTimeout(waReconnectTimer); waReconnectTimer = null; }
+
+  // Matar socket previo si existe
+  if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
+  waStatus = "disconnected";
+
+  // Siempre limpiar creds para generar QR fresco (a menos que haya sesion activa)
+  console.log("[WA /connect] Limpiando creds para QR fresco");
+  await mongoose.connection.collection("wa_auth").deleteMany({});
 
   await connectWhatsApp();
 
-  // Esperar hasta 15s por QR o conexión
-  for (let i = 0; i < 15; i++) {
+  // Esperar hasta 20s por QR o conexión
+  for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 1000));
-    if (waQR || waStatus === "connected") break;
-    if (waStatus === "disconnected") break;
+    if (waQR || waStatus === "connected" || waStatus === "disconnected") break;
   }
 
-  // Si seguimos en "connecting" sin QR, algo anda mal — limpiar creds e intentar una vez mas
-  if (waStatus === "connecting" && !waQR) {
-    console.log("WhatsApp: sin QR tras 15s, limpiando creds y reintentando...");
-    if (waSocket) { try { waSocket.end(); } catch (e) { } waSocket = null; }
-    waStatus = "disconnected";
-    await mongoose.connection.collection("wa_auth").deleteMany({});
-    await connectWhatsApp();
-    for (let i = 0; i < 10; i++) {
-      await new Promise((r) => setTimeout(r, 1000));
-      if (waQR || waStatus === "connected" || waStatus === "disconnected") break;
-    }
-  }
-
+  console.log(`[WA /connect] Resultado: status=${waStatus} qr=${waQR ? "si" : "no"}`);
   res.json({ status: waStatus, qr: waQR });
 });
 

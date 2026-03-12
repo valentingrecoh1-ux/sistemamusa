@@ -1487,7 +1487,7 @@ IMPORTANT RULES:
         .slice(0, 20);
 
       // Tambien traer ventas en local
-      const ventasLocal = await Venta.find({ clienteId: cliente._id })
+      const ventasLocal = await Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" } })
         .select("-facturaPdf -notaCreditoPdf")
         .sort({ createdAt: -1 })
         .limit(20)

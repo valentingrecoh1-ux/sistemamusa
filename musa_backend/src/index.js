@@ -131,11 +131,11 @@ function mpRawToDoc(p, ownCollectorId) {
   if (fechaCreacion) {
     fecha = moment(fechaCreacion).tz("America/Argentina/Buenos_Aires").format("YYYY-MM-DD");
   }
-  const bruto = p.transaction_amount || 0;
+  const bruto = (p.transaction_amount || 0) + (p.shipping_amount || 0);
   const neto = p.transaction_details?.net_received_amount ?? null;
   const shipping = p.shipping_amount || 0;
   let comis = (p.fee_details || []).reduce((s, f) => s + (f.amount || 0), 0);
-  let ret = neto != null ? Math.max(0, +(bruto - comis - (neto - shipping)).toFixed(2)) : 0;
+  let ret = neto != null ? Math.max(0, +(bruto - comis - neto).toFixed(2)) : 0;
 
   // Clasificar tipo de movimiento
   const desc = (p.description || "").toLowerCase();
@@ -662,7 +662,7 @@ app.post("/api/whatsapp/send", async (req, res) => {
 });
 
 // ── Tienda Web API ──
-app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }) }));
+app.use("/api/tienda", createTiendaRouter({ Product, PedidoWeb, ConfigTienda, PlanClub, SuscripcionClub, Resena, Cliente, Venta, ValoracionVino, SugerenciaCliente, Evento, PagoMp, mpRawToDoc, getOwnMpCollectorId, mpClient: mpClient ? { accessToken: process.env.MP_ACCESS_TOKEN } : null, io, getWA: () => ({ waSocket, waStatus }) }));
 
 app.post(
   "/upload_flujo",

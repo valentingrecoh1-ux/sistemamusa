@@ -24,17 +24,17 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
   // Envia WhatsApp de notificacion de envio al cliente
   async function notificarEnvioWA(pedido, tipoMensaje) {
     try {
-      const { waClient, waStatus } = getWA ? getWA() : {};
-      if (waStatus !== "connected" || !waClient) return;
+      const { waSocket, waStatus } = getWA ? getWA() : {};
+      if (waStatus !== "connected" || !waSocket) return;
       const config = await ConfigTienda.findById("main").lean();
       if (!config?.notificacionesEnvioWA) return;
       const telefono = pedido.cliente?.telefono;
       if (!telefono) return;
       const generarMensaje = WA_MENSAJES_ENVIO[tipoMensaje];
       if (!generarMensaje) return;
-      const chatId = telefono.replace(/\D/g, "") + "@c.us";
+      const jid = telefono.replace(/\D/g, "") + "@s.whatsapp.net";
       const mensaje = generarMensaje(pedido);
-      await waClient.sendMessage(chatId, mensaje);
+      await waSocket.sendMessage(jid, { text: mensaje });
       console.log(`[WA Envio] Notificacion "${tipoMensaje}" enviada a ${telefono} para pedido #${pedido.numeroPedido}`);
     } catch (err) {
       console.error(`[WA Envio] Error enviando notificacion:`, err.message);

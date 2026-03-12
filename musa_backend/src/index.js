@@ -2288,7 +2288,7 @@ Origen: ${producto.origen || ""}`;
   });
   socket.on(
     "request-ventas",
-    async ({ fecha, page, filtroPago, filtroTipo, filtroNotaCredito }) => {
+    async ({ fecha, page, filtroPago, filtroTipo, filtroNotaCredito, filtroCanal }) => {
       const pageSize = 50;
       try {
         // Construir el query dinámicamente
@@ -2303,6 +2303,11 @@ Origen: ${producto.origen || ""}`;
               : { idTurno: { $exists: true } } // "reserva" implica que sí hay idTurno
             : {}),
           ...(filtroNotaCredito ? { notaCredito: true } : {}),
+          ...(filtroCanal === "online"
+            ? { canal: "ONLINE" }
+            : filtroCanal === "presencial"
+              ? { canal: { $ne: "ONLINE" } }
+              : {}),
         };
 
         // Consultar las ventas aplicando los filtros

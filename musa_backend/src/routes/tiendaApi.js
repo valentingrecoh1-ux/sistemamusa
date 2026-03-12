@@ -24,17 +24,17 @@ module.exports = function createTiendaRouter({ Product, PedidoWeb, ConfigTienda,
   // Envia WhatsApp de notificacion de envio al cliente
   async function notificarEnvioWA(pedido, tipoMensaje) {
     try {
-      const { waSocket, waStatus } = getWA ? getWA() : {};
-      if (waStatus !== "connected" || !waSocket) return;
+      const { waClient, waStatus } = getWA ? getWA() : {};
+      if (waStatus !== "connected" || !waClient) return;
       const config = await ConfigTienda.findById("main").lean();
       if (!config?.notificacionesEnvioWA) return;
       const telefono = pedido.cliente?.telefono;
       if (!telefono) return;
       const generarMensaje = WA_MENSAJES_ENVIO[tipoMensaje];
       if (!generarMensaje) return;
-      const jid = telefono.replace(/\D/g, "") + "@s.whatsapp.net";
+      const chatId = telefono.replace(/\D/g, "") + "@c.us";
       const mensaje = generarMensaje(pedido);
-      await waSocket.sendMessage(jid, { text: mensaje });
+      await waClient.sendMessage(chatId, mensaje);
       console.log(`[WA Envio] Notificacion "${tipoMensaje}" enviada a ${telefono} para pedido #${pedido.numeroPedido}`);
     } catch (err) {
       console.error(`[WA Envio] Error enviando notificacion:`, err.message);
@@ -1245,7 +1245,7 @@ IMPORTANT RULES:
   // Helper: compute client profile data (reused by token and search endpoints)
   async function computeClientProfile(cliente) {
     const [ventas, pedidosWeb] = await Promise.all([
-      Venta.find({ clienteId: cliente._id }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
+      Venta.find({ clienteId: cliente._id, canal: { $ne: "ONLINE" } }).select("-facturaPdf -notaCreditoPdf").sort({ createdAt: -1 }).limit(200).lean(),
       PedidoWeb.find({ clienteId: cliente._id, estado: { $in: ["confirmado", "preparando", "listo", "enviado", "entregado"] } }).sort({ createdAt: -1 }).limit(200).lean(),
     ]);
     const productosComprados = [];

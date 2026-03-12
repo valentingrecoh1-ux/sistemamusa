@@ -5876,10 +5876,15 @@ Reglas:
 
       // Si pasa a "listo" o "enviado" y tiene logistica integrada, crear envio
       // "listo" = paquete listo, ShipNow programa retiro; "enviado" = fallback si se salteo "listo"
-      if ((estado === "listo" || estado === "enviado") && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId) {
+      const debeCrearEnvio = (estado === "listo" || estado === "enviado") && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId;
+      console.log(`[Pedido #${pedido.numeroPedido}] Estado: ${estadoAnterior} -> ${estado} | entrega=${pedido.entrega} opcionEnvio=${!!pedido.opcionEnvio} logisticaEnvioId=${pedido.logisticaEnvioId || 'null'} -> crearEnvio=${debeCrearEnvio}`);
+      if (debeCrearEnvio) {
         try {
           const config = await ConfigTienda.findById("main").lean();
-          if (config) {
+          if (!config) {
+            console.error(`[Pedido #${pedido.numeroPedido}] ConfigTienda no encontrada`);
+          } else {
+            console.log(`[Pedido #${pedido.numeroPedido}] Creando envio en ${pedido.opcionEnvio.proveedor}...`);
             const resultado = await crearEnvioLogistica(config, {
               destino: {
                 nombre: pedido.cliente.nombre,
@@ -5899,13 +5904,14 @@ Reglas:
               referencia: String(pedido.numeroPedido),
               opcionElegida: pedido.opcionEnvio,
             });
+            console.log(`[Pedido #${pedido.numeroPedido}] Envio creado:`, JSON.stringify(resultado));
             pedido.logisticaEnvioId = resultado.envioId;
             pedido.logisticaTracking = resultado.tracking;
             pedido.logisticaProveedor = resultado.proveedor;
             pedido.logisticaEstado = resultado.estado;
           }
         } catch (logErr) {
-          console.error("Error creando envio logistica:", logErr.message);
+          console.error(`[Pedido #${pedido.numeroPedido}] Error creando envio:`, logErr.message, logErr.stack);
           // No bloquea el cambio de estado
         }
       }
@@ -5940,6 +5946,52 @@ Reglas:
     } catch (err) {
       console.error("Error update-estado-pedido-web:", err);
       cb?.({ error: "Error al actualizar estado" });
+    }
+  });
+
+  // Crear envio manualmente (retry si fallo antes)
+  socket.on("crear-envio-pedido", async ({ pedidoId }, cb) => {
+    try {
+      const pedido = await PedidoWeb.findById(pedidoId);
+      if (!pedido) return cb?.({ error: "Pedido no encontrado" });
+      if (pedido.logisticaEnvioId) return cb?.({ error: "Ya tiene envio creado: " + pedido.logisticaEnvioId });
+      if (pedido.entrega !== "envio") return cb?.({ error: "El pedido no es de envio" });
+      if (!pedido.opcionEnvio) return cb?.({ error: "El pedido no tiene opcion de envio seleccionada" });
+
+      const config = await ConfigTienda.findById("main").lean();
+      if (!config) return cb?.({ error: "Config no encontrada" });
+
+      console.log(`[Pedido #${pedido.numeroPedido}] Creando envio manual en ${pedido.opcionEnvio.proveedor}...`);
+      const resultado = await crearEnvioLogistica(config, {
+        destino: {
+          nombre: pedido.cliente.nombre,
+          apellido: pedido.cliente.apellido || "",
+          direccion: pedido.cliente.direccion,
+          calle: pedido.cliente.calle,
+          numero: pedido.cliente.numero,
+          pisoDepto: pedido.cliente.pisoDepto,
+          localidad: pedido.cliente.localidad,
+          codigoPostal: pedido.cliente.codigoPostal,
+          ciudad: pedido.cliente.localidad || "CABA",
+          provincia: "CABA",
+          email: pedido.cliente.email,
+          telefono: pedido.cliente.telefono,
+        },
+        items: pedido.items,
+        referencia: String(pedido.numeroPedido),
+        opcionElegida: pedido.opcionEnvio,
+      });
+      console.log(`[Pedido #${pedido.numeroPedido}] Envio creado:`, JSON.stringify(resultado));
+      pedido.logisticaEnvioId = resultado.envioId;
+      pedido.logisticaTracking = resultado.tracking;
+      pedido.logisticaProveedor = resultado.proveedor;
+      pedido.logisticaEstado = resultado.estado;
+      await pedido.save();
+      io.emit("cambios-web");
+      cb?.({ ok: true, tracking: resultado.tracking, proveedor: resultado.proveedor });
+    } catch (err) {
+      console.error("Error crear-envio-pedido:", err.message, err.stack);
+      cb?.({ error: "Error creando envio: " + err.message });
     }
   });
 

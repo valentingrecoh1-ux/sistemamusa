@@ -321,7 +321,7 @@ export default function WebPedidos() {
                     {selected.opcionEnvio?.tipo === 'sucursal' && <div><label>Tipo</label><span>Retiro en sucursal</span></div>}
                     {selected.costoEnvio > 0 && <div><label>Costo envio</label><span>{money(selected.costoEnvio)}</span></div>}
                   </div>
-                  {selected.logisticaProveedor && selected.logisticaProveedor !== 'fijo' && selected.logisticaEnvioId && (
+                  {selected.logisticaEnvioId ? (
                     <div className={s.logActions}>
                       <button
                         className={s.logBtn}
@@ -330,7 +330,7 @@ export default function WebPedidos() {
                             if (res?.ok) {
                               setSelected((prev) => prev ? {
                                 ...prev,
-                                logisticaEstado: res.estado.estadoShipnow,
+                                logisticaEstado: res.estado.estadoShipnow || res.estado.estadoPedidosYa || prev.logisticaEstado,
                                 logisticaTracking: res.estado.tracking || prev.logisticaTracking,
                               } : null);
                               fetchPedidos();
@@ -340,19 +340,45 @@ export default function WebPedidos() {
                       >
                         <i className="bi bi-arrow-clockwise" /> Actualizar estado
                       </button>
+                      {selected.logisticaProveedor && selected.logisticaProveedor !== 'fijo' && (
+                        <button
+                          className={s.logBtn}
+                          onClick={() => {
+                            const trackingUrl = selected.logisticaProveedor === 'shipnow'
+                              ? `https://app.shipnow.com.ar/orders/${selected.logisticaEnvioId}`
+                              : null;
+                            if (trackingUrl) window.open(trackingUrl, '_blank');
+                          }}
+                        >
+                          <i className="bi bi-box-arrow-up-right" /> Ver en {selected.logisticaProveedor}
+                        </button>
+                      )}
+                    </div>
+                  ) : selected.opcionEnvio && ['listo', 'enviado', 'entregado'].includes(selected.estado) ? (
+                    <div className={s.logActions}>
                       <button
                         className={s.logBtn}
+                        style={{ background: 'var(--primary)', color: '#fff' }}
                         onClick={() => {
-                          const trackingUrl = selected.logisticaProveedor === 'shipnow'
-                            ? `https://app.shipnow.com.ar/orders/${selected.logisticaEnvioId}`
-                            : null;
-                          if (trackingUrl) window.open(trackingUrl, '_blank');
+                          socket.emit('crear-envio-pedido', { pedidoId: selected._id }, (res) => {
+                            if (res?.ok) {
+                              setSelected((prev) => prev ? {
+                                ...prev,
+                                logisticaEnvioId: true,
+                                logisticaTracking: res.tracking,
+                                logisticaProveedor: res.proveedor,
+                              } : null);
+                              fetchPedidos();
+                            } else {
+                              alert(res?.error || 'Error creando envio');
+                            }
+                          });
                         }}
                       >
-                        <i className="bi bi-box-arrow-up-right" /> Ver en {selected.logisticaProveedor}
+                        <i className="bi bi-truck" /> Crear envio en {TRANSPORTISTA_NOMBRES[selected.opcionEnvio?.proveedor] || selected.opcionEnvio?.proveedor}
                       </button>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )}
 

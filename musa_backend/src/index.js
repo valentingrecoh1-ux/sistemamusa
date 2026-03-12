@@ -509,8 +509,12 @@ async function connectWhatsApp() {
           console.log("[WA] Logged out — limpiando auth");
           waStatus = "disconnected";
           waQR = null;
-          // Limpiar auth de MongoDB
           try { await mongoose.connection.db.collection("wa_auth").deleteMany({}); } catch (e) { }
+        } else if (statusCode === 405 || statusCode === 403) {
+          // 405 = WhatsApp rechaza conexión desde este servidor (datacenter bloqueado)
+          console.log("[WA] Conexion rechazada por WhatsApp (hosting no soportado). No se reintenta.");
+          waStatus = "disconnected";
+          waQR = null;
         } else {
           // Reconexión automática con backoff
           waStatus = "disconnected";

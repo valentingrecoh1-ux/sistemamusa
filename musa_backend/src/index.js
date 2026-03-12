@@ -458,17 +458,30 @@ async function connectWhatsApp() {
 
   try {
     console.log("[WA] Iniciando conexion (Baileys)...");
+
+    // Validar que los creds sean de Baileys (no de whatsapp-web.js anterior)
+    const coll = mongoose.connection.db.collection("wa_auth");
+    const existingCreds = await coll.findOne({ _id: "creds" });
+    if (existingCreds?.value && !existingCreds.value.noiseKey && !existingCreds.value.signedIdentityKey) {
+      console.log("[WA] Creds invalidos (de otra libreria?), limpiando...");
+      await coll.deleteMany({});
+    }
+
     const { state, saveCreds } = await useMongoAuthState();
+    console.log("[WA] Auth state cargado, creds keys:", Object.keys(state.creds || {}).slice(0, 5));
 
     waSocket = makeWASocket({
       auth: state,
-      logger: pino({ level: "silent" }),
+      logger: pino({ level: "warn" }),
       printQRInTerminal: false,
       browser: ["MUSA Vinos", "Chrome", "1.0.0"],
     });
 
-    waSocket.ev.on("creds.update", async () => {
-      try { await saveCreds(); } catch (e) { console.error("[WA] Error guardando creds:", e.message); }
+    waSocket.ev.on("creds.update", async (update) => {
+      try {
+        Object.assign(state.creds, update);
+        await saveCreds();
+      } catch (e) { console.error("[WA] Error guardando creds:", e.message); }
     });
 
     waSocket.ev.on("connection.update", async (update) => {
@@ -512,11 +525,22 @@ async function connectWhatsApp() {
       }
     });
   } catch (e) {
-    console.error("[WA] Error fatal:", e.message);
+    console.error("[WA] Error fatal:", e.message, e.stack);
     waStatus = "disconnected";
     waSocket = null;
   }
 }
+
+// Capturar errores no manejados de Baileys
+process.on("uncaughtException", (err) => {
+  if (err.message?.includes("'me'") || err.stack?.includes("baileys")) {
+    console.error("[WA] Baileys uncaught error:", err.message);
+    waStatus = "disconnected";
+    waSocket = null;
+  } else {
+    console.error("Uncaught exception:", err);
+  }
+});
 
 async function disconnectWhatsApp() {
   if (waReconnectTimer) { clearTimeout(waReconnectTimer); waReconnectTimer = null; }

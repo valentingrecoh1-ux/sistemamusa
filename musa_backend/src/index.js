@@ -5875,8 +5875,9 @@ Reglas:
         }
       }
 
-      // Si pasa a "enviado" y tiene logistica integrada, crear envio
-      if (estado === "enviado" && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId) {
+      // Si pasa a "listo" o "enviado" y tiene logistica integrada, crear envio
+      // "listo" = paquete listo, ShipNow programa retiro; "enviado" = fallback si se salteo "listo"
+      if ((estado === "listo" || estado === "enviado") && pedido.entrega === "envio" && pedido.opcionEnvio && !pedido.logisticaEnvioId) {
         try {
           const config = await ConfigTienda.findById("main").lean();
           if (config) {

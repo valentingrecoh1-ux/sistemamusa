@@ -5,7 +5,7 @@ import Pagination from '../../components/shared/Pagination';
 import { tienePermiso } from '../../lib/permisos';
 import s from './Proveedores.module.css';
 
-const EMPTY = { bodega: '', nombre: '', telefono: '', cuit: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '', esDistribuidor: false, distribuidorNombre: '', distribuidorContacto: '', distribuidorTelefono: '' };
+const EMPTY = { bodega: '', nombre: '', telefono: '', cuit: '', cbu: '', alias: '', banco: '', condicionPago: '', notas: '', factura: false, esDistribuidor: false, distribuidorNombre: '', distribuidorContacto: '', distribuidorTelefono: '' };
 
 export default function Proveedores({ usuario }) {
   const puedeEditar = tienePermiso(usuario, 'editar_proveedor');
@@ -67,6 +67,7 @@ export default function Proveedores({ usuario }) {
       alias: prov.alias || '',
       banco: prov.banco || '',
       condicionPago: prov.condicionPago || '',
+      factura: prov.factura || false,
       notas: prov.notas || '',
       esDistribuidor: prov.esDistribuidor || false,
       distribuidorNombre: prov.distribuidorNombre || '',
@@ -139,6 +140,14 @@ export default function Proveedores({ usuario }) {
           <div className={s.inputGroup}>
             <span>Condicion de Pago</span>
             <input type="text" value={form.condicionPago} onChange={(e) => handleChange('condicionPago', e.target.value)} placeholder="Ej: 30 dias" />
+          </div>
+
+          <div className={s.distribuidorToggle}>
+            <label>
+              <input type="checkbox" checked={form.factura} onChange={(e) => handleChange('factura', e.target.checked)} />
+              <span className={`${s.toggleSwitch} ${form.factura ? s.toggleSwitchOn : ''}`} />
+              <span>Factura</span>
+            </label>
           </div>
 
           <div className={s.inputGroup}>
@@ -220,13 +229,14 @@ export default function Proveedores({ usuario }) {
                 <th>Telefono</th>
                 <th>Distribuidor</th>
                 <th>Cond. Pago</th>
+                <th>Factura</th>
                 <th>Estado</th>
                 {puedeEditar && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {proveedores.length === 0 ? (
-                <tr className={s.emptyRow}><td colSpan={puedeEditar ? 7 : 6}>Sin proveedores</td></tr>
+                <tr className={s.emptyRow}><td colSpan={puedeEditar ? 8 : 7}>Sin proveedores</td></tr>
               ) : proveedores.map((prov) => (
                 <tr key={prov._id}>
                   <td>{prov.bodega || prov.nombre}</td>
@@ -243,6 +253,13 @@ export default function Proveedores({ usuario }) {
                   </td>
                   <td>{prov.esDistribuidor ? (prov.distribuidorNombre || 'Si') : '-'}</td>
                   <td>{prov.condicionPago || '-'}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    {prov.factura ? (
+                      <span style={{ color: 'var(--success)', fontWeight: 600 }}>Si</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>No</span>
+                    )}
+                  </td>
                   <td>
                     <button
                       className={`${s.toggleBtn} ${prov.activo !== false ? s.toggleActive : s.toggleInactive}`}

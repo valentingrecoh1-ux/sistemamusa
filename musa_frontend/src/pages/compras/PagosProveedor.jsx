@@ -7,9 +7,6 @@ import s from './PagosProveedor.module.css';
 
 const money = (n) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(n || 0);
 
-const ESTADOS = { borrador: 'Borrador', pendiente_aprobacion: 'Pend. Aprobacion', aprobada: 'Aprobada', enviada: 'Enviada', en_camino: 'En Camino', recibida_parcial: 'Recibida Parcial', recibida: 'Recibida', cerrada: 'Cerrada', cancelada: 'Cancelada' };
-const ESTADOS_PAGO = { pendiente: 'Pendiente', parcial: 'Parcial', pagado: 'Pagado' };
-
 const METODOS = ['Transferencia', 'Efectivo', 'Cheque', 'Otro'];
 
 export default function PagosProveedor({ usuario }) {
@@ -24,6 +21,7 @@ export default function PagosProveedor({ usuario }) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [editId, setEditId] = useState(null);
 
   useEffect(() => {
     socket.on('response-ordenes-compra', (data) => {
@@ -61,7 +59,42 @@ export default function PagosProveedor({ usuario }) {
     }
   };
 
+  const resetForm = () => {
+    setSelectedOC('');
+    setMonto('');
+    setMetodo('Transferencia');
+    setReferencia('');
+    setNotasPago('');
+    setArchivo(null);
+    setEditId(null);
+  };
+
   const handleSubmit = async () => {
+    if (editId) {
+      // Update existing payment
+      if (archivo) {
+        const formData = new FormData();
+        formData.append('archivo', archivo);
+        try {
+          await fetch(`${IP()}/api/pago-proveedor/${editId}/comprobante`, {
+            method: 'POST',
+            body: formData,
+          });
+        } catch (err) {
+          console.error('Error subiendo comprobante:', err);
+        }
+      }
+      socket.emit('actualizar-pago-proveedor', {
+        id: editId,
+        metodo,
+        referencia,
+        notas: notasPago,
+      });
+      resetForm();
+      return;
+    }
+
+    // New payment
     if (!selectedOC || !monto || Number(monto) <= 0) return;
 
     let comprobanteUrl = '';
@@ -89,13 +122,21 @@ export default function PagosProveedor({ usuario }) {
       comprobante: comprobanteUrl,
     });
 
-    // Reset form
-    setSelectedOC('');
-    setMonto('');
-    setMetodo('Transferencia');
-    setReferencia('');
-    setNotasPago('');
+    resetForm();
+  };
+
+  const handleEdit = (pago) => {
+    setEditId(pago._id);
+    setSelectedOC(pago.ordenCompraId?._id || '');
+    setMonto(pago.monto || '');
+    setMetodo(pago.metodoPago || 'Transferencia');
+    setReferencia(pago.referencia || '');
+    setNotasPago(pago.notas || '');
     setArchivo(null);
+  };
+
+  const handleCancelEdit = () => {
+    resetForm();
   };
 
   return (
@@ -106,31 +147,31 @@ export default function PagosProveedor({ usuario }) {
 
       {/* Left: Form */}
       <div className={s.formCard}>
-        <h3 className={s.formTitle}>Registrar Pago</h3>
+        <h3 className={s.formTitle}>{editId ? 'Editar Pago' : 'Registrar Pago'}</h3>
 
         <div className={s.inputGroup}>
           <span>Orden de Compra *</span>
-          <select value={selectedOC} onChange={(e) => setSelectedOC(e.target.value)}>
+          <select value={selectedOC} onChange={(e) => setSelectedOC(e.target.value)} disabled={!!editId}>
             <option value="">-- Seleccionar OC --</option>
             {ordenes.map((oc) => (
               <option key={oc._id} value={oc._id}>
-                OC #{oc.numero || '-'} - {oc.proveedor?.nombre || '-'} ({money(oc.total)})
+                OC #{oc.numero || '-'} - {oc.proveedorBodega || oc.proveedorNombre || '-'} ({money(oc.montoTotal ? Math.round(oc.montoTotal * 1.21 * 100) / 100 : oc.total)})
               </option>
             ))}
           </select>
         </div>
 
-        {ocSeleccionada && (
+        {ocSeleccionada && !editId && (
           <div className={s.ocInfo}>
-            Total: <span className={s.ocInfoValue}>{money(ocSeleccionada.total)}</span>
-            {' | '}Pagado: <span className={s.ocInfoValue}>{money(ocSeleccionada.totalPagado)}</span>
-            {' | '}Saldo: <span className={s.ocInfoValue}>{money((ocSeleccionada.total || 0) - (ocSeleccionada.totalPagado || 0))}</span>
+            Total: <span className={s.ocInfoValue}>{money(Math.round((ocSeleccionada.montoTotal || 0) * 1.21 * 100) / 100)}</span>
+            {' | '}Pagado: <span className={s.ocInfoValue}>{money(ocSeleccionada.montoPagado || 0)}</span>
+            {' | '}Saldo: <span className={s.ocInfoValue}>{money(Math.round((ocSeleccionada.montoTotal || 0) * 1.21 * 100) / 100 - (ocSeleccionada.montoPagado || 0))}</span>
           </div>
         )}
 
         <div className={s.inputGroup}>
           <span>Monto *</span>
-          <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0" />
+          <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0" disabled={!!editId} />
         </div>
 
         <div className={s.inputGroup}>
@@ -169,7 +210,16 @@ export default function PagosProveedor({ usuario }) {
           {archivo && <div className={s.fileName}>{archivo.name}</div>}
         </div>
 
-        <button className={s.submitBtn} onClick={handleSubmit}>Registrar Pago</button>
+        <div className={s.formActions}>
+          <button className={s.submitBtn} onClick={handleSubmit}>
+            {editId ? 'Actualizar Pago' : 'Registrar Pago'}
+          </button>
+          {editId && (
+            <button className={s.cancelBtn} onClick={handleCancelEdit} type="button">
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Right: Table */}
@@ -201,25 +251,36 @@ export default function PagosProveedor({ usuario }) {
                 <th>Metodo</th>
                 <th>Referencia</th>
                 <th>Comp.</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {pagos.length === 0 ? (
-                <tr className={s.emptyRow}><td colSpan={7}>Sin pagos registrados</td></tr>
+                <tr className={s.emptyRow}><td colSpan={8}>Sin pagos registrados</td></tr>
               ) : pagos.map((p) => (
-                <tr key={p._id}>
+                <tr key={p._id} className={editId === p._id ? s.editingRow : ''}>
                   <td>{p.fecha ? new Date(p.fecha).toLocaleDateString('es-AR') : '-'}</td>
-                  <td>{p.ordenCompra?.numero || p.ordenNumero || '-'}</td>
-                  <td>{p.ordenCompra?.proveedor?.nombre || p.proveedorNombre || '-'}</td>
+                  <td>{p.ordenCompraId?.numero || '-'}</td>
+                  <td>{p.proveedorId?.bodega || p.proveedorId?.nombre || '-'}</td>
                   <td>{money(p.monto)}</td>
-                  <td>{p.metodo || '-'}</td>
+                  <td>{p.metodoPago || '-'}</td>
                   <td>{p.referencia || '-'}</td>
                   <td>
-                    {p.comprobante ? (
-                      <a href={p.comprobante} target="_blank" rel="noopener noreferrer" className={s.comprobanteLink}>
+                    {p.filePath ? (
+                      <a href={p.filePath} target="_blank" rel="noopener noreferrer" className={s.comprobanteLink}>
                         <i className="bi bi-file-earmark" />
                       </a>
-                    ) : '-'}
+                    ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                  </td>
+                  <td>
+                    <button
+                      className={s.editBtn}
+                      onClick={() => handleEdit(p)}
+                      title="Editar pago"
+                      type="button"
+                    >
+                      <i className="bi bi-pencil" />
+                    </button>
                   </td>
                 </tr>
               ))}

@@ -21,6 +21,7 @@ const pagoProveedorSchema = new mongoose.Schema(
       default: "factura",
     },
     notas: { type: String },
+    operacionCajaId: { type: mongoose.Schema.Types.ObjectId, ref: "Operacion" },
   },
   { timestamps: true }
 );

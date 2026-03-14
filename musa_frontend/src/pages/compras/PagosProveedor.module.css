@@ -290,6 +290,53 @@
   color: var(--text-primary);
 }
 
+/* ── Form actions ── */
+.formActions {
+  display: flex;
+  gap: 10px;
+}
+
+.cancelBtn {
+  padding: 10px 16px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition);
+}
+
+.cancelBtn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ── Edit button ── */
+.editBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+.editBtn:hover {
+  color: var(--primary);
+  background-color: var(--accent-bg);
+}
+
+.editingRow td {
+  background-color: var(--accent-bg) !important;
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .container {

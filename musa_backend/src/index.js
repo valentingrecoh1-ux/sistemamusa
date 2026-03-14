@@ -1551,6 +1551,24 @@ app.delete("/api/oc/:id/factura/:idx", async (req, res) => {
   }
 });
 
+// ── Pago Proveedor comprobante upload ──
+app.post("/api/pago-proveedor/:id/comprobante", uploadComprobante.single("archivo"), async (req, res) => {
+  try {
+    const pago = await PagoProveedor.findById(req.params.id);
+    if (!pago) return res.status(404).json({ error: "Pago no encontrado" });
+    if (req.file) {
+      const mime = req.file.mimetype || "application/pdf";
+      pago.filePath = `data:${mime};base64,${req.file.buffer.toString("base64")}`;
+      await pago.save();
+      io.emit("cambios");
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Error upload comprobante pago:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Profile photo upload ──
 app.post("/upload_foto_perfil", uploadPerfil.single("foto"), async (req, res) => {
   try {
@@ -4414,7 +4432,7 @@ Origen: ${producto.origen || ""}`;
       const orden = await OrdenCompra.findById(data.ordenCompra);
       if (!orden) return;
       const concepto = data.concepto === "flete" ? "flete" : "factura";
-      await PagoProveedor.create({
+      const pagoData = {
         ordenCompraId: orden._id,
         proveedorId: orden.proveedorId,
         monto: data.monto,
@@ -4424,7 +4442,9 @@ Origen: ${producto.origen || ""}`;
         notas: data.notas || "",
         fecha: new Date().toISOString().slice(0, 10),
         registradoPor: "Sistema",
-      });
+      };
+      if (data.operacionCajaId) pagoData.operacionCajaId = data.operacionCajaId;
+      await PagoProveedor.create(pagoData);
       if (concepto === "flete") {
         orden.montoPagadoFlete = (orden.montoPagadoFlete || 0) + data.monto;
       } else {
@@ -4465,8 +4485,8 @@ Origen: ${producto.origen || ""}`;
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
-        .populate("ordenCompraId", "numero")
-        .populate("proveedorId", "nombre")
+        .populate("ordenCompraId", "numero proveedorBodega proveedorNombre")
+        .populate("proveedorId", "nombre bodega")
         .lean();
       socket.emit("response-pagos-proveedor", {
         pagos,
@@ -4475,6 +4495,21 @@ Origen: ${producto.origen || ""}`;
     } catch (err) {
       console.error("Error request-pagos-proveedor:", err);
       socket.emit("response-pagos-proveedor", { pagos: [], totalPages: 1 });
+    }
+  });
+
+  socket.on("actualizar-pago-proveedor", async (data) => {
+    try {
+      const pago = await PagoProveedor.findById(data.id);
+      if (!pago) return;
+      if (data.metodo) pago.metodoPago = data.metodo;
+      if (data.referencia !== undefined) pago.referencia = data.referencia;
+      if (data.notas !== undefined) pago.notas = data.notas;
+      if (data.comprobante) pago.filePath = data.comprobante;
+      await pago.save();
+      io.emit("cambios");
+    } catch (err) {
+      console.error("Error actualizar-pago-proveedor:", err);
     }
   });
 

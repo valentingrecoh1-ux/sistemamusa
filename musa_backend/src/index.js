@@ -4200,7 +4200,13 @@ Origen: ${producto.origen || ""}`;
       const { page = 1, search = "", estado = "" } = data;
       const limit = 20;
       const query = {};
-      if (estado) query.estado = estado;
+      if (estado) {
+        if (Array.isArray(estado)) {
+          query.estado = { $in: estado };
+        } else {
+          query.estado = estado;
+        }
+      }
       if (search) {
         query.$or = [
           { numero: { $regex: search, $options: "i" } },

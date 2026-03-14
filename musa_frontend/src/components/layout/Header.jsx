@@ -113,11 +113,17 @@ export default function Header({ onToggleMobile, usuario }) {
                     </div>
                     {!n.leida && (
                       <button
+                        type="button"
                         className={s.notifCheckBtn}
-                        onClick={(e) => { e.stopPropagation(); socket.emit('marcar-notificacion-leida', n._id); }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          socket.emit('marcar-notificacion-leida', n._id);
+                        }}
                         title="Marcar como leída"
                       >
-                        <i className="bi bi-check-lg" />
+                        <i className="bi bi-check-lg" style={{ pointerEvents: 'none' }} />
                       </button>
                     )}
                   </div>

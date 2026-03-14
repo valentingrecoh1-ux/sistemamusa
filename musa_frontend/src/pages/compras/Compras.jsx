@@ -13,6 +13,14 @@ const round2 = (n) => Math.round(n * 100) / 100;
 const ESTADOS = { borrador: 'Borrador', pendiente_aprobacion: 'Pend. Aprobacion', aprobada: 'Aprobada', enviada: 'Enviada', en_camino: 'En Camino', recibida_parcial: 'Recibida Parcial', recibida: 'Recibida', cerrada: 'Cerrada', cancelada: 'Cancelada' };
 const ESTADOS_PAGO = { pendiente: 'Pendiente', parcial: 'Parcial', pagado: 'Pagado' };
 
+const FILTROS_ESTADO = [
+  { key: 'pendientes', label: 'Pendientes', estados: ['borrador', 'pendiente_aprobacion'] },
+  { key: 'en_curso', label: 'En Curso', estados: ['aprobada', 'enviada', 'en_camino'] },
+  { key: 'recibidas', label: 'Recibidas', estados: ['recibida_parcial', 'recibida'] },
+  { key: 'cerrada', label: 'Cerrada', estados: ['cerrada'] },
+  { key: 'cancelada', label: 'Cancelada', estados: ['cancelada'] },
+];
+
 export default function Compras({ usuario }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -20,6 +28,12 @@ export default function Compras({ usuario }) {
   const [ordenes, setOrdenes] = useState([]);
   const [notifs, setNotifs] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState(searchParams.get('filtro') || '');
+
+  const estadoParaEmit = () => {
+    if (!filtroEstado) return '';
+    const grupo = FILTROS_ESTADO.find((f) => f.key === filtroEstado);
+    return grupo ? grupo.estados : filtroEstado;
+  };
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -33,12 +47,12 @@ export default function Compras({ usuario }) {
     socket.on('response-notificaciones', (data) => setNotifs(data || []));
     socket.on('cambios', () => {
       socket.emit('request-compras-dashboard');
-      socket.emit('request-ordenes-compra', { page, estado: filtroEstado, search });
+      socket.emit('request-ordenes-compra', { page, estado: estadoParaEmit(), search });
       socket.emit('request-notificaciones');
     });
 
     socket.emit('request-compras-dashboard');
-    socket.emit('request-ordenes-compra', { page, estado: filtroEstado, search });
+    socket.emit('request-ordenes-compra', { page, estado: estadoParaEmit(), search });
     socket.emit('request-notificaciones');
 
     return () => {
@@ -50,7 +64,7 @@ export default function Compras({ usuario }) {
   }, []);
 
   useEffect(() => {
-    socket.emit('request-ordenes-compra', { page, estado: filtroEstado, search });
+    socket.emit('request-ordenes-compra', { page, estado: estadoParaEmit(), search });
   }, [page, filtroEstado, search]);
 
   const marcarLeida = (id) => {
@@ -103,13 +117,13 @@ export default function Compras({ usuario }) {
           >
             Todas
           </button>
-          {Object.entries(ESTADOS).map(([key, label]) => (
+          {FILTROS_ESTADO.map((f) => (
             <button
-              key={key}
-              className={`${s.filterBtn} ${filtroEstado === key ? s.filterBtnActive : ''}`}
-              onClick={() => { setFiltroEstado(key); setPage(1); }}
+              key={f.key}
+              className={`${s.filterBtn} ${filtroEstado === f.key ? s.filterBtnActive : ''}`}
+              onClick={() => { setFiltroEstado(f.key); setPage(1); }}
             >
-              {label}
+              {f.label}
             </button>
           ))}
         </div>

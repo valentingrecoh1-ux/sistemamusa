@@ -4228,6 +4228,7 @@ Origen: ${producto.origen || ""}`;
       const totalFletes = (orden.fletes || []).reduce((s, f) => s + (f.monto || 0), 0);
       const totalUnidades = (orden.items || []).reduce((s, it) => s + (it.cantidadSolicitada || 0), 0);
       const fletePorUnidad = totalUnidades > 0 ? Math.round((totalFletes / totalUnidades) * 100) / 100 : 0;
+      const totalTributos = (orden.otrosTributos || []).reduce((s, t) => s + (t.importe || 0), 0);
       socket.emit("response-orden-compra-detalle", {
         ...orden,
         proveedor,
@@ -4237,6 +4238,7 @@ Origen: ${producto.origen || ""}`;
         totalPagadoFlete: orden.montoPagadoFlete || 0,
         totalFletes,
         fletePorUnidad,
+        totalTributos,
       });
     } catch (err) {
       console.error("Error request-orden-compra-detalle:", err);
@@ -4260,12 +4262,14 @@ Origen: ${producto.origen || ""}`;
         const subtotal = it.cantidadSolicitada * it.precioUnitario;
         return s + subtotal * (1 - (it.bonif || 0) / 100);
       }, 0);
+      const otrosTributos = (data.otrosTributos || []).filter((t) => t.descripcion || t.importe);
       const nueva = await OrdenCompra.create({
         numero,
         proveedorId: proveedor._id,
         proveedorNombre: proveedor.nombre,
         proveedorBodega: proveedor.bodega || proveedor.nombre,
         items,
+        otrosTributos,
         montoTotal,
         notas: data.notas || "",
         facturas: [],
@@ -4300,9 +4304,11 @@ Origen: ${producto.origen || ""}`;
         const subtotal = it.cantidadSolicitada * it.precioUnitario;
         return s + subtotal * (1 - (it.bonif || 0) / 100);
       }, 0);
+      const otrosTributos = (data.otrosTributos || []).filter((t) => t.descripcion || t.importe);
       orden.proveedorId = proveedor._id;
       orden.proveedorNombre = proveedor.nombre;
       orden.items = items;
+      orden.otrosTributos = otrosTributos;
       orden.montoTotal = montoTotal;
       orden.notas = data.notas || '';
       if (data.factura) {

@@ -142,7 +142,7 @@ export default function Compras({ usuario }) {
                 <td>{oc.numero || '-'}</td>
                 <td>{oc.createdAt ? new Date(oc.createdAt).toLocaleDateString('es-AR') : '-'}</td>
                 <td>{oc.proveedorBodega || oc.proveedorNombre || '-'}</td>
-                <td>{money(round2((oc.montoTotal || 0) * 1.21))}</td>
+                <td>{money(round2((oc.montoTotal || 0) * 1.21 + (oc.otrosTributos || []).reduce((s, t) => s + (t.importe || 0), 0)))}</td>
                 <td><Badge variant={oc.estado}>{ESTADOS[oc.estado] || oc.estado}</Badge></td>
                 <td><Badge variant={oc.estadoPago}>{ESTADOS_PAGO[oc.estadoPago] || oc.estadoPago}</Badge></td>
               </tr>

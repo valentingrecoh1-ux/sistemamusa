@@ -354,8 +354,25 @@ export default function OrdenCompraDetalle({ usuario }) {
     }
   };
 
-  const handlePago = () => {
+  const guardarPago = () => {
     if (!pagoMonto || Number(pagoMonto) <= 0) return;
+    socket.emit('guardar-pago-proveedor', {
+      ordenCompra: id,
+      monto: Number(pagoMonto),
+      metodo: pagoMetodo,
+      notas: pagoNotas,
+      concepto: pagoConcepto,
+    });
+    setShowPayForm(false);
+    setPagoMonto('');
+    setPagoNotas('');
+    setPagoConcepto('factura');
+    setPagoMetodo('efectivo');
+  };
+
+  const guardarPagoYRegistrarEnCaja = async () => {
+    if (!pagoMonto || Number(pagoMonto) <= 0) return;
+    const yaExiste = await dialog.confirm('¿Ya tenés este gasto anotado en caja? Si es así, solo se guardará el pago sin crear un nuevo movimiento.');
     const monto = Number(pagoMonto);
     const metodo = pagoMetodo;
     socket.emit('guardar-pago-proveedor', {
@@ -365,28 +382,18 @@ export default function OrdenCompraDetalle({ usuario }) {
       notas: pagoNotas,
       concepto: pagoConcepto,
     });
-    const conceptoLabel = pagoConcepto === 'flete' ? 'Flete' : 'Factura';
-    const desc = `Pago ${conceptoLabel} - ${orden.proveedorBodega || orden.proveedorNombre || ''} (${orden.numero || ''})`;
     setShowPayForm(false);
     setPagoMonto('');
     setPagoNotas('');
     setPagoConcepto('factura');
     setPagoMetodo('efectivo');
-    if (metodo === 'efectivo') {
+    if (!yaExiste) {
+      const conceptoLabel = pagoConcepto === 'flete' ? 'Flete' : 'Factura';
+      const facturaNum = (orden.facturas && orden.facturas.length > 0) ? ` - ${orden.facturas[0].numero || ''}` : '';
+      const desc = `Pago ${conceptoLabel} - ${orden.proveedorBodega || orden.proveedorNombre || ''} (${orden.numero || ''})${facturaNum}`;
       navigate('/caja', {
         state: {
-          prefill: {
-            descripcion: desc,
-            monto: -(Math.abs(monto)),
-            nombre: orden.proveedorBodega || orden.proveedorNombre || '',
-            tipoOperacion: 'GASTO',
-          },
-        },
-      });
-    } else {
-      navigate('/caja', {
-        state: {
-          tab: 'mercadopago',
+          ...(metodo === 'digital' ? { tab: 'mercadopago' } : {}),
           prefill: {
             descripcion: desc,
             monto: -(Math.abs(monto)),
@@ -1393,8 +1400,11 @@ export default function OrdenCompraDetalle({ usuario }) {
             </div>
           </div>
           <div className={s.btnRow}>
-            <button className={s.btnSuccess} onClick={() => handlePago(true)}>
-              <i className="bi bi-cash-stack" /> Registrar Pago en Caja
+            <button className={s.btnPrimary} onClick={guardarPago}>
+              <i className="bi bi-check-lg" /> Guardar Pago
+            </button>
+            <button className={s.btnSuccess} onClick={guardarPagoYRegistrarEnCaja}>
+              <i className="bi bi-cash-stack" /> Guardar y Registrar en Caja
             </button>
             <button className={s.btnOutline} onClick={() => setShowPayForm(false)}>Cancelar</button>
           </div>
@@ -1632,7 +1642,7 @@ export default function OrdenCompraDetalle({ usuario }) {
           <div className={s.finanzasGrid}>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>Nombre</span>
-              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.nombre}</span>
+              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.bodega || orden.proveedor.nombre || '-'}</span>
             </div>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>CUIT</span>
@@ -1640,7 +1650,7 @@ export default function OrdenCompraDetalle({ usuario }) {
             </div>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>Contacto</span>
-              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.contacto || '-'}</span>
+              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.nombre || '-'}</span>
             </div>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>Telefono</span>

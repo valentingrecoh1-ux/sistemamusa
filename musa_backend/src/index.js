@@ -4114,7 +4114,7 @@ Origen: ${producto.origen || ""}`;
   // ── Proveedores simple (para dropdown) ──
   socket.on("request-proveedores-simple", async () => {
     try {
-      const proveedores = await Proveedor.find({ activo: true }).select("nombre").lean();
+      const proveedores = await Proveedor.find({ activo: true }).select("nombre bodega cuit cbu alias banco telefono condicionPago factura").lean();
       socket.emit("response-proveedores-simple", proveedores);
     } catch (err) {
       console.error("Error request-proveedores-simple:", err);

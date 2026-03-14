@@ -4336,7 +4336,12 @@ Origen: ${producto.origen || ""}`;
       orden.montoTotal = montoTotal;
       orden.notas = data.notas || '';
       if (data.factura) {
-        orden.facturas = [{ numero: data.factura, fecha: data.fecha }];
+        if (orden.facturas && orden.facturas.length > 0) {
+          orden.facturas[0].numero = data.factura;
+          if (data.fecha) orden.facturas[0].fecha = data.fecha;
+        } else {
+          orden.facturas = [{ numero: data.factura, fecha: data.fecha }];
+        }
       }
       orden.timeline.push({ accion: 'Orden editada', usuario: 'Sistema', fecha: new Date() });
       await orden.save();

@@ -171,10 +171,12 @@ export default function RecepcionCompras({ usuario }) {
                 const searchTerm = searchProd[i];
                 const showSearch = searchTerm !== undefined;
                 const filteredProds = showSearch && searchTerm
-                  ? productos.filter((p) =>
-                      p.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                      p.codigo?.toLowerCase().includes(searchTerm.toLowerCase())
-                    ).slice(0, 8)
+                  ? productos.filter((p) => {
+                      const q = searchTerm.toLowerCase();
+                      return p.nombre?.toLowerCase().includes(q) ||
+                        p.codigo?.toLowerCase().includes(q) ||
+                        p.bodega?.toLowerCase().includes(q);
+                    }).slice(0, 8)
                   : [];
 
                 return (
@@ -221,7 +223,11 @@ export default function RecepcionCompras({ usuario }) {
                                   className={s.vincularOption}
                                   onClick={() => handleVinculacion(i, p._id)}
                                 >
-                                  <span className={s.vincularProdName}>{p.nombre}</span>
+                                  <span className={s.vincularProdName}>
+                                    {p.nombre}
+                                    {p.bodega ? <span className={s.vincularProdBodega}> · {p.bodega}</span> : ''}
+                                    {p.anio ? <span className={s.vincularProdAnio}> · {p.anio}</span> : ''}
+                                  </span>
                                   <span className={s.vincularProdStock}>Stock: {p.cantidad || 0}</span>
                                 </div>
                               ))}

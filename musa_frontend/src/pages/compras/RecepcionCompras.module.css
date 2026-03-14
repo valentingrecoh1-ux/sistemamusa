@@ -396,6 +396,18 @@
   text-overflow: ellipsis;
 }
 
+.vincularProdBodega {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.vincularProdAnio {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
 .vincularProdStock {
   font-size: 11px;
   color: var(--text-muted);

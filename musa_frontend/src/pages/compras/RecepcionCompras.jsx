@@ -234,6 +234,7 @@ export default function RecepcionCompras({ usuario }) {
             Recepcion - OC #{selectedOC.numero || '-'} — {selectedOC.proveedorBodega || selectedOC.proveedorNombre || ''}
           </h3>
 
+          <div className={s.tableWrapper}>
           <table className={s.table}>
             <thead>
               <tr>
@@ -376,6 +377,7 @@ export default function RecepcionCompras({ usuario }) {
               })}
             </tbody>
           </table>
+          </div>
 
           <div className={s.btnRow}>
             <button className={s.submitBtn} onClick={handleSubmit}>

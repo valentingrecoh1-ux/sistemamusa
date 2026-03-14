@@ -396,6 +396,18 @@
   text-overflow: ellipsis;
 }
 
+.vincularProdBodega {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.vincularProdAnio {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
 .vincularProdStock {
   font-size: 11px;
   color: var(--text-muted);
@@ -408,6 +420,201 @@
   text-align: center;
   color: var(--text-muted);
   font-size: 12px;
+}
+
+/* ── Search input row with scan button ── */
+.vincularInputRow {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.vincularInputRow .vincularInput {
+  flex: 1;
+}
+
+.scanBtn {
+  background: none;
+  border: 1px solid var(--input-border);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.scanBtn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background-color: var(--accent-bg);
+}
+
+/* ── Scanner modal ── */
+.scannerModal {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scannerBody {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scannerView {
+  width: 100%;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.scanResultBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background-color: var(--accent-bg);
+  border-radius: var(--border-radius-sm);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.scanNotFound {
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Create product button in dropdown ── */
+.vincularOptionCrear {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  border-top: 1px solid var(--card-border);
+  transition: background-color var(--transition);
+}
+
+.vincularOptionCrear:hover {
+  background-color: var(--accent-bg);
+}
+
+/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modalContent {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.modalTitle {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition);
+}
+
+.modalCloseBtn:hover {
+  color: var(--danger);
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.modalBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modalRow {
+  display: flex;
+  gap: 12px;
+}
+
+.modalField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modalField span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.modalField input,
+.modalField select {
+  padding: 8px 10px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  transition: border-color var(--transition);
+}
+
+.modalField input:focus,
+.modalField select:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+}
+
+.modalFooter {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--card-border);
 }
 
 /* ── Responsive ── */

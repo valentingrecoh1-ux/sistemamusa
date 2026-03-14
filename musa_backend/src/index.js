@@ -4197,7 +4197,7 @@ Origen: ${producto.origen || ""}`;
   // ── Ordenes de Compra ──
   socket.on("request-ordenes-compra", async (data = {}) => {
     try {
-      const { page = 1, search = "", estado = "" } = data;
+      const { page = 1, search = "", estado = "", estadoPago = "" } = data;
       const limit = 20;
       const query = {};
       if (estado) {
@@ -4205,6 +4205,13 @@ Origen: ${producto.origen || ""}`;
           query.estado = { $in: estado };
         } else {
           query.estado = estado;
+        }
+      }
+      if (estadoPago) {
+        if (Array.isArray(estadoPago)) {
+          query.estadoPago = { $in: estadoPago };
+        } else {
+          query.estadoPago = estadoPago;
         }
       }
       if (search) {

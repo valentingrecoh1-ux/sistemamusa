@@ -29,6 +29,7 @@ const ESTADOS = { borrador: 'Borrador', pendiente_aprobacion: 'Pend. Aprobacion'
 const ESTADOS_PAGO = { pendiente: 'Pendiente', parcial: 'Parcial', pagado: 'Pagado' };
 
 const EMPTY_ITEM = { descripcion: '', cantidad: 1, precioUnitario: '', precioConIVA: '', bonif: 0, tipoPrecio: 'unidad' };
+const EMPTY_TRIBUTO = { descripcion: '', detalle: '', alicuota: '', importe: '' };
 
 /** Precio unitario real: si tipoPrecio es 'caja6', divide entre 6 */
 const getUnitPrice = (it, field, parsePriceFn) => {
@@ -55,6 +56,7 @@ export default function OrdenCompraDetalle({ usuario }) {
   const [fecha, setFecha] = useState(new Date().toISOString().slice(0, 10));
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
   const [notas, setNotas] = useState('');
+  const [otrosTributos, setOtrosTributos] = useState([]);
   const [newOCFiles, setNewOCFiles] = useState([]);
   const [newOCTipo, setNewOCTipo] = useState('Factura');
 
@@ -94,6 +96,7 @@ export default function OrdenCompraDetalle({ usuario }) {
   const [editFactura, setEditFactura] = useState('');
   const [editFacturaType, setEditFacturaType] = useState('A');
   const [editNotas, setEditNotas] = useState('');
+  const [editOtrosTributos, setEditOtrosTributos] = useState([]);
   const [editBonifOpen, setEditBonifOpen] = useState(new Set());
 
   useEffect(() => {
@@ -186,6 +189,25 @@ export default function OrdenCompraDetalle({ usuario }) {
     setItems((prev) => [...prev, { ...EMPTY_ITEM }]);
   };
 
+  const moveItem = (index, direction) => {
+    setItems((prev) => {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+      return copy;
+    });
+    setBonifOpen((prev) => {
+      const next = new Set();
+      prev.forEach((i) => {
+        if (i === index) next.add(index + direction);
+        else if (i === index + direction) next.add(index);
+        else next.add(i);
+      });
+      return next;
+    });
+  };
+
   const removeItem = (index) => {
     setBonifOpen((prev) => {
       const next = new Set();
@@ -200,6 +222,26 @@ export default function OrdenCompraDetalle({ usuario }) {
 
   const totalSinIVA = () => items.reduce((sum, it) => sum + itemSubSinIVA(it), 0);
   const totalConIVA = () => items.reduce((sum, it) => sum + itemSubConIVA(it), 0);
+
+  // ── Otros Tributos handlers (new OC) ──
+  const totalTributos = () => otrosTributos.reduce((sum, t) => sum + (parsePrice(t.importe) || 0), 0);
+  const addTributo = () => setOtrosTributos((prev) => [...prev, { ...EMPTY_TRIBUTO }]);
+  const removeTributo = (index) => setOtrosTributos((prev) => prev.filter((_, i) => i !== index));
+  const handleTributoChange = (index, field, value) => {
+    setOtrosTributos((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
+  };
+  const handleTributoBlur = (index, field) => {
+    setOtrosTributos((prev) => {
+      const copy = [...prev];
+      const num = parsePrice(copy[index][field]);
+      copy[index] = { ...copy[index], [field]: num ? fmtPrice(num) : '' };
+      return copy;
+    });
+  };
 
   const handleOcrUpload = (e) => {
     const file = e.target.files?.[0];
@@ -276,7 +318,18 @@ export default function OrdenCompraDetalle({ usuario }) {
       }
       navigate('/compras');
     });
-    socket.emit('guardar-orden-compra', { proveedor: proveedorId, fecha, items: buildItems(), notas });
+    socket.emit('guardar-orden-compra', {
+      proveedor: proveedorId,
+      fecha,
+      items: buildItems(),
+      otrosTributos: otrosTributos.filter((t) => t.descripcion || parsePrice(t.importe)).map((t) => ({
+        descripcion: t.descripcion,
+        detalle: t.detalle,
+        alicuota: parsePrice(t.alicuota) || 0,
+        importe: parsePrice(t.importe) || 0,
+      })),
+      notas,
+    });
   };
 
   const handleSaveDraft = async () => {
@@ -419,6 +472,12 @@ export default function OrdenCompraDetalle({ usuario }) {
       setEditFactura('');
     }
     setEditNotas(orden.notas || '');
+    setEditOtrosTributos((orden.otrosTributos || []).map((t) => ({
+      descripcion: t.descripcion || '',
+      detalle: t.detalle || '',
+      alicuota: t.alicuota ? fmtPrice(t.alicuota) : '',
+      importe: t.importe ? fmtPrice(t.importe) : '',
+    })));
     setEditBonifOpen(new Set());
     setEditMode(true);
   };
@@ -465,6 +524,25 @@ export default function OrdenCompraDetalle({ usuario }) {
 
   const addEditItem = () => setEditItems((prev) => [...prev, { ...EMPTY_ITEM }]);
 
+  const moveEditItem = (index, direction) => {
+    setEditItems((prev) => {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+      return copy;
+    });
+    setEditBonifOpen((prev) => {
+      const next = new Set();
+      prev.forEach((i) => {
+        if (i === index) next.add(index + direction);
+        else if (i === index + direction) next.add(index);
+        else next.add(i);
+      });
+      return next;
+    });
+  };
+
   const removeEditItem = (index) => {
     setEditBonifOpen((prev) => {
       const next = new Set();
@@ -478,6 +556,26 @@ export default function OrdenCompraDetalle({ usuario }) {
   const editItemSubConIVA = (it) => getRealQty(it) * getUnitPrice(it, 'precioConIVA', parsePrice) * (1 - (Number(it.bonif) || 0) / 100);
   const editTotalSinIVA = () => editItems.reduce((sum, it) => sum + editItemSubSinIVA(it), 0);
   const editTotalConIVA = () => editItems.reduce((sum, it) => sum + editItemSubConIVA(it), 0);
+
+  // ── Otros Tributos handlers (edit OC) ──
+  const editTotalTributos = () => editOtrosTributos.reduce((sum, t) => sum + (parsePrice(t.importe) || 0), 0);
+  const addEditTributo = () => setEditOtrosTributos((prev) => [...prev, { ...EMPTY_TRIBUTO }]);
+  const removeEditTributo = (index) => setEditOtrosTributos((prev) => prev.filter((_, i) => i !== index));
+  const handleEditTributoChange = (index, field, value) => {
+    setEditOtrosTributos((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
+    });
+  };
+  const handleEditTributoBlur = (index, field) => {
+    setEditOtrosTributos((prev) => {
+      const copy = [...prev];
+      const num = parsePrice(copy[index][field]);
+      copy[index] = { ...copy[index], [field]: num ? fmtPrice(num) : '' };
+      return copy;
+    });
+  };
 
   const handleSave = async () => {
     if (!editProveedorId) { await dialog.alert('Seleccioná un proveedor'); return; }
@@ -496,6 +594,12 @@ export default function OrdenCompraDetalle({ usuario }) {
         };
       }),
       factura: editFactura ? `${editFacturaType} ${editFactura}` : '',
+      otrosTributos: editOtrosTributos.filter((t) => t.descripcion || parsePrice(t.importe)).map((t) => ({
+        descripcion: t.descripcion,
+        detalle: t.detalle,
+        alicuota: parsePrice(t.alicuota) || 0,
+        importe: parsePrice(t.importe) || 0,
+      })),
       notas: editNotas,
     });
     setEditMode(false);
@@ -581,6 +685,7 @@ export default function OrdenCompraDetalle({ usuario }) {
           <table className={s.itemsTable}>
             <thead>
               <tr>
+                <th style={{ width: 36 }} />
                 <th>Descripcion</th>
                 <th style={{ width: 80 }}>Cantidad</th>
                 <th style={{ width: 80 }}>Precio x</th>
@@ -595,6 +700,16 @@ export default function OrdenCompraDetalle({ usuario }) {
             <tbody>
               {items.map((item, i) => (
                 <tr key={i}>
+                  <td style={{ padding: '4px 2px' }}>
+                    <div className={s.moveButtons}>
+                      <button className={s.moveBtn} onClick={() => moveItem(i, -1)} disabled={i === 0} title="Mover arriba">
+                        <i className="bi bi-chevron-up" />
+                      </button>
+                      <button className={s.moveBtn} onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} title="Mover abajo">
+                        <i className="bi bi-chevron-down" />
+                      </button>
+                    </div>
+                  </td>
                   <td>
                     <input
                       className={s.itemInput}
@@ -691,11 +806,63 @@ export default function OrdenCompraDetalle({ usuario }) {
                 </tr>
               ))}
 
+              {/* Subtotal items */}
+              {otrosTributos.length > 0 && (
+                <tr className={s.subtotalRow}>
+                  <td colSpan={7} style={{ textAlign: 'right', fontWeight: 600 }}>Subtotal</td>
+                  <td style={{ fontWeight: 600 }}>{money(totalSinIVA())}</td>
+                  <td style={{ fontWeight: 600 }}>{money(totalConIVA())}</td>
+                  <td />
+                </tr>
+              )}
+
+              {/* Otros tributos rows */}
+              {otrosTributos.map((trib, i) => (
+                <tr key={`trib-${i}`} className={s.tributoRow}>
+                  <td colSpan={3} style={{ textAlign: 'left' }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <input className={s.itemInput} type="text" value={trib.descripcion}
+                        onChange={(e) => handleTributoChange(i, 'descripcion', e.target.value)}
+                        placeholder="Descripcion tributo" style={{ flex: 1 }} />
+                      <input className={s.itemInput} type="text" value={trib.detalle}
+                        onChange={(e) => handleTributoChange(i, 'detalle', e.target.value)}
+                        placeholder="Detalle" style={{ width: 120 }} />
+                    </div>
+                  </td>
+                  <td>
+                    <input className={s.itemInput} type="text" inputMode="decimal" value={trib.alicuota}
+                      onChange={(e) => handleTributoChange(i, 'alicuota', e.target.value)}
+                      onBlur={() => handleTributoBlur(i, 'alicuota')}
+                      placeholder="%" style={{ width: 60 }} />
+                  </td>
+                  <td colSpan={2} />
+                  <td colSpan={2} style={{ fontWeight: 600 }}>
+                    <input className={s.itemInput} type="text" inputMode="decimal" value={trib.importe}
+                      onChange={(e) => handleTributoChange(i, 'importe', e.target.value)}
+                      onBlur={() => handleTributoBlur(i, 'importe')}
+                      placeholder="Importe" />
+                  </td>
+                  <td>
+                    <button className={s.removeBtn} onClick={() => removeTributo(i)} title="Quitar tributo">
+                      <i className="bi bi-trash" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {otrosTributos.length > 0 && (
+                <tr className={s.subtotalRow}>
+                  <td colSpan={7} style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-muted)' }}>Importe Otros Tributos</td>
+                  <td colSpan={2} style={{ fontWeight: 600 }}>{money(totalTributos())}</td>
+                  <td />
+                </tr>
+              )}
+
               {/* Total */}
               <tr className={s.totalRow}>
-                <td colSpan={6} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
-                <td style={{ fontWeight: 700 }}>{money(totalSinIVA())}</td>
-                <td style={{ fontWeight: 700 }}>{money(totalConIVA())}</td>
+                <td colSpan={7} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
+                <td style={{ fontWeight: 700 }}>{money(totalSinIVA() + totalTributos())}</td>
+                <td style={{ fontWeight: 700 }}>{money(totalConIVA() + totalTributos())}</td>
                 <td />
               </tr>
             </tbody>
@@ -704,6 +871,9 @@ export default function OrdenCompraDetalle({ usuario }) {
           <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
             <button className={s.addRowBtn} onClick={addItem}>
               <i className="bi bi-plus" /> Agregar item
+            </button>
+            <button className={s.addRowBtn} onClick={addTributo}>
+              <i className="bi bi-plus" /> Agregar tributo
             </button>
           </div>
 
@@ -772,7 +942,7 @@ export default function OrdenCompraDetalle({ usuario }) {
     );
   }
 
-  const totalConIVAOrden = round2((orden.total || 0) * 1.21);
+  const totalConIVAOrden = round2((orden.total || 0) * 1.21 + (orden.totalTributos || 0));
   const saldoFactura = totalConIVAOrden - (orden.totalPagado || 0);
   const saldoFlete = (orden.totalFletes || 0) - (orden.totalPagadoFlete || 0);
   const saldo = saldoFactura + saldoFlete;
@@ -854,6 +1024,7 @@ export default function OrdenCompraDetalle({ usuario }) {
           <table className={s.itemsTable}>
             <thead>
               <tr>
+                <th style={{ width: 36 }} />
                 <th>Descripcion</th>
                 <th style={{ width: 80 }}>Cantidad</th>
                 <th style={{ width: 80 }}>Precio x</th>
@@ -868,6 +1039,16 @@ export default function OrdenCompraDetalle({ usuario }) {
             <tbody>
               {editItems.map((item, i) => (
                 <tr key={i}>
+                  <td style={{ padding: '4px 2px' }}>
+                    <div className={s.moveButtons}>
+                      <button className={s.moveBtn} onClick={() => moveEditItem(i, -1)} disabled={i === 0} title="Mover arriba">
+                        <i className="bi bi-chevron-up" />
+                      </button>
+                      <button className={s.moveBtn} onClick={() => moveEditItem(i, 1)} disabled={i === editItems.length - 1} title="Mover abajo">
+                        <i className="bi bi-chevron-down" />
+                      </button>
+                    </div>
+                  </td>
                   <td>
                     <input className={s.itemInput} type="text" value={item.descripcion}
                       onChange={(e) => handleEditItemChange(i, 'descripcion', e.target.value)}
@@ -934,10 +1115,62 @@ export default function OrdenCompraDetalle({ usuario }) {
                   </td>
                 </tr>
               ))}
+              {/* Subtotal items */}
+              {editOtrosTributos.length > 0 && (
+                <tr className={s.subtotalRow}>
+                  <td colSpan={7} style={{ textAlign: 'right', fontWeight: 600 }}>Subtotal</td>
+                  <td style={{ fontWeight: 600 }}>{money(editTotalSinIVA())}</td>
+                  <td style={{ fontWeight: 600 }}>{money(editTotalConIVA())}</td>
+                  <td />
+                </tr>
+              )}
+
+              {/* Otros tributos rows */}
+              {editOtrosTributos.map((trib, i) => (
+                <tr key={`trib-${i}`} className={s.tributoRow}>
+                  <td colSpan={3} style={{ textAlign: 'left' }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <input className={s.itemInput} type="text" value={trib.descripcion}
+                        onChange={(e) => handleEditTributoChange(i, 'descripcion', e.target.value)}
+                        placeholder="Descripcion tributo" style={{ flex: 1 }} />
+                      <input className={s.itemInput} type="text" value={trib.detalle}
+                        onChange={(e) => handleEditTributoChange(i, 'detalle', e.target.value)}
+                        placeholder="Detalle" style={{ width: 120 }} />
+                    </div>
+                  </td>
+                  <td>
+                    <input className={s.itemInput} type="text" inputMode="decimal" value={trib.alicuota}
+                      onChange={(e) => handleEditTributoChange(i, 'alicuota', e.target.value)}
+                      onBlur={() => handleEditTributoBlur(i, 'alicuota')}
+                      placeholder="%" style={{ width: 60 }} />
+                  </td>
+                  <td colSpan={2} />
+                  <td colSpan={2} style={{ fontWeight: 600 }}>
+                    <input className={s.itemInput} type="text" inputMode="decimal" value={trib.importe}
+                      onChange={(e) => handleEditTributoChange(i, 'importe', e.target.value)}
+                      onBlur={() => handleEditTributoBlur(i, 'importe')}
+                      placeholder="Importe" />
+                  </td>
+                  <td>
+                    <button className={s.removeBtn} onClick={() => removeEditTributo(i)} title="Quitar tributo">
+                      <i className="bi bi-trash" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {editOtrosTributos.length > 0 && (
+                <tr className={s.subtotalRow}>
+                  <td colSpan={7} style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-muted)' }}>Importe Otros Tributos</td>
+                  <td colSpan={2} style={{ fontWeight: 600 }}>{money(editTotalTributos())}</td>
+                  <td />
+                </tr>
+              )}
+
               <tr className={s.totalRow}>
-                <td colSpan={6} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
-                <td style={{ fontWeight: 700 }}>{money(editTotalSinIVA())}</td>
-                <td style={{ fontWeight: 700 }}>{money(editTotalConIVA())}</td>
+                <td colSpan={7} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
+                <td style={{ fontWeight: 700 }}>{money(editTotalSinIVA() + editTotalTributos())}</td>
+                <td style={{ fontWeight: 700 }}>{money(editTotalConIVA() + editTotalTributos())}</td>
                 <td />
               </tr>
             </tbody>
@@ -946,6 +1179,9 @@ export default function OrdenCompraDetalle({ usuario }) {
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
             <button className={s.addRowBtn} onClick={addEditItem}>
               <i className="bi bi-plus" /> Agregar item
+            </button>
+            <button className={s.addRowBtn} onClick={addEditTributo}>
+              <i className="bi bi-plus" /> Agregar tributo
             </button>
           </div>
 
@@ -1144,43 +1380,82 @@ export default function OrdenCompraDetalle({ usuario }) {
         {/* Products */}
         <div className={s.card}>
           <h3 className={s.cardTitle}>Productos</h3>
-          <table className={s.table}>
-            <thead>
-              <tr>
-                <th>Descripcion</th>
-                <th>Cant.</th>
-                <th>Precio s/IVA</th>
-                {(orden.totalFletes > 0) && <th>Flete/u</th>}
-                {(orden.totalFletes > 0) && <th>Costo Total/u</th>}
-                <th>Subtotal c/IVA</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(orden.items || []).length === 0 ? (
-                <tr className={s.emptyRow}><td colSpan={orden.totalFletes > 0 ? 6 : 4}>Sin productos</td></tr>
-              ) : (orden.items || []).map((it, i) => {
-                const cant = (it.cantidadSolicitada ?? it.cantidad) || 0;
-                const pSin = it.precioUnitario || 0;
-                const pCon = round2(pSin * 1.21);
-                const bonif = 1 - (it.bonif || 0) / 100;
-                const fpu = orden.fletePorUnidad || 0;
-                return (
-                  <tr key={i}>
-                    <td style={{ textAlign: 'left' }}>{it.nombre || it.descripcion}</td>
-                    <td>{cant}</td>
-                    <td>{money(pSin)}</td>
-                    {(orden.totalFletes > 0) && <td style={{ color: 'var(--info)' }}>{money(fpu)}</td>}
-                    {(orden.totalFletes > 0) && <td style={{ fontWeight: 600 }}>{money(pCon + fpu)}</td>}
-                    <td>{money(cant * pCon * bonif)}</td>
+          {(() => {
+            const hasFlete = orden.totalFletes > 0;
+            const hasTributos = (orden.totalTributos || 0) > 0;
+            const totalUnidades = (orden.items || []).reduce((s, it) => s + ((it.cantidadSolicitada ?? it.cantidad) || 0), 0);
+            const tributoPorUnidad = totalUnidades > 0 ? round2((orden.totalTributos || 0) / totalUnidades) : 0;
+            let baseCols = 4; // desc, cant, precio, subtotal
+            if (hasFlete) baseCols += 2;
+            if (hasTributos) baseCols += 1;
+            return (
+              <table className={s.table}>
+                <thead>
+                  <tr>
+                    <th>Descripcion</th>
+                    <th>Cant.</th>
+                    <th>Precio s/IVA</th>
+                    {hasFlete && <th>Flete/u</th>}
+                    {hasTributos && <th>Tributo/u</th>}
+                    {(hasFlete || hasTributos) && <th>Costo Total/u</th>}
+                    <th>Subtotal c/IVA</th>
                   </tr>
-                );
-              })}
-              <tr className={s.totalRow}>
-                <td colSpan={orden.totalFletes > 0 ? 5 : 3} style={{ textAlign: 'right', fontWeight: 700 }}>Total c/IVA</td>
-                <td style={{ fontWeight: 700 }}>{money(round2((orden.total || 0) * 1.21))}</td>
-              </tr>
-            </tbody>
-          </table>
+                </thead>
+                <tbody>
+                  {(orden.items || []).length === 0 ? (
+                    <tr className={s.emptyRow}><td colSpan={baseCols}>Sin productos</td></tr>
+                  ) : (orden.items || []).map((it, i) => {
+                    const cant = (it.cantidadSolicitada ?? it.cantidad) || 0;
+                    const pSin = it.precioUnitario || 0;
+                    const pCon = round2(pSin * 1.21);
+                    const bonif = 1 - (it.bonif || 0) / 100;
+                    const fpu = orden.fletePorUnidad || 0;
+                    const costoTotal = pCon + (hasFlete ? fpu : 0) + (hasTributos ? tributoPorUnidad : 0);
+                    return (
+                      <tr key={i}>
+                        <td style={{ textAlign: 'left' }}>{it.nombre || it.descripcion}</td>
+                        <td>{cant}</td>
+                        <td>{money(pSin)}</td>
+                        {hasFlete && <td style={{ color: 'var(--info)' }}>{money(fpu)}</td>}
+                        {hasTributos && <td style={{ color: 'var(--warning)' }}>{money(tributoPorUnidad)}</td>}
+                        {(hasFlete || hasTributos) && <td style={{ fontWeight: 600 }}>{money(costoTotal)}</td>}
+                        <td>{money(cant * pCon * bonif)}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* Otros Tributos rows */}
+                  {(orden.otrosTributos || []).length > 0 && (
+                    <tr className={s.subtotalRow}>
+                      <td colSpan={baseCols - 1} style={{ textAlign: 'right', fontWeight: 600 }}>Subtotal c/IVA</td>
+                      <td style={{ fontWeight: 600 }}>{money(round2((orden.total || 0) * 1.21 - (orden.totalTributos || 0)))}</td>
+                    </tr>
+                  )}
+                  {(orden.otrosTributos || []).map((t, i) => (
+                    <tr key={`trib-${i}`} className={s.tributoRow}>
+                      <td colSpan={baseCols - 1} style={{ textAlign: 'right', fontSize: 12, color: 'var(--text-muted)' }}>
+                        {t.descripcion}{t.detalle ? ` — ${t.detalle}` : ''}{t.alicuota ? ` (${t.alicuota}%)` : ''}
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{money(t.importe)}</td>
+                    </tr>
+                  ))}
+                  {(orden.otrosTributos || []).length > 0 && (
+                    <tr className={s.subtotalRow}>
+                      <td colSpan={baseCols - 1} style={{ textAlign: 'right', fontWeight: 600, color: 'var(--text-muted)' }}>
+                        Importe Otros Tributos
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{money(orden.totalTributos)}</td>
+                    </tr>
+                  )}
+
+                  <tr className={s.totalRow}>
+                    <td colSpan={baseCols - 1} style={{ textAlign: 'right', fontWeight: 700 }}>Total c/IVA</td>
+                    <td style={{ fontWeight: 700 }}>{money(round2((orden.total || 0) * 1.21 + (orden.totalTributos || 0)))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            );
+          })()}
         </div>
 
         {/* Finanzas */}

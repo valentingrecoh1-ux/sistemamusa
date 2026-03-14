@@ -1311,6 +1311,32 @@ export default function OrdenCompraDetalle({ usuario }) {
         </div>
       </div>
 
+      {/* Datos de pago del proveedor */}
+      {orden.proveedor && (() => {
+        const prov = orden.proveedor;
+        const campos = [
+          { label: 'CUIT', value: prov.cuit },
+          { label: 'Telefono', value: prov.telefono },
+          { label: 'CBU', value: prov.cbu },
+          { label: 'Banco', value: prov.banco },
+          { label: 'Alias', value: prov.alias },
+          { label: 'Contacto', value: prov.nombre },
+          { label: 'Cond. Pago', value: prov.condicionPago },
+          { label: 'Factura', value: prov.factura ? 'Si' : 'No' },
+        ].filter((c) => c.value);
+        if (campos.length === 0) return null;
+        return (
+          <div className={s.proveedorPreview}>
+            {campos.map((c) => (
+              <div key={c.label} className={s.proveedorPreviewItem}>
+                <span className={s.proveedorPreviewLabel}>{c.label}</span>
+                <span className={s.proveedorPreviewValue}>{c.value}</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* Pay form */}
       {showPayForm && (
         <div className={s.payForm}>
@@ -1374,31 +1400,6 @@ export default function OrdenCompraDetalle({ usuario }) {
           </div>
         </div>
       )}
-
-      {/* Datos de pago del proveedor */}
-      {orden.proveedor && (() => {
-        const prov = orden.proveedor;
-        const campos = [
-          { label: 'CUIT', value: prov.cuit },
-          { label: 'Telefono', value: prov.telefono },
-          { label: 'CBU', value: prov.cbu },
-          { label: 'Banco', value: prov.banco },
-          { label: 'Alias', value: prov.alias },
-          { label: 'Cond. Pago', value: prov.condicionPago },
-          { label: 'Factura', value: prov.factura ? 'Si' : 'No' },
-        ].filter((c) => c.value);
-        if (campos.length === 0) return null;
-        return (
-          <div className={s.proveedorPreview} style={{ marginBottom: 0 }}>
-            {campos.map((c) => (
-              <div key={c.label} className={s.proveedorPreviewItem}>
-                <span className={s.proveedorPreviewLabel}>{c.label}</span>
-                <span className={s.proveedorPreviewValue}>{c.value}</span>
-              </div>
-            ))}
-          </div>
-        );
-      })()}
 
       {/* Detail grid */}
       <div className={s.detailGrid}>

@@ -392,8 +392,8 @@ export default function RecepcionCompras({ usuario }) {
           <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Escanear Codigo de Barras</span>
-              <button type="button" className={s.modalCloseBtn} onClick={closeScannerModal}>
-                <i className="bi bi-x-lg" />
+              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
+                <i className="bi bi-x-lg" style={{ pointerEvents: 'none' }} />
               </button>
             </div>
             <div className={s.scannerBody}>
@@ -417,8 +417,8 @@ export default function RecepcionCompras({ usuario }) {
           <div className={s.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Crear Producto</span>
-              <button type="button" className={s.modalCloseBtn} onClick={() => { setCrearModal(null); setNewProd(EMPTY_PROD); }}>
-                <i className="bi bi-x-lg" />
+              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCrearModal(null); setNewProd(EMPTY_PROD); }}>
+                <i className="bi bi-x-lg" style={{ pointerEvents: 'none' }} />
               </button>
             </div>
             <div className={s.modalBody}>

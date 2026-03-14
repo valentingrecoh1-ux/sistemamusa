@@ -186,6 +186,25 @@ export default function OrdenCompraDetalle({ usuario }) {
     setItems((prev) => [...prev, { ...EMPTY_ITEM }]);
   };
 
+  const moveItem = (index, direction) => {
+    setItems((prev) => {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+      return copy;
+    });
+    setBonifOpen((prev) => {
+      const next = new Set();
+      prev.forEach((i) => {
+        if (i === index) next.add(index + direction);
+        else if (i === index + direction) next.add(index);
+        else next.add(i);
+      });
+      return next;
+    });
+  };
+
   const removeItem = (index) => {
     setBonifOpen((prev) => {
       const next = new Set();
@@ -465,6 +484,25 @@ export default function OrdenCompraDetalle({ usuario }) {
 
   const addEditItem = () => setEditItems((prev) => [...prev, { ...EMPTY_ITEM }]);
 
+  const moveEditItem = (index, direction) => {
+    setEditItems((prev) => {
+      const newIndex = index + direction;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+      const copy = [...prev];
+      [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+      return copy;
+    });
+    setEditBonifOpen((prev) => {
+      const next = new Set();
+      prev.forEach((i) => {
+        if (i === index) next.add(index + direction);
+        else if (i === index + direction) next.add(index);
+        else next.add(i);
+      });
+      return next;
+    });
+  };
+
   const removeEditItem = (index) => {
     setEditBonifOpen((prev) => {
       const next = new Set();
@@ -581,6 +619,7 @@ export default function OrdenCompraDetalle({ usuario }) {
           <table className={s.itemsTable}>
             <thead>
               <tr>
+                <th style={{ width: 36 }} />
                 <th>Descripcion</th>
                 <th style={{ width: 80 }}>Cantidad</th>
                 <th style={{ width: 80 }}>Precio x</th>
@@ -595,6 +634,16 @@ export default function OrdenCompraDetalle({ usuario }) {
             <tbody>
               {items.map((item, i) => (
                 <tr key={i}>
+                  <td style={{ padding: '4px 2px' }}>
+                    <div className={s.moveButtons}>
+                      <button className={s.moveBtn} onClick={() => moveItem(i, -1)} disabled={i === 0} title="Mover arriba">
+                        <i className="bi bi-chevron-up" />
+                      </button>
+                      <button className={s.moveBtn} onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} title="Mover abajo">
+                        <i className="bi bi-chevron-down" />
+                      </button>
+                    </div>
+                  </td>
                   <td>
                     <input
                       className={s.itemInput}
@@ -693,7 +742,7 @@ export default function OrdenCompraDetalle({ usuario }) {
 
               {/* Total */}
               <tr className={s.totalRow}>
-                <td colSpan={6} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
+                <td colSpan={7} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
                 <td style={{ fontWeight: 700 }}>{money(totalSinIVA())}</td>
                 <td style={{ fontWeight: 700 }}>{money(totalConIVA())}</td>
                 <td />
@@ -854,6 +903,7 @@ export default function OrdenCompraDetalle({ usuario }) {
           <table className={s.itemsTable}>
             <thead>
               <tr>
+                <th style={{ width: 36 }} />
                 <th>Descripcion</th>
                 <th style={{ width: 80 }}>Cantidad</th>
                 <th style={{ width: 80 }}>Precio x</th>
@@ -868,6 +918,16 @@ export default function OrdenCompraDetalle({ usuario }) {
             <tbody>
               {editItems.map((item, i) => (
                 <tr key={i}>
+                  <td style={{ padding: '4px 2px' }}>
+                    <div className={s.moveButtons}>
+                      <button className={s.moveBtn} onClick={() => moveEditItem(i, -1)} disabled={i === 0} title="Mover arriba">
+                        <i className="bi bi-chevron-up" />
+                      </button>
+                      <button className={s.moveBtn} onClick={() => moveEditItem(i, 1)} disabled={i === editItems.length - 1} title="Mover abajo">
+                        <i className="bi bi-chevron-down" />
+                      </button>
+                    </div>
+                  </td>
                   <td>
                     <input className={s.itemInput} type="text" value={item.descripcion}
                       onChange={(e) => handleEditItemChange(i, 'descripcion', e.target.value)}
@@ -935,7 +995,7 @@ export default function OrdenCompraDetalle({ usuario }) {
                 </tr>
               ))}
               <tr className={s.totalRow}>
-                <td colSpan={6} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
+                <td colSpan={7} style={{ textAlign: 'right', fontWeight: 700 }}>Total</td>
                 <td style={{ fontWeight: 700 }}>{money(editTotalSinIVA())}</td>
                 <td style={{ fontWeight: 700 }}>{money(editTotalConIVA())}</td>
                 <td />

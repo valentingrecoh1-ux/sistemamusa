@@ -354,7 +354,23 @@ export default function OrdenCompraDetalle({ usuario }) {
     }
   };
 
-  const handlePago = () => {
+  const guardarPago = () => {
+    if (!pagoMonto || Number(pagoMonto) <= 0) return;
+    socket.emit('guardar-pago-proveedor', {
+      ordenCompra: id,
+      monto: Number(pagoMonto),
+      metodo: pagoMetodo,
+      notas: pagoNotas,
+      concepto: pagoConcepto,
+    });
+    setShowPayForm(false);
+    setPagoMonto('');
+    setPagoNotas('');
+    setPagoConcepto('factura');
+    setPagoMetodo('efectivo');
+  };
+
+  const guardarPagoYRegistrarEnCaja = () => {
     if (!pagoMonto || Number(pagoMonto) <= 0) return;
     const monto = Number(pagoMonto);
     const metodo = pagoMetodo;
@@ -366,36 +382,24 @@ export default function OrdenCompraDetalle({ usuario }) {
       concepto: pagoConcepto,
     });
     const conceptoLabel = pagoConcepto === 'flete' ? 'Flete' : 'Factura';
-    const desc = `Pago ${conceptoLabel} - ${orden.proveedorBodega || orden.proveedorNombre || ''} (${orden.numero || ''})`;
+    const facturaNum = (orden.facturas && orden.facturas.length > 0) ? ` - ${orden.facturas[0].numero || ''}` : '';
+    const desc = `Pago ${conceptoLabel} - ${orden.proveedorBodega || orden.proveedorNombre || ''} (${orden.numero || ''})${facturaNum}`;
     setShowPayForm(false);
     setPagoMonto('');
     setPagoNotas('');
     setPagoConcepto('factura');
     setPagoMetodo('efectivo');
-    if (metodo === 'efectivo') {
-      navigate('/caja', {
-        state: {
-          prefill: {
-            descripcion: desc,
-            monto: -(Math.abs(monto)),
-            nombre: orden.proveedorBodega || orden.proveedorNombre || '',
-            tipoOperacion: 'GASTO',
-          },
+    navigate('/caja', {
+      state: {
+        ...(metodo === 'digital' ? { tab: 'mercadopago' } : {}),
+        prefill: {
+          descripcion: desc,
+          monto: -(Math.abs(monto)),
+          nombre: orden.proveedorBodega || orden.proveedorNombre || '',
+          tipoOperacion: 'GASTO',
         },
-      });
-    } else {
-      navigate('/caja', {
-        state: {
-          tab: 'mercadopago',
-          prefill: {
-            descripcion: desc,
-            monto: -(Math.abs(monto)),
-            nombre: orden.proveedorBodega || orden.proveedorNombre || '',
-            tipoOperacion: 'GASTO',
-          },
-        },
-      });
-    }
+      },
+    });
   };
 
   // ── Flete handlers ──
@@ -1393,8 +1397,11 @@ export default function OrdenCompraDetalle({ usuario }) {
             </div>
           </div>
           <div className={s.btnRow}>
-            <button className={s.btnSuccess} onClick={() => handlePago(true)}>
-              <i className="bi bi-cash-stack" /> Registrar Pago en Caja
+            <button className={s.btnPrimary} onClick={guardarPago}>
+              <i className="bi bi-check-lg" /> Guardar Pago
+            </button>
+            <button className={s.btnSuccess} onClick={guardarPagoYRegistrarEnCaja}>
+              <i className="bi bi-cash-stack" /> Guardar y Registrar en Caja
             </button>
             <button className={s.btnOutline} onClick={() => setShowPayForm(false)}>Cancelar</button>
           </div>

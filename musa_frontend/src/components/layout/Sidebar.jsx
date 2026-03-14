@@ -35,9 +35,10 @@ const NAV = [
       { to: '/flujos', icon: 'bi-arrow-left-right', label: 'Flujos' },
       { to: '/estadisticas', icon: 'bi-bar-chart-line', label: 'Estadisticas' },
       { to: '/compras', icon: 'bi-bag', label: 'Compras' },
-      { to: '/compras/proveedores', icon: 'bi-people', label: 'Proveedores', sub: true },
-      { to: '/compras/recepcion', icon: 'bi-truck', label: 'Recepcion', sub: true },
-      { to: '/compras/pagos', icon: 'bi-credit-card', label: 'Pagos', sub: true },
+      { to: '/compras/orden/nueva', icon: 'bi-plus-circle', label: 'Nueva OC', sub: true, parent: '/compras' },
+      { to: '/compras/proveedores', icon: 'bi-people', label: 'Proveedores', sub: true, parent: '/compras' },
+      { to: '/compras/recepcion', icon: 'bi-truck', label: 'Recepcion', sub: true, parent: '/compras' },
+      { to: '/compras/pagos', icon: 'bi-credit-card', label: 'Pagos', sub: true, parent: '/compras' },
     ],
   },
   {
@@ -106,7 +107,9 @@ export default function Sidebar({ usuario, onLogout, collapsed, setCollapsed, mo
           {NAV.filter(g => !g.adminOnly || usuario?.rol === 'admin').map(group => (
             <div key={group.section} className={s.section}>
               {group.section && <div className={s.sectionTitle}>{group.section}</div>}
-              {group.items.map(item => (
+              {group.items
+                .filter(item => !item.sub || !item.parent || pathname.startsWith(item.parent))
+                .map(item => (
                 <Link
                   key={item.to}
                   to={item.to}

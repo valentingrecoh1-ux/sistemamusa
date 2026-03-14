@@ -1546,6 +1546,24 @@ export default function OrdenCompraDetalle({ usuario }) {
             </div>
           </div>
 
+          {/* Comprobantes de Pago */}
+          {(orden.pagos || []).some((p) => p.filePath) && (
+            <div className={s.card} style={{ marginBottom: 20 }}>
+              <h3 className={s.cardTitle}>Comprobantes de Pago</h3>
+              {(orden.pagos || []).filter((p) => p.filePath).map((p, i) => (
+                <div key={p._id || i} className={s.facturaItem}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{money(p.monto)}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.fecha} · {p.metodoPago || '-'}</span>
+                  </div>
+                  <span onClick={() => setPreviewArchivo(p.filePath)} style={{ fontSize: 13, color: 'var(--info)', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                    <i className="bi bi-file-earmark-arrow-down" /> Ver comprobante
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Facturas */}
           <div className={s.card}>
             <h3 className={s.cardTitle}>Facturas / Remitos</h3>

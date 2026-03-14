@@ -12,38 +12,37 @@
   gap: 16px;
 }
 
-/* ── Nav links row ── */
-.nav {
+/* ── Quick links row ── */
+.quickLinks {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.navPill {
+.quickLink {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
-  border-radius: 999px;
-  background-color: var(--primary);
-  color: var(--text-inverse);
+  padding: 7px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
   text-decoration: none;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.3px;
-  transition: background-color var(--transition), box-shadow var(--transition);
-  cursor: pointer;
-  border: none;
+  transition: all var(--transition);
 }
 
-.navPill:hover {
-  background-color: var(--primary-hover);
-  box-shadow: var(--card-hover-shadow);
+.quickLink:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: var(--accent-bg);
 }
 
-.navPill i {
-  font-size: 15px;
+.quickLink i {
+  font-size: 14px;
 }
 
 /* ── Toolbar: search + filter + pagination ── */
@@ -101,6 +100,20 @@
   background-color: var(--primary);
   color: var(--text-inverse);
   border-color: var(--primary);
+}
+
+.filterBtnCancelada {
+  opacity: 0.5;
+}
+
+.filterBtnCancelada:hover {
+  opacity: 1;
+}
+
+.filterBtnCancelada.filterBtnActive {
+  opacity: 1;
+  background-color: var(--danger);
+  border-color: var(--danger);
 }
 
 .paginationDock {

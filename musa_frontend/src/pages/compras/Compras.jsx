@@ -21,6 +21,9 @@ const FILTROS_ESTADO = [
   { key: 'cancelada', label: 'Cancelada', estados: ['cancelada'] },
 ];
 
+// "Todas" excludes cancelled
+const ESTADOS_NO_CANCELADA = ['borrador', 'pendiente_aprobacion', 'aprobada', 'enviada', 'en_camino', 'recibida_parcial', 'recibida', 'cerrada'];
+
 export default function Compras({ usuario }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -28,15 +31,44 @@ export default function Compras({ usuario }) {
   const [ordenes, setOrdenes] = useState([]);
   const [notifs, setNotifs] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState(searchParams.get('filtro') || '');
-
-  const estadoParaEmit = () => {
-    if (!filtroEstado) return '';
-    const grupo = FILTROS_ESTADO.find((f) => f.key === filtroEstado);
-    return grupo ? grupo.estados : filtroEstado;
-  };
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const estadoParaEmit = () => {
+    if (!filtroEstado) return ESTADOS_NO_CANCELADA; // default: exclude cancelled
+    const grupo = FILTROS_ESTADO.find((f) => f.key === filtroEstado);
+    return grupo ? grupo.estados : filtroEstado;
+  };
+
+  // KPI filter mappings
+  const KPI_FILTERS = {
+    pendAprobacion: 'pendiente_aprobacion',
+    pendPago: 'pend_pago',
+    pendRecepcion: 'en_curso',
+  };
+
+  const handleKPIClick = (kpi) => {
+    if (kpi === 'pendAprobacion') {
+      setFiltroEstado('pendientes');
+    } else if (kpi === 'pendPago') {
+      // Filter by payment status - show all non-cancelled with pending/partial payment
+      setFiltroEstado('pend_pago');
+    } else if (kpi === 'pendRecepcion') {
+      setFiltroEstado('en_curso');
+    }
+    setPage(1);
+  };
+
+  const estadoParaEmitFull = () => {
+    if (filtroEstado === 'pend_pago') return ESTADOS_NO_CANCELADA;
+    return estadoParaEmit();
+  };
+
+  const estadoPagoFilter = () => {
+    if (filtroEstado === 'pend_pago') return ['pendiente', 'parcial'];
+    return '';
+  };
 
   useEffect(() => {
     socket.on('response-compras-dashboard', (data) => setDash(data));
@@ -47,12 +79,12 @@ export default function Compras({ usuario }) {
     socket.on('response-notificaciones', (data) => setNotifs(data || []));
     socket.on('cambios', () => {
       socket.emit('request-compras-dashboard');
-      socket.emit('request-ordenes-compra', { page, estado: estadoParaEmit(), search });
+      socket.emit('request-ordenes-compra', { page, estado: estadoParaEmitFull(), estadoPago: estadoPagoFilter(), search });
       socket.emit('request-notificaciones');
     });
 
     socket.emit('request-compras-dashboard');
-    socket.emit('request-ordenes-compra', { page, estado: estadoParaEmit(), search });
+    socket.emit('request-ordenes-compra', { page, estado: estadoParaEmitFull(), estadoPago: estadoPagoFilter(), search });
     socket.emit('request-notificaciones');
 
     return () => {
@@ -64,7 +96,7 @@ export default function Compras({ usuario }) {
   }, []);
 
   useEffect(() => {
-    socket.emit('request-ordenes-compra', { page, estado: estadoParaEmit(), search });
+    socket.emit('request-ordenes-compra', { page, estado: estadoParaEmitFull(), estadoPago: estadoPagoFilter(), search });
   }, [page, filtroEstado, search]);
 
   const marcarLeida = (id) => {
@@ -79,24 +111,38 @@ export default function Compras({ usuario }) {
     <div className={s.container}>
       {/* KPI Cards */}
       <div className={s.kpiGrid}>
-        <KPICard label="Pend. Aprobacion" value={dash.pendientesAprobacion} urgent={dash.pendientesAprobacion > 0} />
-        <KPICard label="Pend. Pago" value={dash.pendientesPago} urgent={dash.pendientesPago > 0} />
-        <KPICard label="Pend. Recepcion" value={dash.pendientesRecepcion} />
+        <KPICard
+          label="Pend. Aprobacion"
+          value={dash.pendientesAprobacion}
+          urgent={dash.pendientesAprobacion > 0}
+          onClick={() => handleKPIClick('pendAprobacion')}
+        />
+        <KPICard
+          label="Pend. Pago"
+          value={dash.pendientesPago}
+          urgent={dash.pendientesPago > 0}
+          onClick={() => handleKPIClick('pendPago')}
+        />
+        <KPICard
+          label="Pend. Recepcion"
+          value={dash.pendientesRecepcion}
+          onClick={() => handleKPIClick('pendRecepcion')}
+        />
         <KPICard label="Deuda Total" value={money(dash.deudaTotal)} urgent={dash.deudaTotal > 0} />
       </div>
 
-      {/* Nav Pills */}
-      <div className={s.nav}>
-        <Link to="/compras/orden/nueva" className={s.navPill}>
+      {/* Quick links */}
+      <div className={s.quickLinks}>
+        <Link to="/compras/orden/nueva" className={s.quickLink}>
           <i className="bi bi-plus-circle" /> Nueva OC
         </Link>
-        <Link to="/compras/proveedores" className={s.navPill}>
+        <Link to="/compras/proveedores" className={s.quickLink}>
           <i className="bi bi-people" /> Proveedores
         </Link>
-        <Link to="/compras/recepcion" className={s.navPill}>
+        <Link to="/compras/recepcion" className={s.quickLink}>
           <i className="bi bi-box-seam" /> Recepcion
         </Link>
-        <Link to="/compras/pagos" className={s.navPill}>
+        <Link to="/compras/pagos" className={s.quickLink}>
           <i className="bi bi-cash-stack" /> Pagos
         </Link>
       </div>
@@ -120,12 +166,17 @@ export default function Compras({ usuario }) {
           {FILTROS_ESTADO.map((f) => (
             <button
               key={f.key}
-              className={`${s.filterBtn} ${filtroEstado === f.key ? s.filterBtnActive : ''}`}
+              className={`${s.filterBtn} ${filtroEstado === f.key ? s.filterBtnActive : ''} ${f.key === 'cancelada' ? s.filterBtnCancelada : ''}`}
               onClick={() => { setFiltroEstado(f.key); setPage(1); }}
             >
               {f.label}
             </button>
           ))}
+          {filtroEstado === 'pend_pago' && (
+            <button className={`${s.filterBtn} ${s.filterBtnActive}`}>
+              Pend. Pago
+            </button>
+          )}
         </div>
         <Pagination
           className={s.paginationDock}

@@ -13,6 +13,7 @@
     "bootstrap-icons": "^1.11.3",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
+    "html5-qrcode": "^2.3.8",
     "jsprintmanager": "^8.0.0",
     "moment-timezone": "^0.5.45",
     "qrcode.react": "^4.2.0",

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { Html5Qrcode } from 'html5-qrcode';
 import { socket } from '../../main';
 import { IP } from '../../main';
 import Badge from '../../components/shared/Badge';
@@ -19,6 +20,51 @@ export default function RecepcionCompras({ usuario }) {
   const [crearModal, setCrearModal] = useState(null); // index of item to link after creation
   const [newProd, setNewProd] = useState(EMPTY_PROD);
   const [creando, setCreando] = useState(false);
+  const [scannerIdx, setScannerIdx] = useState(null); // index of item being scanned
+  const [scanResult, setScanResult] = useState(null);
+  const scannerRef = useRef(null);
+
+  const stopScanner = useCallback(() => {
+    if (scannerRef.current) {
+      scannerRef.current.stop().catch(() => {});
+      scannerRef.current.clear().catch(() => {});
+      scannerRef.current = null;
+    }
+  }, []);
+
+  const startScanner = useCallback((itemIndex) => {
+    setScannerIdx(itemIndex);
+    setScanResult(null);
+    setTimeout(() => {
+      const html5QrCode = new Html5Qrcode('barcode-reader');
+      scannerRef.current = html5QrCode;
+      html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 280, height: 120 }, aspectRatio: 2.0 },
+        (decodedText) => {
+          setScanResult(decodedText);
+          html5QrCode.stop().catch(() => {});
+          // Search for product by codigo
+          const found = productos.find((p) =>
+            p.codigo && p.codigo.toLowerCase() === decodedText.toLowerCase()
+          );
+          if (found) {
+            handleVinculacion(itemIndex, found._id);
+            setScannerIdx(null);
+            setScanResult(null);
+          }
+        },
+      ).catch((err) => {
+        console.error('Error starting scanner:', err);
+      });
+    }, 300);
+  }, [productos]);
+
+  const closeScannerModal = useCallback(() => {
+    stopScanner();
+    setScannerIdx(null);
+    setScanResult(null);
+  }, [stopScanner]);
 
   useEffect(() => {
     socket.on('response-ordenes-compra', (data) => {
@@ -246,14 +292,24 @@ export default function RecepcionCompras({ usuario }) {
                         </div>
                       ) : (
                         <div className={s.vincularWrap}>
-                          <input
-                            type="text"
-                            className={s.vincularInput}
-                            placeholder="Buscar producto..."
-                            value={searchTerm || ''}
-                            onChange={(e) => setSearchProd((prev) => ({ ...prev, [i]: e.target.value }))}
-                            onFocus={() => setSearchProd((prev) => ({ ...prev, [i]: prev[i] || '' }))}
-                          />
+                          <div className={s.vincularInputRow}>
+                            <input
+                              type="text"
+                              className={s.vincularInput}
+                              placeholder="Buscar producto..."
+                              value={searchTerm || ''}
+                              onChange={(e) => setSearchProd((prev) => ({ ...prev, [i]: e.target.value }))}
+                              onFocus={() => setSearchProd((prev) => ({ ...prev, [i]: prev[i] || '' }))}
+                            />
+                            <button
+                              type="button"
+                              className={s.scanBtn}
+                              onClick={() => startScanner(i)}
+                              title="Escanear codigo de barras"
+                            >
+                              <i className="bi bi-upc-scan" />
+                            </button>
+                          </div>
                           {showSearch && (
                             <div className={s.vincularDropdown}>
                               {filteredProds.map((p) => (
@@ -326,6 +382,31 @@ export default function RecepcionCompras({ usuario }) {
               <i className="bi bi-check-lg" /> Confirmar Recepcion
             </button>
             <button className={s.cancelBtn} onClick={handleCancel}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal scanner */}
+      {scannerIdx !== null && (
+        <div className={s.modalOverlay} onClick={closeScannerModal}>
+          <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
+            <div className={s.modalHeader}>
+              <span className={s.modalTitle}>Escanear Codigo de Barras</span>
+              <button type="button" className={s.modalCloseBtn} onClick={closeScannerModal}>
+                <i className="bi bi-x-lg" />
+              </button>
+            </div>
+            <div className={s.scannerBody}>
+              <div id="barcode-reader" className={s.scannerView} />
+              {scanResult && (
+                <div className={s.scanResultBox}>
+                  <span>Codigo: <strong>{scanResult}</strong></span>
+                  {!productos.find((p) => p.codigo?.toLowerCase() === scanResult.toLowerCase()) && (
+                    <span className={s.scanNotFound}>No se encontro producto con este codigo</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -1632,7 +1632,7 @@ export default function OrdenCompraDetalle({ usuario }) {
           <div className={s.finanzasGrid}>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>Nombre</span>
-              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.nombre}</span>
+              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.bodega || orden.proveedor.nombre || '-'}</span>
             </div>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>CUIT</span>
@@ -1640,7 +1640,7 @@ export default function OrdenCompraDetalle({ usuario }) {
             </div>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>Contacto</span>
-              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.contacto || '-'}</span>
+              <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{orden.proveedor.nombre || '-'}</span>
             </div>
             <div className={s.finanzasItem}>
               <span className={s.finanzasLabel}>Telefono</span>

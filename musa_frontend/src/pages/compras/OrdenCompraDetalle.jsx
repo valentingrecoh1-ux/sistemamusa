@@ -370,8 +370,9 @@ export default function OrdenCompraDetalle({ usuario }) {
     setPagoMetodo('efectivo');
   };
 
-  const guardarPagoYRegistrarEnCaja = () => {
+  const guardarPagoYRegistrarEnCaja = async () => {
     if (!pagoMonto || Number(pagoMonto) <= 0) return;
+    const yaExiste = await dialog.confirm('¿Ya tenés este gasto anotado en caja? Si es así, solo se guardará el pago sin crear un nuevo movimiento.');
     const monto = Number(pagoMonto);
     const metodo = pagoMetodo;
     socket.emit('guardar-pago-proveedor', {
@@ -381,25 +382,27 @@ export default function OrdenCompraDetalle({ usuario }) {
       notas: pagoNotas,
       concepto: pagoConcepto,
     });
-    const conceptoLabel = pagoConcepto === 'flete' ? 'Flete' : 'Factura';
-    const facturaNum = (orden.facturas && orden.facturas.length > 0) ? ` - ${orden.facturas[0].numero || ''}` : '';
-    const desc = `Pago ${conceptoLabel} - ${orden.proveedorBodega || orden.proveedorNombre || ''} (${orden.numero || ''})${facturaNum}`;
     setShowPayForm(false);
     setPagoMonto('');
     setPagoNotas('');
     setPagoConcepto('factura');
     setPagoMetodo('efectivo');
-    navigate('/caja', {
-      state: {
-        ...(metodo === 'digital' ? { tab: 'mercadopago' } : {}),
-        prefill: {
-          descripcion: desc,
-          monto: -(Math.abs(monto)),
-          nombre: orden.proveedorBodega || orden.proveedorNombre || '',
-          tipoOperacion: 'GASTO',
+    if (!yaExiste) {
+      const conceptoLabel = pagoConcepto === 'flete' ? 'Flete' : 'Factura';
+      const facturaNum = (orden.facturas && orden.facturas.length > 0) ? ` - ${orden.facturas[0].numero || ''}` : '';
+      const desc = `Pago ${conceptoLabel} - ${orden.proveedorBodega || orden.proveedorNombre || ''} (${orden.numero || ''})${facturaNum}`;
+      navigate('/caja', {
+        state: {
+          ...(metodo === 'digital' ? { tab: 'mercadopago' } : {}),
+          prefill: {
+            descripcion: desc,
+            monto: -(Math.abs(monto)),
+            nombre: orden.proveedorBodega || orden.proveedorNombre || '',
+            tipoOperacion: 'GASTO',
+          },
         },
-      },
-    });
+      });
+    }
   };
 
   // ── Flete handlers ──

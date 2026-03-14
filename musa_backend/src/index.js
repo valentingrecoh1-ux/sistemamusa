@@ -4409,6 +4409,81 @@ Origen: ${producto.origen || ""}`;
     }
   });
 
+  // ── Productos simple (para vincular en recepcion) ──
+  socket.on("request-productos-simple", async () => {
+    try {
+      const prods = await Product.find({}, "nombre codigo cantidad costo bodega").sort({ nombre: 1 }).lean();
+      socket.emit("response-productos-simple", prods);
+    } catch (err) {
+      console.error("Error request-productos-simple:", err);
+      socket.emit("response-productos-simple", []);
+    }
+  });
+
+  // ── Registrar Recepcion de Mercaderia ──
+  socket.on("registrar-recepcion", async (data) => {
+    try {
+      const orden = await OrdenCompra.findById(data.ordenCompra);
+      if (!orden) return;
+      const recibidos = data.items || [];
+      for (const rec of recibidos) {
+        const item = orden.items[rec.index];
+        if (!item) continue;
+        const cantRecibir = Math.min(
+          rec.cantidadRecibida,
+          (item.cantidadSolicitada || 0) - (item.cantidadRecibida || 0)
+        );
+        if (cantRecibir <= 0) continue;
+        item.cantidadRecibida = (item.cantidadRecibida || 0) + cantRecibir;
+        // Vincular producto si se proporcionó
+        if (rec.productoId && !item.productoId) {
+          item.productoId = rec.productoId;
+        }
+        // Actualizar stock del producto vinculado
+        const prodId = item.productoId || rec.productoId;
+        if (prodId) {
+          const prod = await Product.findById(prodId);
+          if (prod) {
+            prod.cantidad = (prod.cantidad || 0) + cantRecibir;
+            // Actualizar costo con precio unitario + flete proporcional
+            const totalFletes = (orden.fletes || []).reduce((s, f) => s + (f.monto || 0), 0);
+            const totalUnidades = (orden.items || []).reduce((s, it) => s + (it.cantidadSolicitada || 0), 0);
+            const fletePorUnidad = totalUnidades > 0 ? Math.round((totalFletes / totalUnidades) * 100) / 100 : 0;
+            prod.costo = Math.round((item.precioUnitario + fletePorUnidad) * 100) / 100;
+            await prod.save();
+          }
+        }
+      }
+      // Determinar estado de recepcion
+      const todosRecibidos = orden.items.every((it) => (it.cantidadRecibida || 0) >= (it.cantidadSolicitada || 0));
+      const algunoRecibido = orden.items.some((it) => (it.cantidadRecibida || 0) > 0);
+      if (todosRecibidos) {
+        orden.estado = "recibida";
+      } else if (algunoRecibido) {
+        orden.estado = "recibida_parcial";
+      }
+      const itemsDesc = recibidos
+        .filter((r) => r.cantidadRecibida > 0)
+        .map((r) => `${r.nombre || 'Item'} x${r.cantidadRecibida}`)
+        .join(", ");
+      orden.timeline.push({
+        accion: `Recepcion: ${itemsDesc}${todosRecibidos ? " (completa)" : ""}`,
+        usuario: "Sistema",
+        fecha: new Date(),
+      });
+      await orden.save();
+      io.emit("cambios");
+      crearNotificacion({
+        tipo: "recepcion_mercaderia",
+        mensaje: `Recepcion registrada para ${orden.proveedorBodega || orden.proveedorNombre} (${orden.numero})${todosRecibidos ? " - COMPLETA" : ""}`,
+        destinatarioRol: "admin",
+        referenciaId: orden._id,
+      });
+    } catch (err) {
+      console.error("Error registrar-recepcion:", err);
+    }
+  });
+
   // ── Fletes OC ──
   socket.on("agregar-flete-oc", async (data) => {
     try {

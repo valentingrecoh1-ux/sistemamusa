@@ -644,7 +644,7 @@ export default function OrdenCompraDetalle({ usuario }) {
               <select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)}>
                 <option value="">-- Seleccionar --</option>
                 {proveedores.map((p) => (
-                  <option key={p._id} value={p._id}>{p.nombre}</option>
+                  <option key={p._id} value={p._id}>{p.bodega || p.nombre}</option>
                 ))}
               </select>
             </div>
@@ -969,7 +969,7 @@ export default function OrdenCompraDetalle({ usuario }) {
               <select value={editProveedorId} onChange={(e) => setEditProveedorId(e.target.value)}>
                 <option value="">-- Seleccionar --</option>
                 {proveedores.map((p) => (
-                  <option key={p._id} value={p._id}>{p.nombre}</option>
+                  <option key={p._id} value={p._id}>{p.bodega || p.nombre}</option>
                 ))}
               </select>
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { NumericFormat } from 'react-number-format';
 import { socket } from '../../main';
 import { IP } from '../../main';
 import Pagination from '../../components/shared/Pagination';
@@ -22,6 +23,7 @@ export default function PagosProveedor({ usuario }) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [editId, setEditId] = useState(null);
+  const [modalComp, setModalComp] = useState(null);
 
   useEffect(() => {
     socket.on('response-ordenes-compra', (data) => {
@@ -71,7 +73,6 @@ export default function PagosProveedor({ usuario }) {
 
   const handleSubmit = async () => {
     if (editId) {
-      // Update existing payment
       if (archivo) {
         const formData = new FormData();
         formData.append('archivo', archivo);
@@ -94,7 +95,6 @@ export default function PagosProveedor({ usuario }) {
       return;
     }
 
-    // New payment
     if (!selectedOC || !monto || Number(monto) <= 0) return;
 
     let comprobanteUrl = '';
@@ -139,6 +139,17 @@ export default function PagosProveedor({ usuario }) {
     resetForm();
   };
 
+  const handleDownloadComp = (dataUrl) => {
+    const isPdf = dataUrl.startsWith('data:application/pdf');
+    const ext = isPdf ? 'pdf' : 'png';
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = `comprobante.${ext}`;
+    a.click();
+  };
+
+  const isImage = (url) => url && (url.startsWith('data:image') || /\.(jpg|jpeg|png|gif|webp)/i.test(url));
+
   return (
     <div className={s.container}>
       <Link to="/compras" className={s.backLink}>
@@ -171,7 +182,18 @@ export default function PagosProveedor({ usuario }) {
 
         <div className={s.inputGroup}>
           <span>Monto *</span>
-          <input type="number" min="0" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="0" disabled={!!editId} />
+          <NumericFormat
+            value={monto}
+            onValueChange={(v) => setMonto(v.floatValue || '')}
+            thousandSeparator="."
+            decimalSeparator=","
+            prefix="$ "
+            decimalScale={2}
+            allowNegative={false}
+            placeholder="$ 0"
+            disabled={!!editId}
+            className={s.montoInput}
+          />
         </div>
 
         <div className={s.inputGroup}>
@@ -267,9 +289,14 @@ export default function PagosProveedor({ usuario }) {
                   <td>{p.referencia || '-'}</td>
                   <td>
                     {p.filePath ? (
-                      <a href={p.filePath} target="_blank" rel="noopener noreferrer" className={s.comprobanteLink}>
+                      <button
+                        type="button"
+                        className={s.comprobanteLink}
+                        onClick={() => setModalComp(p.filePath)}
+                        title="Ver comprobante"
+                      >
                         <i className="bi bi-file-earmark" />
-                      </a>
+                      </button>
                     ) : <span style={{ color: 'var(--text-muted)' }}>-</span>}
                   </td>
                   <td>
@@ -288,6 +315,41 @@ export default function PagosProveedor({ usuario }) {
           </table>
         </div>
       </div>
+
+      {/* Comprobante Modal */}
+      {modalComp && (
+        <div className={s.modalOverlay} onClick={() => setModalComp(null)}>
+          <div className={s.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={s.modalHeader}>
+              <span className={s.modalTitle}>Comprobante</span>
+              <div className={s.modalActions}>
+                <button
+                  type="button"
+                  className={s.modalDownloadBtn}
+                  onClick={() => handleDownloadComp(modalComp)}
+                  title="Descargar"
+                >
+                  <i className="bi bi-download" /> Descargar
+                </button>
+                <button
+                  type="button"
+                  className={s.modalCloseBtn}
+                  onClick={() => setModalComp(null)}
+                >
+                  <i className="bi bi-x-lg" />
+                </button>
+              </div>
+            </div>
+            <div className={s.modalBody}>
+              {isImage(modalComp) ? (
+                <img src={modalComp} alt="Comprobante" className={s.modalImg} />
+              ) : (
+                <iframe src={modalComp} className={s.modalIframe} title="Comprobante PDF" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ const proveedorSchema = new mongoose.Schema(
     alias: { type: String },
     banco: { type: String },
     condicionPago: { type: String, default: "" },
+    factura: { type: Boolean, default: false },
     notas: { type: String },
     activo: { type: Boolean, default: true },
     esDistribuidor: { type: Boolean, default: false },

@@ -951,6 +951,13 @@ app.post("/upload", upload.array("fotos", 10), async (req, res) => {
       });
       try {
         await newProduct.save();
+        res.json({
+          status: "ok",
+          message: "Producto guardado y notificado a los clientes",
+          producto: { _id: newProduct._id, nombre: newProduct.nombre },
+        });
+        io.emit("cambios");
+        return;
       } catch (error) {
         res.json({ status: "error", message: "Codigo ya existe" });
         return;

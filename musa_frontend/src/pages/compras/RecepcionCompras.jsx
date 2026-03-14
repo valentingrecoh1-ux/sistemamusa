@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { socket } from '../../main';
+import { IP } from '../../main';
 import Badge from '../../components/shared/Badge';
 import s from './RecepcionCompras.module.css';
 
 const ESTADOS = { borrador: 'Borrador', pendiente_aprobacion: 'Pend. Aprobacion', aprobada: 'Aprobada', enviada: 'Enviada', en_camino: 'En Camino', recibida_parcial: 'Recibida Parcial', recibida: 'Recibida', cerrada: 'Cerrada', cancelada: 'Cancelada' };
+
+const EMPTY_PROD = { nombre: '', bodega: '', cepa: '', year: '', origen: '', codigo: '', costo: '', venta: '', cantidad: 0, tipo: 'vino' };
 
 export default function RecepcionCompras({ usuario }) {
   const [ordenes, setOrdenes] = useState([]);
@@ -13,6 +16,9 @@ export default function RecepcionCompras({ usuario }) {
   const [cantidades, setCantidades] = useState({});
   const [vinculaciones, setVinculaciones] = useState({});
   const [searchProd, setSearchProd] = useState({});
+  const [crearModal, setCrearModal] = useState(null); // index of item to link after creation
+  const [newProd, setNewProd] = useState(EMPTY_PROD);
+  const [creando, setCreando] = useState(false);
 
   useEffect(() => {
     socket.on('response-ordenes-compra', (data) => {
@@ -26,6 +32,7 @@ export default function RecepcionCompras({ usuario }) {
     });
     socket.on('cambios', () => {
       socket.emit('request-ordenes-compra', {});
+      socket.emit('request-productos-simple');
     });
 
     socket.emit('request-ordenes-compra', {});
@@ -62,6 +69,41 @@ export default function RecepcionCompras({ usuario }) {
   const handleVinculacion = (index, prodId) => {
     setVinculaciones((prev) => ({ ...prev, [index]: prodId }));
     setSearchProd((prev) => ({ ...prev, [index]: undefined }));
+  };
+
+  const openCrearModal = (index) => {
+    const item = selectedOC?.items?.[index];
+    setCrearModal(index);
+    setNewProd({
+      ...EMPTY_PROD,
+      nombre: item?.nombre || '',
+      bodega: selectedOC?.proveedorBodega || '',
+      costo: item?.precioUnitario || '',
+    });
+    setSearchProd((prev) => ({ ...prev, [index]: undefined }));
+  };
+
+  const handleCrearProducto = async () => {
+    if (!newProd.nombre) return;
+    setCreando(true);
+    try {
+      const formData = new FormData();
+      Object.entries(newProd).forEach(([k, v]) => {
+        if (v !== '' && v !== null && v !== undefined) formData.append(k, v);
+      });
+      const res = await fetch(`${IP()}/upload`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.status === 'ok' && data.producto) {
+        // Link the new product to the item
+        handleVinculacion(crearModal, data.producto._id);
+        socket.emit('request-productos-simple');
+      }
+    } catch (err) {
+      console.error('Error creando producto:', err);
+    }
+    setCreando(false);
+    setCrearModal(null);
+    setNewProd(EMPTY_PROD);
   };
 
   const handleSubmit = () => {
@@ -167,7 +209,6 @@ export default function RecepcionCompras({ usuario }) {
                 const vinculado = vinculaciones[i] || item.productoId;
                 const prodVinculado = vinculado ? productos.find((p) => p._id === vinculado) : null;
 
-                // Filter products for search
                 const searchTerm = searchProd[i];
                 const showSearch = searchTerm !== undefined;
                 const filteredProds = showSearch && searchTerm
@@ -176,7 +217,7 @@ export default function RecepcionCompras({ usuario }) {
                       return p.nombre?.toLowerCase().includes(q) ||
                         p.codigo?.toLowerCase().includes(q) ||
                         p.bodega?.toLowerCase().includes(q);
-                    }).slice(0, 8)
+                    }).slice(0, 6)
                   : [];
 
                 return (
@@ -215,9 +256,7 @@ export default function RecepcionCompras({ usuario }) {
                           />
                           {showSearch && (
                             <div className={s.vincularDropdown}>
-                              {filteredProds.length === 0 && searchTerm ? (
-                                <div className={s.vincularEmpty}>Sin resultados</div>
-                              ) : filteredProds.map((p) => (
+                              {filteredProds.map((p) => (
                                 <div
                                   key={p._id}
                                   className={s.vincularOption}
@@ -231,6 +270,13 @@ export default function RecepcionCompras({ usuario }) {
                                   <span className={s.vincularProdStock}>Stock: {p.cantidad || 0}</span>
                                 </div>
                               ))}
+                              <div
+                                className={s.vincularOptionCrear}
+                                onClick={() => openCrearModal(i)}
+                              >
+                                <i className="bi bi-plus-circle" />
+                                <span>Crear producto nuevo</span>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -280,6 +326,80 @@ export default function RecepcionCompras({ usuario }) {
               <i className="bi bi-check-lg" /> Confirmar Recepcion
             </button>
             <button className={s.cancelBtn} onClick={handleCancel}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal crear producto */}
+      {crearModal !== null && (
+        <div className={s.modalOverlay} onClick={() => { setCrearModal(null); setNewProd(EMPTY_PROD); }}>
+          <div className={s.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={s.modalHeader}>
+              <span className={s.modalTitle}>Crear Producto</span>
+              <button type="button" className={s.modalCloseBtn} onClick={() => { setCrearModal(null); setNewProd(EMPTY_PROD); }}>
+                <i className="bi bi-x-lg" />
+              </button>
+            </div>
+            <div className={s.modalBody}>
+              <div className={s.modalRow}>
+                <div className={s.modalField}>
+                  <span>Nombre *</span>
+                  <input type="text" value={newProd.nombre} onChange={(e) => setNewProd((p) => ({ ...p, nombre: e.target.value }))} />
+                </div>
+                <div className={s.modalField}>
+                  <span>Bodega</span>
+                  <input type="text" value={newProd.bodega} onChange={(e) => setNewProd((p) => ({ ...p, bodega: e.target.value }))} />
+                </div>
+              </div>
+              <div className={s.modalRow}>
+                <div className={s.modalField}>
+                  <span>Cepa</span>
+                  <input type="text" value={newProd.cepa} onChange={(e) => setNewProd((p) => ({ ...p, cepa: e.target.value }))} />
+                </div>
+                <div className={s.modalField}>
+                  <span>Cosecha</span>
+                  <input type="text" value={newProd.year} onChange={(e) => setNewProd((p) => ({ ...p, year: e.target.value }))} placeholder="2024" />
+                </div>
+              </div>
+              <div className={s.modalRow}>
+                <div className={s.modalField}>
+                  <span>Origen</span>
+                  <input type="text" value={newProd.origen} onChange={(e) => setNewProd((p) => ({ ...p, origen: e.target.value }))} placeholder="Mendoza" />
+                </div>
+                <div className={s.modalField}>
+                  <span>Codigo</span>
+                  <input type="text" value={newProd.codigo} onChange={(e) => setNewProd((p) => ({ ...p, codigo: e.target.value }))} />
+                </div>
+              </div>
+              <div className={s.modalRow}>
+                <div className={s.modalField}>
+                  <span>Costo</span>
+                  <input type="number" min="0" value={newProd.costo} onChange={(e) => setNewProd((p) => ({ ...p, costo: e.target.value }))} />
+                </div>
+                <div className={s.modalField}>
+                  <span>Precio Venta</span>
+                  <input type="number" min="0" value={newProd.venta} onChange={(e) => setNewProd((p) => ({ ...p, venta: e.target.value }))} />
+                </div>
+              </div>
+              <div className={s.modalRow}>
+                <div className={s.modalField}>
+                  <span>Tipo</span>
+                  <select value={newProd.tipo} onChange={(e) => setNewProd((p) => ({ ...p, tipo: e.target.value }))}>
+                    <option value="vino">Vino</option>
+                    <option value="espumante">Espumante</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className={s.modalFooter}>
+              <button className={s.submitBtn} onClick={handleCrearProducto} disabled={creando || !newProd.nombre}>
+                {creando ? 'Creando...' : <><i className="bi bi-plus-circle" /> Crear y vincular</>}
+              </button>
+              <button className={s.cancelBtn} onClick={() => { setCrearModal(null); setNewProd(EMPTY_PROD); }}>
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}

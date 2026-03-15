@@ -38,11 +38,17 @@ export default function RecepcionCompras({ usuario }) {
     } catch (_) {}
   }, []);
 
-  const stopScanner = useCallback(() => {
+  const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
-      scannerRef.current.stop().catch(() => {});
-      scannerRef.current.clear().catch(() => {});
+      const scanner = scannerRef.current;
       scannerRef.current = null;
+      try {
+        const state = scanner.getState();
+        if (state === 2) { // SCANNING
+          await scanner.stop();
+        }
+        scanner.clear();
+      } catch (_) {}
     }
   }, []);
 
@@ -58,8 +64,11 @@ export default function RecepcionCompras({ usuario }) {
         (decodedText) => {
           playBeep();
           setScanResult(decodedText);
-          html5QrCode.stop().catch(() => {});
-          // Search for product by codigo
+          const scanner = scannerRef.current;
+          scannerRef.current = null;
+          if (scanner) {
+            scanner.stop().then(() => scanner.clear()).catch(() => {});
+          }
           const found = productos.find((p) =>
             p.codigo && p.codigo.toLowerCase() === decodedText.toLowerCase()
           );
@@ -76,9 +85,9 @@ export default function RecepcionCompras({ usuario }) {
   }, [productos, playBeep]);
 
   const closeScannerModal = useCallback(() => {
-    stopScanner();
     setScannerIdx(null);
     setScanResult(null);
+    stopScanner();
   }, [stopScanner]);
 
   useEffect(() => {
@@ -426,7 +435,10 @@ export default function RecepcionCompras({ usuario }) {
               </button>
             </div>
             <div className={s.scannerBody}>
-              <div id="barcode-reader" className={s.scannerView} />
+              <div className={s.scannerContainer}>
+                <div id="barcode-reader" className={s.scannerView} />
+                <div className={s.scannerLine} />
+              </div>
               {scanResult && (
                 <div className={s.scanResultBox}>
                   <span>Codigo: <strong>{scanResult}</strong></span>

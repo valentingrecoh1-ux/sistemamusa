@@ -53,12 +53,8 @@ const fmtHours = (h) => {
   return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}hs`;
 };
 
-// Get first name or abbreviation
-const shortName = (name) => {
-  if (!name) return "";
-  const parts = name.trim().split(/\s+/);
-  return parts[0];
-};
+// Full name for display
+const displayName = (name) => name || "";
 
 export default function Asistencia() {
   const now = new Date();
@@ -226,7 +222,7 @@ export default function Asistencia() {
           value={selectedEmp}
           onChange={(e) => setSelectedEmp(e.target.value)}
         >
-          <option value="all">Todos los empleados</option>
+          <option value="all">Ambos</option>
           {employees.map((emp) => (
             <option key={emp.employeeId} value={emp.employeeId}>
               {emp.name}
@@ -244,7 +240,7 @@ export default function Asistencia() {
                 className={s.legendDot}
                 style={{ background: EMP_COLORS[idx % EMP_COLORS.length] }}
               />
-              <span className={s.legendName}>{shortName(emp.employeeName)}</span>
+              <span className={s.legendName}>{displayName(emp.employeeName)}</span>
             </div>
           ))}
           <div className={s.legendItem}>
@@ -307,10 +303,22 @@ export default function Asistencia() {
                 const selected = selectedDay === dateStr;
                 const feriado = isFeriado(day);
 
+                // Build diagonal gradient when 2 employees work same day
+                let cellBg = undefined;
+                if (hasWork && data.empDetails.length === 2) {
+                  const c1 = empColorMap[data.empDetails[0].id] || "#6366f1";
+                  const c2 = empColorMap[data.empDetails[1].id] || "#f59e0b";
+                  cellBg = `linear-gradient(135deg, ${c1}22 0%, ${c1}22 50%, ${c2}22 50%, ${c2}22 100%)`;
+                } else if (hasWork && data.empDetails.length === 1) {
+                  const c = empColorMap[data.empDetails[0].id] || "#6366f1";
+                  cellBg = `${c}18`;
+                }
+
                 return (
                   <div
                     key={i}
-                    className={`${s.dayCell} ${today ? s.today : ""} ${selected ? s.selected : ""} ${hasWork ? s.worked : past ? s.noWork : ""} ${feriado ? s.feriado : ""}`}
+                    className={`${s.dayCell} ${today ? s.today : ""} ${selected ? s.selected : ""} ${!hasWork && past ? s.noWork : ""} ${feriado ? s.feriado : ""}`}
+                    style={cellBg ? { background: cellBg } : undefined}
                     onClick={() => dateStr && handleDayClick(dateStr)}
                     title={feriado || ""}
                   >
@@ -323,7 +331,7 @@ export default function Asistencia() {
                         {data.empDetails.slice(0, 4).map((emp) => (
                           <div key={emp.id} className={s.empLine} style={{ color: empColorMap[emp.id] }}>
                             <span className={s.empDot} style={{ background: empColorMap[emp.id] }} />
-                            <span className={s.empName}>{shortName(emp.name)}</span>
+                            <span className={s.empName}>{displayName(emp.name)}</span>
                             <span className={s.empTime}>
                               {emp.firstIn?.slice(0, 5) || "?"}-{emp.lastOut?.slice(0, 5) || "?"}
                             </span>

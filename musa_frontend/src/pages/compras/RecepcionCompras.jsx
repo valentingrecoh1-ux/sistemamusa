@@ -340,12 +340,12 @@ export default function RecepcionCompras({ usuario }) {
                     <td style={{ position: 'relative', minWidth: 200 }}>
                       {completado ? (
                         <span className={s.vinculadoTag}>
-                          {prodVinculado ? <>{prodVinculado.nombre}{prodVinculado.cepa ? ` · ${prodVinculado.cepa}` : ''}{prodVinculado.bodega ? ` · ${prodVinculado.bodega}` : ''}{prodVinculado.anio ? ` · ${prodVinculado.anio}` : ''}</> : (vinculado ? 'Vinculado' : '-')}
+                          {prodVinculado ? <>{prodVinculado.nombre}{prodVinculado.cepa ? ` · ${prodVinculado.cepa}` : ''}{prodVinculado.bodega ? ` · ${prodVinculado.bodega}` : ''}{prodVinculado.anio ? ` · ${prodVinculado.anio}` : ''}{prodVinculado.codigo ? ` · ${prodVinculado.codigo}` : ''}</> : (vinculado ? 'Vinculado' : '-')}
                         </span>
                       ) : prodVinculado ? (
                         <div className={s.vinculadoWrap}>
                           <span className={s.vinculadoTag}>
-                            <i className="bi bi-link-45deg" /> {prodVinculado.nombre}{prodVinculado.cepa ? ` · ${prodVinculado.cepa}` : ''}{prodVinculado.bodega ? ` · ${prodVinculado.bodega}` : ''}{prodVinculado.anio ? ` · ${prodVinculado.anio}` : ''}
+                            <i className="bi bi-link-45deg" /> {prodVinculado.nombre}{prodVinculado.cepa ? ` · ${prodVinculado.cepa}` : ''}{prodVinculado.bodega ? ` · ${prodVinculado.bodega}` : ''}{prodVinculado.anio ? ` · ${prodVinculado.anio}` : ''}{prodVinculado.codigo ? ` · ${prodVinculado.codigo}` : ''}
                           </span>
                           <button
                             type="button"
@@ -389,6 +389,7 @@ export default function RecepcionCompras({ usuario }) {
                                     {p.cepa ? <span className={s.vincularProdBodega}> · {p.cepa}</span> : ''}
                                     {p.bodega ? <span className={s.vincularProdBodega}> · {p.bodega}</span> : ''}
                                     {p.anio ? <span className={s.vincularProdAnio}> · {p.anio}</span> : ''}
+                                    {p.codigo ? <span className={s.vincularProdAnio}> · {p.codigo}</span> : ''}
                                   </span>
                                   <span className={s.vincularProdStock}>Stock: {p.cantidad || 0}</span>
                                 </div>

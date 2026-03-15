@@ -593,6 +593,22 @@ app.use(
 );
 */
 
+// ── Proxy para API de Asistencia (evita CORS) ──
+const ASISTENCIA_API = "https://asistencia.musavinos.com/api/musa";
+app.get("/api/asistencia/*", async (req, res) => {
+  try {
+    const subpath = req.params[0]; // everything after /api/asistencia/
+    const qs = new URLSearchParams(req.query).toString();
+    const url = `${ASISTENCIA_API}/${subpath}${qs ? "?" + qs : ""}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    res.json(data);
+  } catch (err) {
+    console.error("Proxy asistencia error:", err.message);
+    res.status(502).json({ error: "Error conectando con API de asistencia" });
+  }
+});
+
 // Sirviendo PDFs de AFIP (legacy filesystem, nuevos van a MongoDB)
 app.use("/facturas", express.static("src/facturas"));
 app.use("/notas_de_credito", express.static("src/notas_de_credito"));

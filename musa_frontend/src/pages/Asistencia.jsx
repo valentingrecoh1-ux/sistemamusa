@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import s from "./Asistencia.module.css";
 
 const API = "/api/asistencia";
+const AREA_FILTER = "MUSA PALERMO";
 
 const DAYS = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -81,8 +82,15 @@ export default function Asistencia() {
       ]);
       const repData = await repRes.json();
       const empData = await empRes.json();
+      const allEmps = empData.employees || [];
+      const areaEmps = allEmps.filter((e) => e.position === AREA_FILTER);
+      const areaIds = new Set(areaEmps.map((e) => e.employeeId));
+      // Filter report employees to only show MUSA PALERMO
+      if (repData.employees) {
+        repData.employees = repData.employees.filter((e) => areaIds.has(e.employeeId));
+      }
       setReport(repData);
-      setEmployees(empData.employees || []);
+      setEmployees(areaEmps);
     } catch (err) {
       console.error("Error fetching report:", err);
     }
@@ -97,8 +105,17 @@ export default function Asistencia() {
 
   const fetchDaily = async (dateStr) => {
     try {
-      const res = await fetch(`${API}/schedules/daily?date=${dateStr}`);
-      const data = await res.json();
+      const [dailyRes, empRes] = await Promise.all([
+        fetch(`${API}/schedules/daily?date=${dateStr}`),
+        fetch(`${API}/employees`),
+      ]);
+      const data = await dailyRes.json();
+      const empData = await empRes.json();
+      const areaIds = new Set((empData.employees || []).filter((e) => e.position === AREA_FILTER).map((e) => e.employeeId));
+      if (data.present) data.present = data.present.filter((p) => areaIds.has(p.employeeId));
+      if (data.absent) data.absent = data.absent.filter((a) => areaIds.has(a.employeeId));
+      data.totalPresent = data.present?.length || 0;
+      data.totalAbsent = data.absent?.length || 0;
       setDaily(data);
     } catch (err) {
       console.error("Error fetching daily:", err);

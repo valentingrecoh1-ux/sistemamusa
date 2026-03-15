@@ -580,7 +580,6 @@
 /* Employee rows in cell */
 .empRows {
   display: flex;
-  flex-direction: column;
   gap: 6px;
   margin-top: auto;
 }
@@ -589,6 +588,8 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 
 .empTag {

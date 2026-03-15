@@ -393,7 +393,7 @@ function Eventos({ usuario }) {
         prefill: {
           descripcion: gasto.descripcion,
           monto: -(Math.abs(gasto.monto)),
-          nombre: detailData.nombre,
+          nombre: "DEGUSTACION",
           tipoOperacion: "GASTO",
           eventoId: detailData._id,
         },

@@ -390,7 +390,7 @@ export default function RecepcionCompras({ usuario }) {
 
       {/* Modal scanner */}
       {scannerIdx !== null && (
-        <div className={s.modalOverlay} onClick={closeScannerModal}>
+        <div className={s.modalOverlay} onClick={closeScannerModal} onTouchEnd={closeScannerModal}>
           <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Escanear Codigo de Barras</span>

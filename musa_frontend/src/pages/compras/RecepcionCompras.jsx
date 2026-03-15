@@ -324,12 +324,12 @@ export default function RecepcionCompras({ usuario }) {
                     <td style={{ position: 'relative', minWidth: 200 }}>
                       {completado ? (
                         <span className={s.vinculadoTag}>
-                          {prodVinculado ? prodVinculado.nombre : (vinculado ? 'Vinculado' : '-')}
+                          {prodVinculado ? <>{prodVinculado.nombre}{prodVinculado.cepa ? ` · ${prodVinculado.cepa}` : ''}{prodVinculado.bodega ? ` · ${prodVinculado.bodega}` : ''}{prodVinculado.anio ? ` · ${prodVinculado.anio}` : ''}</> : (vinculado ? 'Vinculado' : '-')}
                         </span>
                       ) : prodVinculado ? (
                         <div className={s.vinculadoWrap}>
                           <span className={s.vinculadoTag}>
-                            <i className="bi bi-link-45deg" /> {prodVinculado.nombre}
+                            <i className="bi bi-link-45deg" /> {prodVinculado.nombre}{prodVinculado.cepa ? ` · ${prodVinculado.cepa}` : ''}{prodVinculado.bodega ? ` · ${prodVinculado.bodega}` : ''}{prodVinculado.anio ? ` · ${prodVinculado.anio}` : ''}
                           </span>
                           <button
                             type="button"

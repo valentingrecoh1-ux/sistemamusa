@@ -53,32 +53,107 @@
   text-align: center;
 }
 
-.empSelect {
-  padding: 8px 14px 8px 12px;
+/* Custom employee dropdown */
+.empDrop {
+  position: relative;
+}
+
+.empDropBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
   border: 1px solid var(--card-border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--card-bg);
   color: var(--text-primary);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
   transition: all 0.2s ease;
+  min-width: 180px;
 }
 
-.empSelect:hover {
+.empDropBtn:hover {
   border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.05);
 }
 
-.empSelect:focus {
-  outline: none;
+.empDropBtn.empDropOpen {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.empDropIcon {
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.empDropDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.empDropArrow {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.empDropOpen .empDropArrow {
+  transform: rotate(180deg);
+}
+
+.empDropMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+  overflow: hidden;
+  animation: dropIn 0.15s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.empDropItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.empDropItem:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.empDropItem.empDropActive {
+  background: rgba(99, 102, 241, 0.15);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.empDropItem i {
+  font-size: 15px;
+  color: var(--accent);
 }
 
 /* Legend */

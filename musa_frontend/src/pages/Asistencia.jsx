@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { socket } from "../main";
 import s from "./Asistencia.module.css";
 
 const API = "/api/asistencia";
 const AREA_FILTER = "MUSA PALERMO";
+const CRISTIAN_ID = "emp018";
+const PRECIO_HORA = 9000;
 
 const DAYS = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -57,6 +61,7 @@ const fmtHours = (h) => {
 const displayName = (name) => name || "";
 
 export default function Asistencia() {
+  const navigate = useNavigate();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -66,6 +71,10 @@ export default function Asistencia() {
   const [selectedEmp, setSelectedEmp] = useState("all");
   const [selectedDay, setSelectedDay] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [lastLiquidacion, setLastLiquidacion] = useState(null);
+  const [liqHours, setLiqHours] = useState(0);
+  const [liqFrom, setLiqFrom] = useState(null);
+  const [liqTo, setLiqTo] = useState(null);
 
   const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
 
@@ -98,6 +107,87 @@ export default function Asistencia() {
     setSelectedDay(null);
     setDaily(null);
   }, [fetchReport]);
+
+  // Fetch last liquidation date from config
+  useEffect(() => {
+    const handleConfig = (cfg) => {
+      if (cfg?.lastLiquidacionDate) {
+        setLastLiquidacion(cfg.lastLiquidacionDate);
+      }
+    };
+    socket.on("response-config-tienda", handleConfig);
+    socket.emit("request-config-tienda");
+    return () => socket.off("response-config-tienda", handleConfig);
+  }, []);
+
+  // Calculate Cristian's hours since last liquidation (fetch all needed months)
+  useEffect(() => {
+    if (lastLiquidacion === null && !report) return;
+    const calcHours = async () => {
+      const fromDate = lastLiquidacion || null;
+      // Determine which months to fetch (from lastLiquidacion to today)
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+      const months = new Set([todayStr]);
+      if (fromDate) {
+        // Add months between last liquidation and today
+        const [fy, fm] = fromDate.split("-").map(Number);
+        let y = fy, m = fm;
+        while (`${y}-${String(m).padStart(2, "0")}` <= todayStr) {
+          months.add(`${y}-${String(m).padStart(2, "0")}`);
+          m++;
+          if (m > 12) { m = 1; y++; }
+        }
+      }
+      // Fetch all needed month reports
+      let totalH = 0;
+      let firstDate = null;
+      let lastDate = null;
+      for (const mo of [...months].sort()) {
+        try {
+          const res = await fetch(`${API}/schedules/report?month=${mo}`);
+          const data = await res.json();
+          const cristian = data.employees?.find((e) => e.employeeId === CRISTIAN_ID);
+          if (!cristian?.dailyDetails) continue;
+          Object.entries(cristian.dailyDetails).forEach(([dateStr, dd]) => {
+            if (fromDate && dateStr <= fromDate) return;
+            if (dd.totalHours > 0) {
+              totalH += dd.totalHours;
+              if (!firstDate || dateStr < firstDate) firstDate = dateStr;
+              if (!lastDate || dateStr > lastDate) lastDate = dateStr;
+            }
+          });
+        } catch {}
+      }
+      setLiqHours(totalH);
+      setLiqFrom(firstDate);
+      setLiqTo(lastDate);
+    };
+    calcHours();
+  }, [report, lastLiquidacion]);
+
+  const handleLiquidar = () => {
+    if (!liqTo || liqHours <= 0) return;
+    const monto = Math.round(liqHours * PRECIO_HORA);
+    const fromFmt = liqFrom ? new Date(liqFrom + "T12:00:00").toLocaleDateString("es-AR") : "";
+    const toFmt = liqTo ? new Date(liqTo + "T12:00:00").toLocaleDateString("es-AR") : "";
+
+    // Save last liquidation date
+    socket.emit("update-config-tienda", { lastLiquidacionDate: liqTo });
+    setLastLiquidacion(liqTo);
+
+    // Navigate to Caja with prefill
+    navigate("/caja", {
+      state: {
+        prefill: {
+          descripcion: `Sueldo Cristian Baldovino ${fromFmt} a ${toFmt}`,
+          monto: -(Math.abs(monto)),
+          nombre: "SUELDO",
+          tipoOperacion: "GASTO",
+        },
+      },
+    });
+  };
 
   const fetchDaily = async (dateStr) => {
     try {
@@ -285,6 +375,47 @@ export default function Asistencia() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Liquidar sueldo Cristian */}
+      {!loading && report && (
+        <div className={s.liqCard}>
+          <div className={s.liqHeader}>
+            <i className="bi bi-cash-coin"></i>
+            <span>Liquidar sueldo — Cristian Baldovino</span>
+          </div>
+          {lastLiquidacion && (
+            <div className={s.liqInfo}>
+              Liquidado hasta: <strong>{new Date(lastLiquidacion + "T12:00:00").toLocaleDateString("es-AR")}</strong>
+            </div>
+          )}
+          {liqHours > 0 ? (
+            <div className={s.liqBody}>
+              <div className={s.liqStats}>
+                <div className={s.liqStat}>
+                  <span className={s.liqValue}>{fmtHours(liqHours)}</span>
+                  <span className={s.liqLabel}>horas</span>
+                </div>
+                <div className={s.liqStat}>
+                  <span className={s.liqValue}>${PRECIO_HORA.toLocaleString("es-AR")}</span>
+                  <span className={s.liqLabel}>por hora</span>
+                </div>
+                <div className={s.liqStat}>
+                  <span className={`${s.liqValue} ${s.liqTotal}`}>${Math.round(liqHours * PRECIO_HORA).toLocaleString("es-AR")}</span>
+                  <span className={s.liqLabel}>total</span>
+                </div>
+              </div>
+              <div className={s.liqPeriod}>
+                Periodo: {liqFrom && new Date(liqFrom + "T12:00:00").toLocaleDateString("es-AR")} — {liqTo && new Date(liqTo + "T12:00:00").toLocaleDateString("es-AR")}
+              </div>
+              <button className={s.liqBtn} onClick={handleLiquidar}>
+                <i className="bi bi-check2-circle"></i> Liquidar y enviar a Caja
+              </button>
+            </div>
+          ) : (
+            <div className={s.liqEmpty}>No hay horas pendientes de liquidar</div>
+          )}
         </div>
       )}
 

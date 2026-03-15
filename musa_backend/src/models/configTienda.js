@@ -39,6 +39,8 @@ const configTiendaSchema = new mongoose.Schema(
     fotosEventos: [{ type: String }],
     // Notificaciones WhatsApp automaticas de envio
     notificacionesEnvioWA: { type: Boolean, default: false },
+    // Ultima fecha de liquidacion de sueldo (Cristian)
+    lastLiquidacionDate: { type: String, default: null },
   },
   { timestamps: true }
 );

@@ -35,6 +35,7 @@ import Precios from './pages/Precios';
 import Clientes from './pages/Clientes';
 import Usuarios from './pages/admin/Usuarios';
 import Setup from './pages/admin/Setup';
+import Asistencia from './pages/Asistencia';
 
 import { socket } from './main';
 import { isTiendaDomain } from './tiendaConfig';
@@ -140,6 +141,7 @@ function AdminApp({ usuario, onLogout }) {
           <Route path="/web/club" element={<WebClub />} />
           <Route path="/web/pedidosya" element={<PedidosYaEnvios />} />
           <Route path="/web/config" element={<WebConfig />} />
+          <Route path="/asistencia" element={<Asistencia />} />
           <Route path="/admin/usuarios" element={<Usuarios usuario={usuario} />} />
           <Route path="/admin/setup" element={<Setup />} />
         </Routes>

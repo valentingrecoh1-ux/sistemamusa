@@ -1,0 +1,380 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navBtn {
+  padding: 6px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.navBtn:hover {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+}
+
+.monthLabel {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 160px;
+  text-align: center;
+}
+
+.empSelect {
+  padding: 8px 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Summary cards */
+.summaryRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.summaryCard {
+  flex: 1;
+  min-width: 200px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 16px;
+  box-shadow: var(--card-shadow);
+}
+
+.summaryName {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.summaryStats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.summaryStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summaryValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.summaryValue.extra {
+  color: var(--warning);
+}
+
+.summaryLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Calendar */
+.calendarCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.calendarHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.dayHeader {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 6px 0;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayEmpty {
+  aspect-ratio: 1;
+  min-height: 70px;
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  min-height: 70px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--card-border);
+  padding: 6px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dayCell:hover {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.dayCell.today {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+
+.dayCell.selected {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: var(--accent);
+}
+
+.dayCell.worked {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.dayCell.noWork {
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.dayNum {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.today .dayNum {
+  color: var(--accent);
+}
+
+.dayInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: auto;
+}
+
+.dayHours {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--success);
+}
+
+.dayCount {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Daily detail */
+.dailyCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.dailyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dailyHeader h3 {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: capitalize;
+}
+
+.dailyBadges {
+  display: flex;
+  gap: 8px;
+}
+
+.badgePresent {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+}
+
+.badgeAbsent {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--danger);
+}
+
+.dailySection {
+  margin-bottom: 16px;
+}
+
+.dailySectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.dailyList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dailyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--card-border);
+  flex-wrap: wrap;
+}
+
+.dailyName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.dailyHours {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent);
+  min-width: 60px;
+}
+
+.dailyTimes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.timeBadge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.timeIn {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--success);
+}
+
+.timeOut {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--warning);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .monthNav {
+    justify-content: center;
+  }
+
+  .dayCell {
+    min-height: 50px;
+    padding: 4px;
+  }
+
+  .dayNum {
+    font-size: 11px;
+  }
+
+  .dayHours {
+    font-size: 9px;
+  }
+
+  .dayCount {
+    display: none;
+  }
+
+  .summaryRow {
+    flex-direction: column;
+  }
+
+  .dailyRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

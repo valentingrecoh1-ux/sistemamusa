@@ -217,9 +217,7 @@
   border-color: var(--accent);
 }
 
-.dayCell.worked {
-  background: rgba(34, 197, 94, 0.06);
-}
+/* worked background is set via inline style (diagonal gradient for 2 employees) */
 
 .dayCell.noWork {
   background: rgba(239, 68, 68, 0.03);

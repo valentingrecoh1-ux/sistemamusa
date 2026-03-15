@@ -24,6 +24,20 @@ export default function RecepcionCompras({ usuario }) {
   const [scanResult, setScanResult] = useState(null);
   const scannerRef = useRef(null);
 
+  const playBeep = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1200;
+      gain.gain.value = 0.3;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (_) {}
+  }, []);
+
   const stopScanner = useCallback(() => {
     if (scannerRef.current) {
       scannerRef.current.stop().catch(() => {});
@@ -42,6 +56,7 @@ export default function RecepcionCompras({ usuario }) {
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 280, height: 120 }, aspectRatio: 2.0 },
         (decodedText) => {
+          playBeep();
           setScanResult(decodedText);
           html5QrCode.stop().catch(() => {});
           // Search for product by codigo
@@ -58,7 +73,7 @@ export default function RecepcionCompras({ usuario }) {
         console.error('Error starting scanner:', err);
       });
     }, 300);
-  }, [productos]);
+  }, [productos, playBeep]);
 
   const closeScannerModal = useCallback(() => {
     stopScanner();

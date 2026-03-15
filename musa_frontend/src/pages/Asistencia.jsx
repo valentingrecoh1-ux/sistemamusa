@@ -156,12 +156,15 @@ export default function Asistencia() {
       if (dd && dd.totalHours > 0) {
         totalHours += dd.totalHours;
         worked++;
+        const sessions = dd.sessions || [];
+        const firstIn = sessions[0]?.in || null;
+        const lastOut = sessions[sessions.length - 1]?.out || null;
         empDetails.push({
           name: emp.employeeName,
           id: emp.employeeId,
           hours: dd.totalHours,
-          firstIn: dd.firstIn,
-          lastOut: dd.lastOut,
+          firstIn,
+          lastOut,
         });
       }
     });

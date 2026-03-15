@@ -24,6 +24,7 @@ const NAV = [
       { to: '/inventario', icon: 'bi-box-seam', label: 'Inventario' },
       { to: '/eventos', icon: 'bi-calendar-event', label: 'Eventos' },
       { to: '/chat', icon: 'bi-chat-square-text', label: 'Chat Interno' },
+      { to: '/asistencia', icon: 'bi-clock-history', label: 'Asistencia' },
       { to: '/vidriera', icon: 'bi-tv', label: 'Vidriera' },
     ],
   },
@@ -98,7 +99,7 @@ export default function Sidebar({ usuario, onLogout, collapsed, setCollapsed, mo
           <img src={logo} alt="MUSA" className={s.logoImg} />
           <div className={s.logoCol}>
             <span className={s.logoText}>MUSA</span>
-            <span className={s.version}>v1.38</span>
+            <span className={s.version}>v1.39</span>
           </div>
         </Link>
 

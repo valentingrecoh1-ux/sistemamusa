@@ -321,10 +321,8 @@
   background-color: var(--accent-bg);
   color: var(--text-secondary);
   font-size: 12px;
-  white-space: nowrap;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .desvincularBtn {

@@ -6,11 +6,57 @@ const API = "https://asistencia.musavinos.com/api/musa";
 const DAYS = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
+// Feriados nacionales Argentina 2026
+const FERIADOS_2026 = {
+  "2026-01-01": "Año Nuevo",
+  "2026-02-16": "Carnaval",
+  "2026-02-17": "Carnaval",
+  "2026-03-23": "Puente turístico",
+  "2026-03-24": "Día de la Memoria",
+  "2026-04-02": "Día del Veterano",
+  "2026-04-03": "Viernes Santo",
+  "2026-05-01": "Día del Trabajador",
+  "2026-05-25": "Revolución de Mayo",
+  "2026-06-15": "Güemes",
+  "2026-06-20": "Día de la Bandera",
+  "2026-07-09": "Día de la Independencia",
+  "2026-07-10": "Puente turístico",
+  "2026-08-17": "San Martín",
+  "2026-10-12": "Diversidad Cultural",
+  "2026-11-23": "Soberanía Nacional",
+  "2026-12-07": "Puente turístico",
+  "2026-12-08": "Inmaculada Concepción",
+  "2026-12-25": "Navidad",
+};
+
+// Colores para empleados (distinguibles entre sí)
+const EMP_COLORS = [
+  "#6366f1", // indigo
+  "#f59e0b", // amber
+  "#10b981", // emerald
+  "#ef4444", // red
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#06b6d4", // cyan
+  "#f97316", // orange
+  "#14b8a6", // teal
+  "#a855f7", // purple
+  "#64748b", // slate
+  "#e11d48", // rose
+];
+
 const fmtHours = (h) => {
   if (!h) return "0hs";
   const hrs = Math.floor(h);
   const mins = Math.round((h - hrs) * 60);
   return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}hs`;
+};
+
+// Get first name or abbreviation
+const shortName = (name) => {
+  if (!name) return "";
+  const parts = name.trim().split(/\s+/);
+  return parts[0];
 };
 
 export default function Asistencia() {
@@ -88,6 +134,12 @@ export default function Asistencia() {
   for (let i = 0; i < startDow; i++) calendarDays.push(null);
   for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
 
+  // Build employee color map
+  const empColorMap = {};
+  (report?.employees || []).forEach((emp, idx) => {
+    empColorMap[emp.employeeId] = EMP_COLORS[idx % EMP_COLORS.length];
+  });
+
   // Get employee data for calendar
   const filteredEmployees = report?.employees?.filter(
     (e) => selectedEmp === "all" || e.employeeId === selectedEmp
@@ -98,14 +150,27 @@ export default function Asistencia() {
     const dateStr = `${monthStr}-${String(day).padStart(2, "0")}`;
     let totalHours = 0;
     let worked = 0;
+    const empDetails = [];
     filteredEmployees.forEach((emp) => {
       const dd = emp.dailyDetails?.[dateStr];
       if (dd && dd.totalHours > 0) {
         totalHours += dd.totalHours;
         worked++;
+        empDetails.push({
+          name: emp.employeeName,
+          id: emp.employeeId,
+          hours: dd.totalHours,
+          firstIn: dd.firstIn,
+          lastOut: dd.lastOut,
+        });
       }
     });
-    return { totalHours, worked, dateStr };
+    return { totalHours, worked, dateStr, empDetails };
+  };
+
+  const isFeriado = (day) => {
+    const dateStr = `${monthStr}-${String(day).padStart(2, "0")}`;
+    return FERIADOS_2026[dateStr] || null;
   };
 
   const isToday = (day) => {
@@ -150,11 +215,30 @@ export default function Asistencia() {
         </select>
       </div>
 
+      {/* Employee color legend */}
+      {!loading && report && selectedEmp === "all" && (
+        <div className={s.legend}>
+          {(report.employees || []).map((emp, idx) => (
+            <div key={emp.employeeId} className={s.legendItem}>
+              <span
+                className={s.legendDot}
+                style={{ background: EMP_COLORS[idx % EMP_COLORS.length] }}
+              />
+              <span className={s.legendName}>{shortName(emp.employeeName)}</span>
+            </div>
+          ))}
+          <div className={s.legendItem}>
+            <span className={`${s.legendDot} ${s.legendFeriado}`} />
+            <span className={s.legendName}>Feriado</span>
+          </div>
+        </div>
+      )}
+
       {/* Summary cards */}
       {!loading && report && (
         <div className={s.summaryRow}>
           {filteredEmployees.map((emp) => (
-            <div key={emp.employeeId} className={s.summaryCard}>
+            <div key={emp.employeeId} className={s.summaryCard} style={{ borderTop: `3px solid ${empColorMap[emp.employeeId]}` }}>
               <div className={s.summaryName}>{emp.employeeName}</div>
               <div className={s.summaryStats}>
                 <div className={s.summaryStat}>
@@ -201,19 +285,32 @@ export default function Asistencia() {
                 const today = isToday(day);
                 const past = isPast(day);
                 const selected = selectedDay === dateStr;
+                const feriado = isFeriado(day);
 
                 return (
                   <div
                     key={i}
-                    className={`${s.dayCell} ${today ? s.today : ""} ${selected ? s.selected : ""} ${hasWork ? s.worked : past ? s.noWork : ""}`}
+                    className={`${s.dayCell} ${today ? s.today : ""} ${selected ? s.selected : ""} ${hasWork ? s.worked : past ? s.noWork : ""} ${feriado ? s.feriado : ""}`}
                     onClick={() => dateStr && handleDayClick(dateStr)}
+                    title={feriado || ""}
                   >
-                    <span className={s.dayNum}>{day}</span>
+                    <div className={s.dayTopRow}>
+                      <span className={s.dayNum}>{day}</span>
+                      {feriado && <i className={`bi bi-flag-fill ${s.feriadoIcon}`} title={feriado}></i>}
+                    </div>
                     {hasWork && (
                       <div className={s.dayInfo}>
-                        <span className={s.dayHours}>{fmtHours(data.totalHours)}</span>
-                        {selectedEmp === "all" && data.worked > 0 && (
-                          <span className={s.dayCount}>{data.worked} emp</span>
+                        {data.empDetails.slice(0, 4).map((emp) => (
+                          <div key={emp.id} className={s.empLine} style={{ color: empColorMap[emp.id] }}>
+                            <span className={s.empDot} style={{ background: empColorMap[emp.id] }} />
+                            <span className={s.empName}>{shortName(emp.name)}</span>
+                            <span className={s.empTime}>
+                              {emp.firstIn?.slice(0, 5) || "?"}-{emp.lastOut?.slice(0, 5) || "?"}
+                            </span>
+                          </div>
+                        ))}
+                        {data.empDetails.length > 4 && (
+                          <span className={s.empMore}>+{data.empDetails.length - 4} más</span>
                         )}
                       </div>
                     )}
@@ -232,6 +329,11 @@ export default function Asistencia() {
             <h3>
               <i className="bi bi-calendar-date"></i>{" "}
               {new Date(selectedDay + "T12:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}
+              {FERIADOS_2026[selectedDay] && (
+                <span className={s.feriadoBadge}>
+                  <i className="bi bi-flag-fill"></i> {FERIADOS_2026[selectedDay]}
+                </span>
+              )}
             </h3>
             <div className={s.dailyBadges}>
               <span className={s.badgePresent}>{daily.totalPresent} presentes</span>
@@ -246,9 +348,9 @@ export default function Asistencia() {
                 {daily.present
                   .filter((p) => selectedEmp === "all" || p.employeeId === selectedEmp)
                   .map((p) => (
-                    <div key={p.employeeId} className={s.dailyRow}>
+                    <div key={p.employeeId} className={s.dailyRow} style={{ borderLeft: `3px solid ${empColorMap[p.employeeId] || "var(--accent)"}` }}>
                       <span className={s.dailyName}>
-                        <i className="bi bi-check-circle-fill" style={{ color: "var(--success)" }}></i>{" "}
+                        <i className="bi bi-check-circle-fill" style={{ color: empColorMap[p.employeeId] || "var(--success)" }}></i>{" "}
                         {p.employeeName}
                       </span>
                       <span className={s.dailyHours}>{fmtHours(p.hoursWorked)}</span>
@@ -270,7 +372,7 @@ export default function Asistencia() {
               <div className={s.dailySectionTitle}>Ausentes</div>
               <div className={s.dailyList}>
                 {daily.absent.map((a) => (
-                  <div key={a.employeeId} className={s.dailyRow}>
+                  <div key={a.employeeId} className={s.dailyRow} style={{ borderLeft: `3px solid ${empColorMap[a.employeeId] || "var(--danger)"}` }}>
                     <span className={s.dailyName}>
                       <i className="bi bi-x-circle-fill" style={{ color: "var(--danger)" }}></i>{" "}
                       {a.employeeName}

@@ -201,6 +201,22 @@ export default function RecepcionCompras({ usuario }) {
     setNewProd(EMPTY_PROD);
   };
 
+  const handleConfirmRow = (i) => {
+    if (!selectedOC) return;
+    const item = selectedOC.items[i];
+    const qty = cantidades[i] || 0;
+    if (qty <= 0) return;
+    socket.emit('registrar-recepcion', {
+      ordenCompra: selectedOC._id,
+      items: [{
+        index: i,
+        nombre: item.nombre,
+        cantidadRecibida: qty,
+        productoId: vinculaciones[i] || item.productoId || '',
+      }],
+    });
+  };
+
   const handleSubmit = () => {
     if (!selectedOC) return;
     const items = (selectedOC.items || []).map((item, i) => ({
@@ -415,8 +431,8 @@ export default function RecepcionCompras({ usuario }) {
                         <button
                           type="button"
                           className={s.fillBtn}
-                          onClick={() => setCantidades((prev) => ({ ...prev, [i]: pendiente }))}
-                          title="Recibir todo"
+                          onClick={() => handleConfirmRow(i)}
+                          title="Confirmar recepción"
                         >
                           <i className="bi bi-check-all" />
                         </button>

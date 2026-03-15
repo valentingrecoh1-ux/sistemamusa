@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import s from "./Asistencia.module.css";
 
-const API = "https://asistencia.musavinos.com/api/musa";
+const API = "/api/asistencia";
 
 const DAYS = ["Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom"];
 const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];

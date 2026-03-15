@@ -185,11 +185,11 @@
 }
 
 .dayEmpty {
-  min-height: 100px;
+  min-height: 120px;
 }
 
 .dayCell {
-  min-height: 100px;
+  min-height: 120px;
   border-radius: var(--border-radius);
   border: 1px solid var(--card-border);
   padding: 6px;
@@ -248,6 +248,14 @@
 .feriadoIcon {
   font-size: 10px;
   color: #3b82f6;
+}
+
+.storeHours {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-left: auto;
+  letter-spacing: -0.3px;
 }
 
 .feriadoBadge {

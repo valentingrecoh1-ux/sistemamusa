@@ -181,7 +181,14 @@ export default function Asistencia() {
         });
       }
     });
-    return { totalHours, worked, dateStr, empDetails };
+    // Store open/close = earliest in, latest out across all employees
+    let storeOpen = null;
+    let storeClose = null;
+    empDetails.forEach((e) => {
+      if (e.firstIn && (!storeOpen || e.firstIn < storeOpen)) storeOpen = e.firstIn;
+      if (e.lastOut && (!storeClose || e.lastOut > storeClose)) storeClose = e.lastOut;
+    });
+    return { totalHours, worked, dateStr, empDetails, storeOpen, storeClose };
   };
 
   const isFeriado = (day) => {
@@ -325,10 +332,15 @@ export default function Asistencia() {
                     <div className={s.dayTopRow}>
                       <span className={s.dayNum}>{day}</span>
                       {feriado && <i className={`bi bi-flag-fill ${s.feriadoIcon}`} title={feriado}></i>}
+                      {hasWork && data.storeOpen && (
+                        <span className={s.storeHours}>
+                          {data.storeOpen.slice(0, 5)} - {data.storeClose?.slice(0, 5)}
+                        </span>
+                      )}
                     </div>
                     {hasWork && (
                       <div className={s.dayInfo}>
-                        {data.empDetails.slice(0, 4).map((emp) => (
+                        {data.empDetails.map((emp) => (
                           <div key={emp.id} className={s.empLine} style={{ color: empColorMap[emp.id] }}>
                             <span className={s.empDot} style={{ background: empColorMap[emp.id] }} />
                             <span className={s.empName}>{displayName(emp.name)}</span>
@@ -337,9 +349,6 @@ export default function Asistencia() {
                             </span>
                           </div>
                         ))}
-                        {data.empDetails.length > 4 && (
-                          <span className={s.empMore}>+{data.empDetails.length - 4} más</span>
-                        )}
                       </div>
                     )}
                   </div>

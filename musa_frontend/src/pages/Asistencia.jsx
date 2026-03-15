@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../main";
 import s from "./Asistencia.module.css";
@@ -75,6 +75,8 @@ export default function Asistencia() {
   const [liqHours, setLiqHours] = useState(0);
   const [liqFrom, setLiqFrom] = useState(null);
   const [liqTo, setLiqTo] = useState(null);
+  const [dropOpen, setDropOpen] = useState(false);
+  const dropRef = useRef(null);
 
   const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
 
@@ -188,6 +190,15 @@ export default function Asistencia() {
       },
     });
   };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropRef.current && !dropRef.current.contains(e.target)) setDropOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const fetchDaily = async (dateStr) => {
     try {
@@ -314,18 +325,40 @@ export default function Asistencia() {
             <i className="bi bi-chevron-right"></i>
           </button>
         </div>
-        <select
-          className={s.empSelect}
-          value={selectedEmp}
-          onChange={(e) => setSelectedEmp(e.target.value)}
-        >
-          <option value="all">Ambos</option>
-          {employees.map((emp) => (
-            <option key={emp.employeeId} value={emp.employeeId}>
-              {emp.name}
-            </option>
-          ))}
-        </select>
+        <div className={s.empDrop} ref={dropRef}>
+          <button className={`${s.empDropBtn} ${dropOpen ? s.empDropOpen : ""}`} onClick={() => setDropOpen(!dropOpen)}>
+            <span className={s.empDropIcon}>
+              {selectedEmp === "all" ? (
+                <i className="bi bi-people-fill"></i>
+              ) : (
+                <span className={s.empDropDot} style={{ background: empColorMap[selectedEmp] }} />
+              )}
+            </span>
+            <span>{selectedEmp === "all" ? "Ambos" : employees.find((e) => e.employeeId === selectedEmp)?.name}</span>
+            <i className={`bi bi-chevron-down ${s.empDropArrow}`}></i>
+          </button>
+          {dropOpen && (
+            <div className={s.empDropMenu}>
+              <div
+                className={`${s.empDropItem} ${selectedEmp === "all" ? s.empDropActive : ""}`}
+                onClick={() => { setSelectedEmp("all"); setDropOpen(false); }}
+              >
+                <i className="bi bi-people-fill"></i>
+                <span>Ambos</span>
+              </div>
+              {employees.map((emp) => (
+                <div
+                  key={emp.employeeId}
+                  className={`${s.empDropItem} ${selectedEmp === emp.employeeId ? s.empDropActive : ""}`}
+                  onClick={() => { setSelectedEmp(emp.employeeId); setDropOpen(false); }}
+                >
+                  <span className={s.empDropDot} style={{ background: empColorMap[emp.employeeId] }} />
+                  <span>{emp.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Employee color legend */}

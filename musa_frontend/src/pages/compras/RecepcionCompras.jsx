@@ -380,10 +380,9 @@ export default function RecepcionCompras({ usuario }) {
           </div>
 
           <div className={s.btnRow}>
-            <button className={s.submitBtn} onClick={handleSubmit}>
-              <i className="bi bi-check-lg" /> Confirmar Recepcion
+            <button className={s.cancelBtn} onClick={handleCancel}>
+              <i className="bi bi-arrow-left" /> Volver
             </button>
-            <button className={s.cancelBtn} onClick={handleCancel}>Cancelar</button>
           </div>
         </div>
       )}

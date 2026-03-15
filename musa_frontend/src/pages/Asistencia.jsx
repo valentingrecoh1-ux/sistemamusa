@@ -462,25 +462,31 @@ export default function Asistencia() {
                   >
                     <div className={s.dayTopRow}>
                       <span className={s.dayNum}>{day}</span>
-                      {feriado && <i className={`bi bi-flag-fill ${s.feriadoIcon}`} title={feriado}></i>}
-                      {hasWork && data.storeOpen && (
-                        <span className={s.storeHours}>
-                          {data.storeOpen.slice(0, 5)} - {data.storeClose?.slice(0, 5)}
+                      {feriado && (
+                        <span className={s.feriadoTag}>
+                          <i className="bi bi-flag-fill"></i>
                         </span>
                       )}
                     </div>
                     {hasWork && (
-                      <div className={s.dayInfo}>
-                        {data.empDetails.map((emp) => (
-                          <div key={emp.id} className={s.empLine} style={{ color: empColorMap[emp.id] }}>
-                            <span className={s.empDot} style={{ background: empColorMap[emp.id] }} />
-                            <span className={s.empName}>{displayName(emp.name)}</span>
-                            <span className={s.empTime}>
-                              {emp.firstIn?.slice(0, 5) || "?"}-{emp.lastOut?.slice(0, 5) || "?"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      <>
+                        <div className={s.storeBar}>
+                          <i className="bi bi-shop"></i>
+                          <span>{data.storeOpen?.slice(0, 5)} — {data.storeClose?.slice(0, 5)}</span>
+                        </div>
+                        <div className={s.empRows}>
+                          {data.empDetails.map((emp) => (
+                            <div key={emp.id} className={s.empRow}>
+                              <span className={s.empTag} style={{ background: empColorMap[emp.id], color: "#fff" }}>
+                                {emp.name.split(" ")[0]}
+                              </span>
+                              <span className={s.empHrs} style={{ color: empColorMap[emp.id] }}>
+                                {emp.firstIn?.slice(0, 5)}-{emp.lastOut?.slice(0, 5)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 );

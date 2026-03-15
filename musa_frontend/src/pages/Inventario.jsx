@@ -561,7 +561,7 @@ E
           </div>
           <div className={s.formRow}>
             <div className={s.formGroup}>
-              <label>Año</label>
+              <label>Cosecha</label>
               <input
                 type="text"
                 name="year"
@@ -783,7 +783,7 @@ E
           )}
           {filtroYear && (
             <button className={s.filterChip} onClick={() => { setFiltroYear(""); setPage(1); }}>
-              Año: {filtroYear} <i className="bi bi-x"></i>
+              Cosecha: {filtroYear} <i className="bi bi-x"></i>
             </button>
           )}
           <button className={s.filterClearAll} onClick={limpiarFiltros}>

@@ -329,7 +329,7 @@ E
             />
           </div>
           <div className="form-group">
-            <label>Año</label>
+            <label>Cosecha</label>
             <input
               type="text"
               id="year"
@@ -447,7 +447,7 @@ E
               <tr className="titulos-tabla">
                 <th>Código</th>
                 <th>Nombre</th>
-                <th>Año</th>
+                <th>Cosecha</th>
                 <th>Bodega</th>
                 <th>Cepa</th>
                 <th>Posicion</th>

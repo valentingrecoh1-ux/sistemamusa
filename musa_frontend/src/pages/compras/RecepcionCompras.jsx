@@ -132,13 +132,26 @@ export default function RecepcionCompras({ usuario }) {
     setSearchProd((prev) => ({ ...prev, [index]: undefined }));
   };
 
+  const generateEAN13 = useCallback(() => {
+    const timestamp = Date.now().toString().slice(0, 12);
+    const modified = timestamp.replace(/^1/, '8');
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+      const d = parseInt(modified.charAt(i));
+      sum += i % 2 === 0 ? d : d * 3;
+    }
+    const r = sum % 10;
+    const check = r === 0 ? 0 : 10 - r;
+    setNewProd((p) => ({ ...p, codigo: modified + check }));
+  }, []);
+
   const openCrearModal = (index) => {
     const item = selectedOC?.items?.[index];
     setCrearModal(index);
     setNewProd({
       ...EMPTY_PROD,
       nombre: item?.nombre || '',
-      bodega: selectedOC?.proveedorBodega || '',
+      bodega: selectedOC?.proveedorBodega || selectedOC?.proveedorNombre || '',
       costo: item?.precioUnitario || '',
     });
     setSearchProd((prev) => ({ ...prev, [index]: undefined }));
@@ -438,34 +451,37 @@ export default function RecepcionCompras({ usuario }) {
               </button>
             </div>
             <div className={s.modalBody}>
+              <div className={s.modalField}>
+                <span>Codigo</span>
+                <div className={s.codigoRow}>
+                  <input type="text" value={newProd.codigo} onChange={(e) => setNewProd((p) => ({ ...p, codigo: e.target.value.replace(/\D/g, '') }))} placeholder="EAN-13" />
+                  <button type="button" className={s.generateBtn} onClick={generateEAN13}>Generar</button>
+                </div>
+              </div>
               <div className={s.modalRow}>
                 <div className={s.modalField}>
                   <span>Nombre *</span>
                   <input type="text" value={newProd.nombre} onChange={(e) => setNewProd((p) => ({ ...p, nombre: e.target.value }))} />
                 </div>
+              </div>
+              <div className={s.modalRow}>
                 <div className={s.modalField}>
                   <span>Bodega</span>
                   <input type="text" value={newProd.bodega} onChange={(e) => setNewProd((p) => ({ ...p, bodega: e.target.value }))} />
                 </div>
-              </div>
-              <div className={s.modalRow}>
                 <div className={s.modalField}>
                   <span>Cepa</span>
                   <input type="text" value={newProd.cepa} onChange={(e) => setNewProd((p) => ({ ...p, cepa: e.target.value }))} />
                 </div>
+              </div>
+              <div className={s.modalRow}>
                 <div className={s.modalField}>
                   <span>Cosecha</span>
                   <input type="text" value={newProd.year} onChange={(e) => setNewProd((p) => ({ ...p, year: e.target.value }))} placeholder="2024" />
                 </div>
-              </div>
-              <div className={s.modalRow}>
                 <div className={s.modalField}>
                   <span>Origen</span>
                   <input type="text" value={newProd.origen} onChange={(e) => setNewProd((p) => ({ ...p, origen: e.target.value }))} placeholder="Mendoza" />
-                </div>
-                <div className={s.modalField}>
-                  <span>Codigo</span>
-                  <input type="text" value={newProd.codigo} onChange={(e) => setNewProd((p) => ({ ...p, codigo: e.target.value }))} />
                 </div>
               </div>
               <div className={s.modalRow}>

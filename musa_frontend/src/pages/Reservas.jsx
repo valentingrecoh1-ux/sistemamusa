@@ -4,6 +4,7 @@ import { es } from "date-fns/locale/es";
 import { NumericFormat } from "react-number-format";
 import { socket } from "../main";
 import Pagination from "../components/shared/Pagination";
+import PhoneInput from "../components/shared/PhoneInput";
 import { dialog } from "../components/shared/dialog";
 import s from "./Reservas.module.css";
 
@@ -316,11 +317,9 @@ function Reservas() {
           <div className={s.formRow}>
             <div className={s.formGroup}>
               <label>Telefono</label>
-              <input
-                type="text"
-                name="telefono"
+              <PhoneInput
                 value={turno.telefono}
-                onChange={handleChange}
+                onChange={(val) => setTurno((prev) => ({ ...prev, telefono: val }))}
                 autoComplete="off"
               />
             </div>

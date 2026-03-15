@@ -7,6 +7,7 @@ import { toPng } from "html-to-image";
 import { socket } from "../main";
 import { tienePermiso } from "../lib/permisos";
 import Pagination from "../components/shared/Pagination";
+import PhoneInput from "../components/shared/PhoneInput";
 import { dialog } from "../components/shared/dialog";
 import s from "./Eventos.module.css";
 
@@ -1090,14 +1091,12 @@ function Eventos({ usuario }) {
                     onChange={handleNewReservaChange}
                     style={{ width: 60 }}
                   />
-                  <input
+                  <PhoneInput
                     className={s.miniInput}
-                    type="text"
-                    placeholder="Teléfono"
-                    name="telefono"
                     value={newReserva.telefono}
-                    onChange={handleNewReservaChange}
+                    onChange={(val) => setNewReserva((prev) => ({ ...prev, telefono: val }))}
                     style={{ flex: 1 }}
+                    placeholder="Teléfono"
                   />
                   <NumericFormat
                     className={s.miniInput}
@@ -1147,14 +1146,12 @@ function Eventos({ usuario }) {
                               onChange={handleEditReservaChange}
                               style={{ width: 60 }}
                             />
-                            <input
+                            <PhoneInput
                               className={s.miniInput}
-                              type="text"
-                              placeholder="Teléfono"
-                              name="telefono"
                               value={editReservaData.telefono}
-                              onChange={handleEditReservaChange}
+                              onChange={(val) => setEditReservaData((prev) => ({ ...prev, telefono: val }))}
                               style={{ flex: 1 }}
+                              placeholder="Teléfono"
                             />
                             <NumericFormat
                               className={s.miniInput}

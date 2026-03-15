@@ -502,24 +502,25 @@ export default function Asistencia() {
                       )}
                     </div>
                     {hasWork && (
-                      <>
-                        <div className={s.storeBar}>
-                          <i className="bi bi-shop"></i>
-                          <span>{data.storeOpen?.slice(0, 5)} — {data.storeClose?.slice(0, 5)}</span>
-                        </div>
-                        <div className={s.empRows}>
-                          {data.empDetails.map((emp) => (
-                            <div key={emp.id} className={s.empRow}>
-                              <span className={s.empTag} style={{ background: empColorMap[emp.id], color: "#fff" }}>
-                                {emp.name.split(" ")[0]}
+                      <div className={s.empRows}>
+                        {data.empDetails.map((emp) => (
+                          <div key={emp.id} className={s.empRow}>
+                            <span className={s.empTag} style={{ background: empColorMap[emp.id] }}>
+                              {emp.name.split(" ")[0]}
+                            </span>
+                            <div className={s.empTimes}>
+                              <span className={s.empIn}>
+                                <i className="bi bi-box-arrow-in-right"></i>
+                                {emp.firstIn?.slice(0, 5)}
                               </span>
-                              <span className={s.empHrs} style={{ color: empColorMap[emp.id] }}>
-                                {emp.firstIn?.slice(0, 5)}-{emp.lastOut?.slice(0, 5)}
+                              <span className={s.empOut}>
+                                <i className="bi bi-box-arrow-right"></i>
+                                {emp.lastOut?.slice(0, 5)}
                               </span>
                             </div>
-                          ))}
-                        </div>
-                      </>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 );

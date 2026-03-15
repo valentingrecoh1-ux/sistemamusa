@@ -147,6 +147,104 @@
   text-transform: uppercase;
 }
 
+/* Liquidar sueldo */
+.liqCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.liqHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.liqHeader i {
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.liqInfo {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.liqBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.liqStats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.liqStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.liqValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.liqValue.liqTotal {
+  color: var(--success);
+  font-size: 22px;
+}
+
+.liqLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.liqPeriod {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.liqBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--accent);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  align-self: flex-start;
+}
+
+.liqBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.liqEmpty {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* Calendar */
 .calendarCard {
   background: var(--card-bg);

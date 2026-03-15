@@ -9,3 +9,4 @@
 - La versión se muestra en el Sidebar: `musa_frontend/src/components/layout/Sidebar.jsx` línea ~101.
 - Cada vez que se hace un cambio, incrementar la versión en +1 (ej: v1.25 → v1.26 → v1.27).
 - Incluir el bump de versión en el mismo commit del build.
+- Después de deployar, SIEMPRE decirle al usuario cuál es la versión deployada para que pueda verificar que el caché se limpió correctamente mirando el sidebar.

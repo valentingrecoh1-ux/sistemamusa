@@ -479,10 +479,38 @@
   gap: 12px;
 }
 
-.scannerView {
+.scannerContainer {
+  position: relative;
   width: 100%;
   border-radius: var(--border-radius);
   overflow: hidden;
+}
+
+.scannerView {
+  width: 100%;
+}
+
+/* Hide library UI elements */
+.scannerView :global(#qr-shaded-region) {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.scannerLine {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff0000, #ff4444, #ff0000, transparent);
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+  top: 50%;
+  animation: scanLine 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes scanLine {
+  0%, 100% { top: 35%; }
+  50% { top: 65%; }
 }
 
 .scanResultBox {

@@ -435,7 +435,10 @@ export default function RecepcionCompras({ usuario }) {
               </button>
             </div>
             <div className={s.scannerBody}>
-              <div id="barcode-reader" className={s.scannerView} />
+              <div className={s.scannerContainer}>
+                <div id="barcode-reader" className={s.scannerView} />
+                <div className={s.scannerLine} />
+              </div>
               {scanResult && (
                 <div className={s.scanResultBox}>
                   <span>Codigo: <strong>{scanResult}</strong></span>

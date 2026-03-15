@@ -98,7 +98,7 @@ export default function Sidebar({ usuario, onLogout, collapsed, setCollapsed, mo
           <img src={logo} alt="MUSA" className={s.logoImg} />
           <div className={s.logoCol}>
             <span className={s.logoText}>MUSA</span>
-            <span className={s.version}>v1.27</span>
+            <span className={s.version}>v1.28</span>
           </div>
         </Link>
 

@@ -76,6 +76,7 @@ export default function Asistencia() {
   const [liqFrom, setLiqFrom] = useState(null);
   const [liqTo, setLiqTo] = useState(null);
   const [dropOpen, setDropOpen] = useState(false);
+  const [showLiqModal, setShowLiqModal] = useState(false);
   const dropRef = useRef(null);
 
   const monthStr = `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -170,6 +171,7 @@ export default function Asistencia() {
 
   const handleLiquidar = () => {
     if (!liqTo || liqHours <= 0) return;
+    setShowLiqModal(false);
     const monto = Math.round(liqHours * PRECIO_HORA);
     const fromFmt = liqFrom ? new Date(liqFrom + "T12:00:00").toLocaleDateString("es-AR") : "";
     const toFmt = liqTo ? new Date(liqTo + "T12:00:00").toLocaleDateString("es-AR") : "";
@@ -385,7 +387,14 @@ export default function Asistencia() {
         <div className={s.summaryRow}>
           {filteredEmployees.map((emp) => (
             <div key={emp.employeeId} className={s.summaryCard} style={{ borderTop: `3px solid ${empColorMap[emp.employeeId]}` }}>
-              <div className={s.summaryName}>{emp.employeeName}</div>
+              <div className={s.summaryTop}>
+                <div className={s.summaryName}>{emp.employeeName}</div>
+                {emp.employeeId === CRISTIAN_ID && (
+                  <button className={s.liqOpenBtn} onClick={() => setShowLiqModal(true)}>
+                    <i className="bi bi-cash-coin"></i> Liquidar
+                  </button>
+                )}
+              </div>
               <div className={s.summaryStats}>
                 <div className={s.summaryStat}>
                   <span className={s.summaryValue}>{emp.daysWorked}</span>
@@ -411,45 +420,54 @@ export default function Asistencia() {
         </div>
       )}
 
-      {/* Liquidar sueldo Cristian */}
-      {!loading && report && (
-        <div className={s.liqCard}>
-          <div className={s.liqHeader}>
-            <i className="bi bi-cash-coin"></i>
-            <span>Liquidar sueldo — Cristian Baldovino</span>
-          </div>
-          {lastLiquidacion && (
-            <div className={s.liqInfo}>
-              Liquidado hasta: <strong>{new Date(lastLiquidacion + "T12:00:00").toLocaleDateString("es-AR")}</strong>
-            </div>
-          )}
-          {liqHours > 0 ? (
-            <div className={s.liqBody}>
-              <div className={s.liqStats}>
-                <div className={s.liqStat}>
-                  <span className={s.liqValue}>{fmtHours(liqHours)}</span>
-                  <span className={s.liqLabel}>horas</span>
-                </div>
-                <div className={s.liqStat}>
-                  <span className={s.liqValue}>${PRECIO_HORA.toLocaleString("es-AR")}</span>
-                  <span className={s.liqLabel}>por hora</span>
-                </div>
-                <div className={s.liqStat}>
-                  <span className={`${s.liqValue} ${s.liqTotal}`}>${Math.round(liqHours * PRECIO_HORA).toLocaleString("es-AR")}</span>
-                  <span className={s.liqLabel}>total</span>
-                </div>
-              </div>
-              <div className={s.liqPeriod}>
-                Periodo: {liqFrom && new Date(liqFrom + "T12:00:00").toLocaleDateString("es-AR")} — {liqTo && new Date(liqTo + "T12:00:00").toLocaleDateString("es-AR")}
-              </div>
-              <button className={s.liqBtn} onClick={handleLiquidar}>
-                <i className="bi bi-check2-circle"></i> Liquidar y enviar a Caja
+      {/* Modal liquidar sueldo */}
+      {showLiqModal && (
+        <>
+          <div className={s.modalOverlay} onClick={() => setShowLiqModal(false)} />
+          <div className={s.modal}>
+            <div className={s.modalHeader}>
+              <h3><i className="bi bi-cash-coin"></i> Liquidar sueldo</h3>
+              <button className={s.modalClose} onClick={() => setShowLiqModal(false)}>
+                <i className="bi bi-x-lg"></i>
               </button>
             </div>
-          ) : (
-            <div className={s.liqEmpty}>No hay horas pendientes de liquidar</div>
-          )}
-        </div>
+            <div className={s.modalBody}>
+              <div className={s.liqEmpName}>Cristian Baldovino</div>
+              {lastLiquidacion && (
+                <div className={s.liqInfo}>
+                  Liquidado hasta: <strong>{new Date(lastLiquidacion + "T12:00:00").toLocaleDateString("es-AR")}</strong>
+                </div>
+              )}
+              {liqHours > 0 ? (
+                <>
+                  <div className={s.liqStats}>
+                    <div className={s.liqStat}>
+                      <span className={s.liqValue}>{fmtHours(liqHours)}</span>
+                      <span className={s.liqLabel}>horas</span>
+                    </div>
+                    <div className={s.liqStat}>
+                      <span className={s.liqValue}>${PRECIO_HORA.toLocaleString("es-AR")}</span>
+                      <span className={s.liqLabel}>por hora</span>
+                    </div>
+                    <div className={s.liqStat}>
+                      <span className={`${s.liqValue} ${s.liqTotal}`}>${Math.round(liqHours * PRECIO_HORA).toLocaleString("es-AR")}</span>
+                      <span className={s.liqLabel}>total</span>
+                    </div>
+                  </div>
+                  <div className={s.liqPeriod}>
+                    <i className="bi bi-calendar-range"></i>{" "}
+                    {liqFrom && new Date(liqFrom + "T12:00:00").toLocaleDateString("es-AR")} — {liqTo && new Date(liqTo + "T12:00:00").toLocaleDateString("es-AR")}
+                  </div>
+                  <button className={s.liqBtn} onClick={handleLiquidar}>
+                    <i className="bi bi-check2-circle"></i> Liquidar y enviar a Caja
+                  </button>
+                </>
+              ) : (
+                <div className={s.liqEmpty}>No hay horas pendientes de liquidar</div>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Calendar */}

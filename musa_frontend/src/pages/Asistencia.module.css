@@ -207,11 +207,37 @@
   box-shadow: var(--card-shadow);
 }
 
+.summaryTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .summaryName {
   font-weight: 700;
   font-size: 14px;
   color: var(--text-primary);
-  margin-bottom: 10px;
+}
+
+.liqOpenBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.liqOpenBtn:hover {
+  background: var(--accent);
+  color: white;
 }
 
 .summaryStats {
@@ -242,45 +268,98 @@
   text-transform: uppercase;
 }
 
-/* Liquidar sueldo */
-.liqCard {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--border-radius-lg);
-  padding: 20px;
-  box-shadow: var(--card-shadow);
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  animation: fadeIn 0.15s ease;
 }
 
-.liqHeader {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  z-index: 101;
+  width: 90%;
+  max-width: 420px;
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 12px;
 }
 
-.liqHeader i {
-  font-size: 1.2rem;
+.modalHeader h3 i {
   color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.modalClose:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.modalBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.liqEmpName {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .liqInfo {
   font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 12px;
-  padding: 6px 12px;
+  padding: 8px 12px;
   background: rgba(99, 102, 241, 0.08);
-  border-radius: var(--border-radius);
-  display: inline-block;
-}
-
-.liqBody {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  border-radius: 10px;
 }
 
 .liqStats {

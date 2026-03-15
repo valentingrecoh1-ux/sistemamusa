@@ -417,12 +417,12 @@ export default function RecepcionCompras({ usuario }) {
 
       {/* Modal scanner */}
       {scannerIdx !== null && (
-        <div className={s.modalOverlay} onClick={closeScannerModal} onTouchEnd={closeScannerModal}>
-          <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
+        <div className={s.modalOverlay} onClick={closeScannerModal}>
+          <div className={s.scannerModal} onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Escanear Codigo de Barras</span>
-              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
-                <i className="bi bi-x-lg" style={{ pointerEvents: 'none' }} />
+              <button type="button" className={s.modalCloseBtn} onClick={closeScannerModal}>
+                <i className="bi bi-x-lg" />
               </button>
             </div>
             <div className={s.scannerBody}>

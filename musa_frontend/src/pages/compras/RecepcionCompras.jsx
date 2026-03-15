@@ -394,7 +394,7 @@ export default function RecepcionCompras({ usuario }) {
           <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Escanear Codigo de Barras</span>
-              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
+              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
                 <i className="bi bi-x-lg" style={{ pointerEvents: 'none' }} />
               </button>
             </div>

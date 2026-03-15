@@ -391,7 +391,7 @@ function Info() {
           )}
           {filtroYear && (
             <button className={s.filterChip} onClick={() => { setFiltroYear(""); setPage(1); }}>
-              Año: {filtroYear} <i className="bi bi-x"></i>
+              Cosecha: {filtroYear} <i className="bi bi-x"></i>
             </button>
           )}
           <button className={s.filterClearAll} onClick={limpiarFiltros}>

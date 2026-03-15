@@ -242,7 +242,7 @@ function Info() {
             <tr className="titulos-tabla">
               <th>Código</th>
               <th>Nombre</th>
-              <th>Año</th>
+              <th>Cosecha</th>
               <th>Bodega</th>
               <th
                 className="th-cantidad"

@@ -148,6 +148,9 @@ export default function RecepcionCompras({ usuario }) {
   const handleVinculacion = (index, prodId) => {
     setVinculaciones((prev) => ({ ...prev, [index]: prodId }));
     setSearchProd((prev) => ({ ...prev, [index]: undefined }));
+    if (selectedOC) {
+      socket.emit('vincular-item-oc', { ordenId: selectedOC._id, itemIndex: index, productoId: prodId || null });
+    }
   };
 
   const generateEAN13 = useCallback(() => {
@@ -346,7 +349,7 @@ export default function RecepcionCompras({ usuario }) {
                               placeholder="Buscar producto..."
                               value={searchTerm || ''}
                               onChange={(e) => setSearchProd((prev) => ({ ...prev, [i]: e.target.value }))}
-                              onFocus={() => setSearchProd((prev) => ({ ...prev, [i]: prev[i] || '' }))}
+                              onFocus={() => setSearchProd({ [i]: searchProd[i] || '' })}
                             />
                             <button
                               type="button"
@@ -367,6 +370,7 @@ export default function RecepcionCompras({ usuario }) {
                                 >
                                   <span className={s.vincularProdName}>
                                     {p.nombre}
+                                    {p.cepa ? <span className={s.vincularProdBodega}> · {p.cepa}</span> : ''}
                                     {p.bodega ? <span className={s.vincularProdBodega}> · {p.bodega}</span> : ''}
                                     {p.anio ? <span className={s.vincularProdAnio}> · {p.anio}</span> : ''}
                                   </span>

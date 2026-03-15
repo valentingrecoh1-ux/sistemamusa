@@ -4430,11 +4430,23 @@ Origen: ${producto.origen || ""}`;
   // ── Productos simple (para vincular en recepcion) ──
   socket.on("request-productos-simple", async () => {
     try {
-      const prods = await Product.find({}, "nombre codigo cantidad costo bodega anio").sort({ nombre: 1 }).lean();
+      const prods = await Product.find({}, "nombre codigo cantidad costo bodega anio cepa").sort({ nombre: 1 }).lean();
       socket.emit("response-productos-simple", prods);
     } catch (err) {
       console.error("Error request-productos-simple:", err);
       socket.emit("response-productos-simple", []);
+    }
+  });
+
+  // ── Vincular producto a item de OC ──
+  socket.on("vincular-item-oc", async ({ ordenId, itemIndex, productoId }) => {
+    try {
+      const orden = await OrdenCompra.findById(ordenId);
+      if (!orden || !orden.items[itemIndex]) return;
+      orden.items[itemIndex].productoId = productoId || null;
+      await orden.save();
+    } catch (err) {
+      console.error("Error vincular-item-oc:", err);
     }
   });
 

@@ -24,6 +24,20 @@ export default function RecepcionCompras({ usuario }) {
   const [scanResult, setScanResult] = useState(null);
   const scannerRef = useRef(null);
 
+  const playBeep = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1200;
+      gain.gain.value = 0.3;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch (_) {}
+  }, []);
+
   const stopScanner = useCallback(() => {
     if (scannerRef.current) {
       scannerRef.current.stop().catch(() => {});
@@ -40,8 +54,9 @@ export default function RecepcionCompras({ usuario }) {
       scannerRef.current = html5QrCode;
       html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 280, height: 120 }, aspectRatio: 2.0 },
+        { fps: 15, qrbox: { width: 320, height: 160 }, formatsToSupport: [0, 2, 4, 11, 12, 13] },
         (decodedText) => {
+          playBeep();
           setScanResult(decodedText);
           html5QrCode.stop().catch(() => {});
           // Search for product by codigo
@@ -58,7 +73,7 @@ export default function RecepcionCompras({ usuario }) {
         console.error('Error starting scanner:', err);
       });
     }, 300);
-  }, [productos]);
+  }, [productos, playBeep]);
 
   const closeScannerModal = useCallback(() => {
     stopScanner();
@@ -389,11 +404,11 @@ export default function RecepcionCompras({ usuario }) {
 
       {/* Modal scanner */}
       {scannerIdx !== null && (
-        <div className={s.modalOverlay} onClick={closeScannerModal}>
+        <div className={s.modalOverlay} onClick={closeScannerModal} onTouchEnd={closeScannerModal}>
           <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Escanear Codigo de Barras</span>
-              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
+              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
                 <i className="bi bi-x-lg" style={{ pointerEvents: 'none' }} />
               </button>
             </div>

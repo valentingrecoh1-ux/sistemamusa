@@ -3321,6 +3321,17 @@ Origen: ${producto.origen || ""}`;
       io.emit("cambios");
     } catch (err) { console.error("Error cobrar-turno:", err); }
   });
+  socket.on("info-venta-turno", async (turnoId, callback) => {
+    try {
+      const ventas = await Venta.find({ idTurno: turnoId }).select(
+        "stringNumeroFactura monto formaPago fecha tipoFactura numeroVenta"
+      ).lean();
+      if (typeof callback === "function") callback(ventas);
+    } catch (err) {
+      console.error("Error info-venta-turno:", err);
+      if (typeof callback === "function") callback([]);
+    }
+  });
   socket.on("cambiar-cantidad-color", (color, cantidad) => {
     try {
       let cantidades = JSON.parse(

@@ -54,7 +54,7 @@ export default function RecepcionCompras({ usuario }) {
       scannerRef.current = html5QrCode;
       html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 15, qrbox: { width: 320, height: 160 }, formatsToSupport: [0, 2, 4, 11, 12, 13] },
+        { fps: 30, qrbox: { width: 350, height: 180 }, formatsToSupport: [2, 11, 12] },
         (decodedText) => {
           playBeep();
           setScanResult(decodedText);
@@ -417,12 +417,12 @@ export default function RecepcionCompras({ usuario }) {
 
       {/* Modal scanner */}
       {scannerIdx !== null && (
-        <div className={s.modalOverlay} onClick={closeScannerModal} onTouchEnd={closeScannerModal}>
-          <div className={s.scannerModal} onClick={(e) => e.stopPropagation()}>
+        <div className={s.modalOverlay} onClick={closeScannerModal}>
+          <div className={s.scannerModal} onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
             <div className={s.modalHeader}>
               <span className={s.modalTitle}>Escanear Codigo de Barras</span>
-              <button type="button" className={s.modalCloseBtn} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }} onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); closeScannerModal(); }}>
-                <i className="bi bi-x-lg" style={{ pointerEvents: 'none' }} />
+              <button type="button" className={s.modalCloseBtn} onClick={closeScannerModal}>
+                <i className="bi bi-x-lg" />
               </button>
             </div>
             <div className={s.scannerBody}>

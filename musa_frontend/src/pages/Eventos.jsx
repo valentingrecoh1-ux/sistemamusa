@@ -88,6 +88,10 @@ function Eventos({ usuario }) {
   const [infoOpenIdx, setInfoOpenIdx] = useState(null);
   const [infoPagoEdit, setInfoPagoEdit] = useState("");
 
+  // Info venta popup
+  const [ventaInfo, setVentaInfo] = useState(null); // { turnoId, ventas, loading }
+  const ventaInfoRef = useRef(null);
+
   // Feedback
   const [feedbacks, setFeedbacks] = useState([]);
   const [orgFeedback, setOrgFeedback] = useState({ puntaje: 0, notasInternas: "" });
@@ -574,6 +578,30 @@ function Eventos({ usuario }) {
     setShowCobrar(false);
     setCobrarTarget(null);
   };
+
+  // ── Info venta ──
+  const toggleVentaInfo = (turnoId) => {
+    if (ventaInfo && ventaInfo.turnoId === turnoId) {
+      setVentaInfo(null);
+      return;
+    }
+    setVentaInfo({ turnoId, ventas: [], loading: true });
+    socket.emit("info-venta-turno", turnoId, (ventas) => {
+      setVentaInfo({ turnoId, ventas: ventas || [], loading: false });
+    });
+  };
+
+  // Close ventaInfo on outside click
+  useEffect(() => {
+    if (!ventaInfo) return;
+    const handleClick = (e) => {
+      if (ventaInfoRef.current && !ventaInfoRef.current.contains(e.target)) {
+        setVentaInfo(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [ventaInfo]);
 
   // ── Format ──
   const formatFecha = (fecha) => {
@@ -1191,6 +1219,36 @@ function Eventos({ usuario }) {
                             </span>
                           </div>
                           {pagoBadge(r)}
+                          {r.cobrado > 0 && (
+                            <span style={{ position: "relative", display: "inline-block" }}>
+                              <button
+                                className={s.infoVentaBtn}
+                                onClick={() => toggleVentaInfo(r._id)}
+                                title="Ver venta asociada"
+                              >
+                                <i className="bi bi-info-circle"></i>
+                              </button>
+                              {ventaInfo && ventaInfo.turnoId === r._id && (
+                                <div className={s.ventaInfoPopup} ref={ventaInfoRef}>
+                                  {ventaInfo.loading ? (
+                                    <span>Cargando...</span>
+                                  ) : ventaInfo.ventas.length === 0 ? (
+                                    <span>Sin venta asociada</span>
+                                  ) : (
+                                    ventaInfo.ventas.map((v, idx) => (
+                                      <div key={idx} className={s.ventaInfoItem}>
+                                        <div><strong>Venta #{v.numeroVenta || "—"}</strong></div>
+                                        {v.stringNumeroFactura && <div>Factura: {v.stringNumeroFactura}</div>}
+                                        <div>Monto: {money(v.monto)}</div>
+                                        <div>Pago: {v.formaPago}</div>
+                                        <div>Fecha: {formatFecha(v.fecha)}</div>
+                                      </div>
+                                    ))
+                                  )}
+                                </div>
+                              )}
+                            </span>
+                          )}
                           <button className={s.editReservaBtn} onClick={() => iniciarEditReserva(r)} title="Editar reserva">
                             <i className="bi bi-pencil"></i>
                           </button>

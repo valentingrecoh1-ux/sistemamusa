@@ -520,25 +520,32 @@ export default function Asistencia() {
                       )}
                     </div>
                     {hasWork && (
-                      <div className={s.empRows}>
-                        {data.empDetails.map((emp) => (
-                          <div key={emp.id} className={s.empRow}>
-                            <span className={s.empTag} style={{ background: empColorMap[emp.id] }}>
-                              {emp.name.split(" ")[0]}
-                            </span>
-                            <div className={s.empTimes}>
-                              <span className={s.empIn}>
-                                <i className="bi bi-box-arrow-in-right"></i>
-                                {emp.firstIn?.slice(0, 5)}
+                      <>
+                        <div className={s.storeBar}>
+                          <span className={s.storeIn}><i className="bi bi-door-open"></i> {data.storeOpen?.slice(0, 5)}</span>
+                          <span className={s.storeSep}>—</span>
+                          <span className={s.storeOut}><i className="bi bi-door-closed"></i> {data.storeClose?.slice(0, 5)}</span>
+                        </div>
+                        <div className={s.empRows}>
+                          {data.empDetails.map((emp) => (
+                            <div key={emp.id} className={s.empRow}>
+                              <span className={s.empTag} style={{ background: empColorMap[emp.id] }}>
+                                {emp.name}
                               </span>
-                              <span className={s.empOut}>
-                                <i className="bi bi-box-arrow-right"></i>
-                                {emp.lastOut?.slice(0, 5)}
-                              </span>
+                              <div className={s.empTimes}>
+                                <span className={s.empIn}>
+                                  <i className="bi bi-box-arrow-in-right"></i>
+                                  {emp.firstIn?.slice(0, 5)}
+                                </span>
+                                <span className={s.empOut}>
+                                  <i className="bi bi-box-arrow-right"></i>
+                                  {emp.lastOut?.slice(0, 5)}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 );

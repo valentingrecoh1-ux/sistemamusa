@@ -541,6 +541,41 @@
   margin-left: 8px;
 }
 
+/* Store open/close bar */
+.storeBar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.storeIn {
+  color: #22c55e;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.storeIn i { font-size: 10px; }
+
+.storeSep {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.storeOut {
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.storeOut i { font-size: 10px; }
+
 /* Employee rows in cell */
 .empRows {
   display: flex;

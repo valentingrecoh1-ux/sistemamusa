@@ -54,7 +54,7 @@ export default function RecepcionCompras({ usuario }) {
       scannerRef.current = html5QrCode;
       html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 280, height: 120 }, aspectRatio: 2.0 },
+        { fps: 15, qrbox: { width: 320, height: 160 }, formatsToSupport: [0, 2, 4, 11, 12, 13] },
         (decodedText) => {
           playBeep();
           setScanResult(decodedText);

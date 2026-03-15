@@ -484,15 +484,21 @@
   width: 100%;
   border-radius: var(--border-radius);
   overflow: hidden;
+  max-height: 280px;
 }
 
 .scannerView {
   width: 100%;
 }
 
-/* Hide library UI elements */
+.scannerView video {
+  object-fit: cover;
+  max-height: 280px;
+}
+
+/* Style the scan region border */
 .scannerView :global(#qr-shaded-region) {
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(0, 0, 0, 0.6) !important;
 }
 
 .scannerLine {

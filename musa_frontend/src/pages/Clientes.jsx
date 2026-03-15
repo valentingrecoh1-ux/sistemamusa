@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { socket } from '../main';
 import { IP } from '../main';
 import Pagination from '../components/shared/Pagination';
+import PhoneInput from '../components/shared/PhoneInput';
 import Modal from '../components/shared/Modal';
 import { dialog } from '../components/shared/dialog';
 import { fetchClienteToken } from '../lib/tiendaApi';
@@ -208,7 +209,7 @@ export default function Clientes({ usuario }) {
         <div className={s.row2}>
           <div className={s.inputGroup}>
             <span>WhatsApp</span>
-            <input type="tel" value={form.whatsapp} onChange={(e) => handleChange('whatsapp', e.target.value)} placeholder="+54 11 1234-5678" />
+            <PhoneInput value={form.whatsapp} onChange={(val) => handleChange('whatsapp', val)} />
           </div>
           <div className={s.inputGroup}>
             <span>DNI</span>
@@ -225,7 +226,7 @@ export default function Clientes({ usuario }) {
               </div>
               <div className={s.inputGroup}>
                 <span>Telefono</span>
-                <input type="tel" value={form.telefono} onChange={(e) => handleChange('telefono', e.target.value)} placeholder="+54 11 1234-5678" />
+                <PhoneInput value={form.telefono} onChange={(val) => handleChange('telefono', val)} />
               </div>
             </div>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { socket } from '../../main';
 import { IP } from '../../main';
 import Pagination from '../../components/shared/Pagination';
+import PhoneInput from '../../components/shared/PhoneInput';
 import { tienePermiso } from '../../lib/permisos';
 import s from './Proveedores.module.css';
 
@@ -106,7 +107,7 @@ export default function Proveedores({ usuario }) {
             <div className={s.inputGroup}>
               <span>Telefono</span>
               <div className={s.phoneRow}>
-                <input type="text" value={form.telefono} onChange={(e) => handleChange('telefono', e.target.value)} />
+                <PhoneInput value={form.telefono} onChange={(val) => handleChange('telefono', val)} />
                 {form.telefono.trim() && (
                   <a className={s.waBtn} href={`https://wa.me/${form.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp">
                     <i className="bi bi-whatsapp" />
@@ -179,7 +180,7 @@ export default function Proveedores({ usuario }) {
                 <div className={s.inputGroup}>
                   <span>Telefono</span>
                   <div className={s.phoneRow}>
-                    <input type="text" value={form.distribuidorTelefono} onChange={(e) => handleChange('distribuidorTelefono', e.target.value)} />
+                    <PhoneInput value={form.distribuidorTelefono} onChange={(val) => handleChange('distribuidorTelefono', val)} />
                     {form.distribuidorTelefono.trim() && (
                       <a className={s.waBtn} href={`https://wa.me/${form.distribuidorTelefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" title="Abrir WhatsApp">
                         <i className="bi bi-whatsapp" />

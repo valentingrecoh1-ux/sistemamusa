@@ -148,6 +148,9 @@ export default function RecepcionCompras({ usuario }) {
   const handleVinculacion = (index, prodId) => {
     setVinculaciones((prev) => ({ ...prev, [index]: prodId }));
     setSearchProd((prev) => ({ ...prev, [index]: undefined }));
+    if (selectedOC) {
+      socket.emit('vincular-item-oc', { ordenId: selectedOC._id, itemIndex: index, productoId: prodId || null });
+    }
   };
 
   const generateEAN13 = useCallback(() => {

@@ -4438,6 +4438,18 @@ Origen: ${producto.origen || ""}`;
     }
   });
 
+  // ── Vincular producto a item de OC ──
+  socket.on("vincular-item-oc", async ({ ordenId, itemIndex, productoId }) => {
+    try {
+      const orden = await OrdenCompra.findById(ordenId);
+      if (!orden || !orden.items[itemIndex]) return;
+      orden.items[itemIndex].productoId = productoId || null;
+      await orden.save();
+    } catch (err) {
+      console.error("Error vincular-item-oc:", err);
+    }
+  });
+
   // ── Registrar Recepcion de Mercaderia ──
   socket.on("registrar-recepcion", async (data) => {
     try {

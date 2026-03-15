@@ -29,59 +29,79 @@
 }
 
 .navBtn {
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--card-border);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
   background: var(--card-bg);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 0.2s ease;
+  font-size: 14px;
 }
 .navBtn:hover {
   background: var(--accent);
-  color: var(--text-inverse);
+  color: white;
   border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .monthLabel {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: var(--text-primary);
-  min-width: 160px;
+  min-width: 180px;
   text-align: center;
 }
 
 .empSelect {
-  padding: 8px 12px;
+  padding: 8px 14px 8px 12px;
   border: 1px solid var(--card-border);
-  border-radius: var(--border-radius);
+  border-radius: 10px;
   background: var(--card-bg);
   color: var(--text-primary);
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239ca3af' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  transition: all 0.2s ease;
+}
+
+.empSelect:hover {
+  border-color: var(--accent);
+}
+
+.empSelect:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 /* Legend */
 .legend {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  padding: 10px 14px;
+  padding: 12px 16px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
 }
 
 .legendItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .legendDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
@@ -90,7 +110,7 @@
 }
 
 .legendName {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
   font-weight: 600;
 }
@@ -176,6 +196,10 @@
   font-size: 13px;
   color: var(--text-muted);
   margin-bottom: 12px;
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: var(--border-radius);
+  display: inline-block;
 }
 
 .liqBody {
@@ -224,19 +248,20 @@
   gap: 8px;
   padding: 10px 20px;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-lg);
   background: var(--accent);
   color: white;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 0.2s ease;
   align-self: flex-start;
 }
 
 .liqBtn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .liqEmpty {
@@ -263,67 +288,70 @@
 .calendarHeader {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
   margin-bottom: 8px;
 }
 
 .dayHeader {
   text-align: center;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   color: var(--text-muted);
   text-transform: uppercase;
-  padding: 6px 0;
+  padding: 8px 0;
 }
 
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
 }
 
 .dayEmpty {
-  min-height: 120px;
+  min-height: 110px;
 }
 
 .dayCell {
-  min-height: 120px;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--card-border);
-  padding: 6px;
+  min-height: 110px;
+  border-radius: 12px;
+  border: 1.5px solid var(--card-border);
+  padding: 8px;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   overflow: hidden;
+  position: relative;
 }
 
 .dayCell:hover {
   border-color: var(--accent);
-  background: rgba(99, 102, 241, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .dayCell.today {
   border-color: var(--accent);
-  border-width: 2px;
-  box-shadow: 0 0 0 1px var(--accent);
+  border-width: 2.5px;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
 }
 
 .dayCell.selected {
-  background: rgba(99, 102, 241, 0.12);
+  background: rgba(99, 102, 241, 0.15);
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 /* worked background is set via inline style (diagonal gradient for 2 employees) */
 
 .dayCell.noWork {
-  background: rgba(239, 68, 68, 0.03);
+  opacity: 0.4;
 }
 
 .dayCell.feriado {
-  background: rgba(59, 130, 246, 0.08);
-  border-color: rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.4);
 }
 
 .dayTopRow {
@@ -333,27 +361,23 @@
 }
 
 .dayNum {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--text-primary);
 }
 
 .today .dayNum {
   color: var(--accent);
-  font-weight: 800;
+  font-size: 18px;
 }
 
-.feriadoIcon {
+.feriadoTag {
   font-size: 10px;
   color: #3b82f6;
-}
-
-.storeHours {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-left: auto;
-  letter-spacing: -0.3px;
+  background: rgba(59, 130, 246, 0.18);
+  padding: 2px 7px;
+  border-radius: 8px;
+  line-height: 1;
 }
 
 .feriadoBadge {
@@ -363,59 +387,53 @@
   margin-left: 8px;
 }
 
-.dayInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  margin-top: 2px;
-  overflow: hidden;
-}
-
-.empLine {
+/* Store hours bar */
+.storeBar {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.empDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.empName {
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.empTime {
-  font-weight: 500;
-  opacity: 0.8;
-  margin-left: auto;
-  font-size: 9px;
-}
-
-.empMore {
-  font-size: 9px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.dayHours {
+  gap: 5px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--success);
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 3px 7px;
+  border-radius: 8px;
+  margin-top: 2px;
 }
 
-.dayCount {
+.storeBar i {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--accent);
+}
+
+/* Employee rows in cell */
+.empRows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.empRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.empTag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+.empHrs {
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 /* Daily detail */
@@ -454,18 +472,18 @@
 }
 
 .badgePresent {
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   background: rgba(34, 197, 94, 0.15);
   color: var(--success);
 }
 
 .badgeAbsent {
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   background: rgba(239, 68, 68, 0.12);
   color: var(--danger);
@@ -493,8 +511,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: var(--border-radius);
+  padding: 12px 14px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--card-border);
   flex-wrap: wrap;
@@ -502,17 +520,17 @@
 
 .dailyName {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 150px;
 }
 
 .dailyHours {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--accent);
   min-width: 60px;
 }
@@ -524,9 +542,9 @@
 }
 
 .timeBadge {
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 
@@ -557,18 +575,11 @@
   }
 
   .dayNum {
-    font-size: 11px;
+    font-size: 12px;
   }
 
-  .empLine {
-    display: none;
-  }
-
-  .dayHours {
-    font-size: 9px;
-  }
-
-  .dayCount {
+  .storeBar,
+  .empRows {
     display: none;
   }
 
